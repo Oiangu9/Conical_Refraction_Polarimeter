@@ -56,7 +56,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         logging.getLogger().setLevel(logging.DEBUG)
 
 
-
         # We connect the events with their actions
 
         # when image directory path is changed, the tree should display a new look
@@ -71,7 +70,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.choose_directory("choose directory for Output", self.output_directory))
 
         # when the button to convert selected images is pressed, run it
-        self.initialized = False # checking whether an instance for the polarization calculator has been already initialized
+        self.image_loader_initialized = False # checking whether an instance for the Image_Loader has been already initialized
         self.convert_selected_images.clicked.connect(
             self.initialize_Angle_Calculator_instance_convert_images)
 
@@ -119,7 +118,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def initialize_Angle_Calculator_instance_convert_images(self):
         """
-            Initializes an instance of the Polarization_Angle_Calculator class and executes the
+            Initializes an instance of the Image_Loader class and executes the
             conversion of the raw images to the selected mode i607 or i203. The output images
             will be saved in the output directory.
 
@@ -131,16 +130,21 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # save the mode chosen by the user
         self.mode = 607 if self.use_i607.isChecked() else 203
         # initialize instance
-        self.angle_calculator = Polarization_Angle_Calculator(mode=self.mode)
+        self.image_loader = Image_Loader(mode=self.mode)
         # import the images
-        self.angle_calculator.get_raw_images_to_compute(
+        self.image_loader.get_raw_images_to_compute(
             self.get_selected_file_paths(self.picture_dir_tree, self.image_directory.text()))
         # create directory for outputing the resulting converted images
         os.makedirs(self.output_directory.text()+f"/i{self.mode}_converted_images/", exist_ok=True)
         # convert the images
-        self.angle_calculator.compute_raw_to_i607_or_i203(self.output_directory.text()+
-                                                    f"/i{self.mode}")
+        self.image_loader.compute_raw_to_i607_or_i203(self.output_directory.text()+
+                                                    f"/i{self.mode}_converted_images/")
 
+        self.image_loader_initialized=True
+
+        # Unblock things in gui
+
+        
 
 
 

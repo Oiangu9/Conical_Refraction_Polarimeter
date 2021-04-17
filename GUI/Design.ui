@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -205,7 +205,7 @@
        </rect>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_3">
        <attribute name="title">
@@ -216,6 +216,111 @@
        <attribute name="title">
         <string>K2 - Rotatation Algorithm</string>
        </attribute>
+       <widget class="QRadioButton" name="radioButton">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>50</y>
+          <width>231</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Brute Force Grid Search</string>
+        </property>
+       </widget>
+       <widget class="QRadioButton" name="radioButton_2">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>200</y>
+          <width>271</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Golden Ratio 3 point search</string>
+        </property>
+       </widget>
+       <widget class="QRadioButton" name="radioButton_3">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>340</y>
+          <width>251</width>
+          <height>61</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Yet even better one
+search for convex</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="geometry">
+         <rect>
+          <x>360</x>
+          <y>20</y>
+          <width>841</width>
+          <height>141</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Parameters for Brute Force Search</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="geometry">
+         <rect>
+          <x>360</x>
+          <y>180</y>
+          <width>831</width>
+          <height>151</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Parameters for Golden Ratio Search</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="geometry">
+         <rect>
+          <x>360</x>
+          <y>350</y>
+          <width>831</width>
+          <height>151</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Parameters for Convex Search</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>10</y>
+          <width>251</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Select the Search Algorithm</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton">
+        <property name="geometry">
+         <rect>
+          <x>120</x>
+          <y>480</y>
+          <width>121</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>RUN</string>
+        </property>
+       </widget>
       </widget>
       <widget class="QWidget" name="tab_5">
        <attribute name="title">
