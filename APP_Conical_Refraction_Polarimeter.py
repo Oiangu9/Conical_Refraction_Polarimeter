@@ -14,18 +14,36 @@ import os
 
 """
 
-# To be able to log into the QPlainTextEdit widget directly
-class QPlainTextEditLogger(logging.Handler):
-    def __init__(self, parent):
-        super().__init__()
 
-        self.widget = parent
-        self.widget.setReadOnly(True)
+class QPlainTextEditLogger_NonBlockong(logging.Handler, QtCore.QObject):
+    """
+        To log into the QPlainTextEdit widget directly in a 
+        non-blocking way: using signals and slots instead of directly changing
+        the log text box    
+    """
+    sigLog = QtCore.Signal(str)  # define the signal that will send the log messages
 
-    def emit(self, record):
-        msg = self.format(record)
-        self.widget.appendPlainText(msg)
+    def __init__(self, widget):
+        logging.Handler.__init__(self)
+        QtCore.QObject.__init__(self)
+        self.widget=widget # text widget where to append the text when emitted
+        self.widget.setReadOnly(True) # set the widget to readonly
+        # connect the emission of the signal with the function to append text
+        # the emission will emit a string
+        self.sigLog.connect(self.widget.appendPlainText)
 
+    def emit(self, logRecord):
+        message = str(logRecord.getMessage())
+        self.sigLog.emit(message)
+
+class Worker(QtCore.QThread):
+    def __init__(self, func, args):
+        super(Worker, self).__init__()
+        self.func = func
+        self.args = args
+
+    def run(self):
+        self.func(*self.args) # si pones *self.args se desacoplan todos los argumentos
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -47,9 +65,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
         # Set up logging to use your widget as a handler
-        log_handler = QPlainTextEditLogger(self.log_text)
+        log_handler = QPlainTextEditLogger_NonBlockong(self.log_text)
         # You can format what is printed to text box
-
         # connect with logger
         logging.getLogger().addHandler(log_handler)
         # You can control the logging level
