@@ -34,7 +34,7 @@ from skimage.measure import block_reduce # useful function for average pooling
     > En ese caso e ssimple porque si los computas los valores del histograma, ya tienes cual es el
         bin mínimo con su incertidumbre ames. Y puedes poner de parametero o el numero de bins
         or even better el ancho en angulo que cada bin va a contener!
-        
+
 """
 
 class Image_Loader:
@@ -67,7 +67,10 @@ class Image_Loader:
                 #Image.open(image_path).show()
             else:
                 logging.warning(f" Unable to import image {image_path}")
-
+        if len(images.keys())==0:
+            # Then no valid images were introduced!
+            logging.error(" No valid images were selected!")
+            return 1
         # We assume they have the same width and height as (height, width) tuple
         self.raw_image_shape = next(iter(images.values())).shape
 
@@ -199,14 +202,46 @@ class Image_Loader:
         del self.raw_image_shape
 
 
+    def import_converted_images(self, path_list):
+        """
+        Instead of computing the i607or i203 images form raw images, we could also import
+        them directly, already converted. path_list should provide a list with the paths
+        to converted images of the self.mode kind.
+
+        """
+
+        images={}
+        for image_path in path_list:
+            img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+            if img is not None:
+                images[image_path] = img
+                #np.array(Image.open(image_path))
+                #Image.open(image_path).show()
+            else:
+                logging.warning(f" Unable to import image {image_path}")
+
+        self.centered_ring_images = np.zeros(
+                (len(images.keys()), 2*self.mode+1, 2*self.mode+1),
+                dtype = images.values()[0].dtype )
+        self.raw_images_names=[]
+        for k, (image_path, image_array) in enumerate(images.items()):
+            if image_array.shape[0]==slef.mode*2+1:
+                self.raw_images_names.append(image_path.rsplit('/',1)[-1])
+                self.centered_ring_images[k,:,:] = image_array
+
+        if len(self.raw_images_names)==0:
+            # Then no valid images were introduced!
+            logging.error(" No valid images were selected!")
+            return 1
+
 
 class Rotation_Algorithm:
     """
     The distance between the images, i607 and rotated i607R as a function of the rotation angle,
-    once both images are centered in the gravicenter is a strictly unimodal and convex function,
+    once both images are centered in the gravicenter, is a strictly unimodal and convex function,
     the minimum of which should be extremely simple to find (disregarding the fluctuations that
     might appear in the microscopic rotation scale due to the discrete nature of images or the
-    lossy compression issues). A simple algorithm that can proove to be good enough is the Golden
+    lossy compression issues). A simple algorithm that can prove to be good enough is the Fibonacci
     Ratio three point search.
 
     Brute force grid search:
