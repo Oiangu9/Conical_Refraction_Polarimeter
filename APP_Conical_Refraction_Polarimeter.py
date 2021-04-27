@@ -241,8 +241,24 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         ret = self._check_image_loader_ready()
         if ret==1: # failed!
             return 1
+        # Initialize instance of Rotation Algorithm calculator
+        rotation_algorithm = Rotation_Algorithm(self.image_loader)
         # Get arguments and run algorithm depending on the chosen stuff
-
+        if self.brute_rot.isChecked():
+            rotation_algorithm.brute_force_search(
+                [float(self.angle_step_1.text()), float(self.angle_step_2.text()),
+                 float(self.angle_step_3.text())], [float(self.zoom1_ratio.text()),
+                 float(self.zoom2_ratio.text())]
+            )
+        elif self.fibonacci_rot.isChecked():
+            rotation_algorithm.fibonacci_ratio_search(
+                float(self.precision_fib.text()), int(self.max_points_fib.text())
+            )
+        else:
+            rotation_algorithm.quadratic_fit_search(
+                float(self.precision_quad.text()), float(self.initial_guess_delta.text()),
+                int(self.max_it_quad.text())
+            )
 
 
     def _check_image_loader_ready(self):
@@ -252,20 +268,22 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         thread before the execution of any algorithm. Algorithms from secondary threads
         will call it.
         """
-        if self.use_current_images_rot.isChecked():
+        if self.use_current_images.isChecked():
             # make sure there is an instance of image_loader initilized!
             if not self.image_loader_initialized:
                 self.mode = 607 if self.use_i607.isChecked() else 203
                 # initialize instance
                 self.image_loader = Image_Loader(mode=self.mode)
                 ret = self._initialize_Angle_Calculator_instance_convert_images()
-                return 1 if ret==1
+                if ret==1:
+                    return 1
         else: # use all the images in the output directory
             self.mode = 607 if self.use_converted_i607.isChecked() else 203
             self.image_loader = Image_Loader(mode=self.mode)
             ret = self.image_loader.import_converted_images(
                 sorted(glob(f"{self.output_directory}/i{self.mode}_converted_images/*")))
-            return 1 if ret==1
+            if ret==1:
+                return 1
 
 
 

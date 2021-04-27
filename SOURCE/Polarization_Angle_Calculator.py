@@ -219,10 +219,13 @@ class Image_Loader:
                 #Image.open(image_path).show()
             else:
                 logging.warning(f" Unable to import image {image_path}")
-
+        if len(images.values())==0:
+            # Then no valid images were introduced!
+            logging.error(" No valid images were selected!")
+            return 1
         self.centered_ring_images = np.zeros(
                 (len(images.keys()), 2*self.mode+1, 2*self.mode+1),
-                dtype = images.values()[0].dtype )
+                dtype = next(iter(images.values())).dtype )
         self.raw_images_names=[]
         for k, (image_path, image_array) in enumerate(images.items()):
             if image_array.shape[0]==slef.mode*2+1:
@@ -265,3 +268,75 @@ class Rotation_Algorithm:
 
         """
         self.image_loader = image_loader
+
+
+    def brute_force_search(self, angle_steps, zoom_ratios):
+        """
+        What does this exactly do
+
+        Arguments
+        --------
+        - angle_steps (list): A list of the different angle steps to take in each of the sweeps.
+            Expected N, where N is the number of sweeps that will be performed. The first one is
+            expected to be the coarsest grain and they should be ordered from big to smallest.
+            The last step in the list will define the precision of the found minimum. The angle
+            steps are expected to be in (0, 2pi)
+
+        - zoom_ratios (list): A list of the interval reductions that will be held after each sweep
+            around the current best candidate for the minimum. There should be N-1 elements and
+            they should be numbers in (0,1].
+
+        """
+        logging.info("Hey")
+
+
+    def fibonacci_ratio_search(self, precision, maximum_points):
+        """
+
+        Arguments
+        --------
+        - precision (float): Half the length of the interval achieved in the last step. It will be
+            the absolute error to which we compute the minimum of the funtion. Note however that
+            the precision will have a minimum depending on the image quality and the minimum
+            rotation arithmetics. Noise or discretization can induce plateaus in the minimum.
+            Therefore, if at some point the three points have the same cost function the algorithm
+            will stop: the cost function has arrived to the plateau. In that case the precision will
+            be outputed accordingly.
+
+        - maximum_points (int): Maximum number of points to use in the minimum search. It is also
+            the number of times to make an interval reduction.
+
+        """
+        logging.info("Hey")
+
+
+    def quadratic_fit_search(self, precision, initial_guess_angle_delta, max_iterations):
+        """
+        Quadratic
+
+        Arguments
+        --------
+        - precision (float): Half the length of the interval achieved in the last step. It will be
+            the absolute error to which we compute the minimum of the funtion. Note however that
+            the precision will have a minimum depending on the image quality and the minimum
+            rotation arithmetics. Noise or discretization can induce plateaus in the minimum.
+            Therefore, if at some point the three points have the same cost function the algorithm
+            will stop: the cost function has arrived to the plateau. In that case the precision will
+            be outputed accordingly.
+
+        - initial_guess_angle_delta (float): The two initial point ssampled in the middle of the
+            initial interval should be almost exactly in the middle, but still slightly separted
+            netween them. This will maximize the interval reduction. The present parameter
+            will measure their distance.
+
+        - max_iterations (int): Number of maximum iterations of quadratic function fit and
+            minimization to tolerate.
+
+        """
+        logging.info("Hey")
+
+    def plot_results_fibonacci_or_quadratic(self):
+
+        pass
+
+    def plot_results_brute_force(self):
