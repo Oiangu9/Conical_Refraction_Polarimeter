@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import cv2
 import logging
 from skimage.measure import block_reduce # useful function for average pooling
-
+import os
+from time import time
 #from PIL import Image
 
 
@@ -38,12 +39,13 @@ from skimage.measure import block_reduce # useful function for average pooling
 """
 
 class Image_Loader:
-    def __init__(self, mode):
+    def __init__(self, mode, interpolation_flag):
         """
             Mode is expected to be 607 or 203, depending of whether i607 or i203 is desired to be
             used for all the algorithms.
         """
         self.mode = mode
+        self.interpolation_flag = interpolation_flag
 
     def get_raw_images_to_compute(self, path_list):
         """
@@ -80,7 +82,7 @@ class Image_Loader:
         self.raw_images_names = []
         # Now generate the ordered list with the names and the image tensor
         for k, (image_path, image_array) in enumerate(images.items()):
-            self.raw_images_names.append(image_path.rsplit('/',1)[-1])
+            self.raw_images_names.append(image_path.rsplit('/',1)[-1].rsplit('.',1)[0])
             self.raw_images[k,:,:] = image_array
 
         if(self.mode==203): # the mode is set to 203, we will need to downscale the raw image by 3,
@@ -189,8 +191,9 @@ class Image_Loader:
         for im in range(g_raw.shape[0]):
             T = np.float64([[1,0, translate_vectors[im, 1]], [0,1, translate_vectors[im, 0]]])
             self.centered_ring_images[im] = cv2.warpAffine(
-                            self.centered_ring_images[im], T, (self.mode*2+1, self.mode*2+1))
-            cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}", self.centered_ring_images[im])
+                        self.centered_ring_images[im], T, (self.mode*2+1, self.mode*2+1),
+                        flags=self.interpolation_flag) # interpolation method
+            cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_ring_images[im])
 
         # We recompute the gravity centers:
         self.g_centered = self.compute_intensity_gravity_center(self.centered_ring_images)
@@ -228,8 +231,8 @@ class Image_Loader:
                 dtype = next(iter(images.values())).dtype )
         self.raw_images_names=[]
         for k, (image_path, image_array) in enumerate(images.items()):
-            if image_array.shape[0]==slef.mode*2+1:
-                self.raw_images_names.append(image_path.rsplit('/',1)[-1])
+            if image_array.shape[0]==self.mode*2+1:
+                self.raw_images_names.append(image_path.rsplit('/',1)[-1].rsplit('.',1)[0])
                 self.centered_ring_images[k,:,:] = image_array
 
         if len(self.raw_images_names)==0:
@@ -257,17 +260,69 @@ class Rotation_Algorithm:
 
     - Y yet another que es even better existe casi seguro. Algo con una componente mas estocastica.
 
+    OJOOOO!!!!
+    - Si realizo el mirror flip respecto al gravicentro exacto de cada imagen en en eje y?
+    - Y si realizo las rotaciones de la imagen relativas al gravicentro exacto de la imagen???
+    Si hago estas dos correciones, incluso accounteara por esas decimas problematicas!!
+
+    Otro suggetsion de algoritmo! Podrias ir probando mirror reflections relativos a angulos
+    diferentes a rectas ke pasan desde el gravicenter hasta encontrar el mirror reflection tal que
+    divide en una mitad y en la otra la suma de intensidades mas parecida entre ellas. Super
+    facil de hacerlo y se pueden usar los mismos tres algoritmos de busqueda si cambias la
+    funcion de coste
     """
-    def __init__(self, image_loader):
+    def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta):
         """
             Argument image_loader is expected to be an instance of class Image_Loader,
             which has already been initialized and has non-null attributes:
             - self.mode: 203 or 607 depending on whther it contians i607 or i203 images
-            - self.centered_ring_images: the [N_images, self.mode*2+1, self.mode*2+1]
+            - self.centered_ring_images: the [N_images, self.mode*2+1 (h), self.mode*2+1 (w)]
             - self.g_centered: intensity gravicenter in pixel index coordinates [N_images, 2 (h,w)]
+            - self.raw_images_names: nems of the N_images in order
+
+        - initial_guess_angle_delta (float): The two initial point ssampled in the middle of the
+            initial interval should be almost exactly in the middle, but still slightly separted
+            netween them. This will maximize the interval reduction. The present parameter
+            will measure their distance.
 
         """
-        self.image_loader = image_loader
+        self.original_images = image_loader
+        self.interpolation_flag = interpolation_flag
+        self.mirror_images_wrt_width_axis = np.flip(image_loader.centered_ring_images, 1)
+        #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
+        self.min_angle = min_angle
+        self.max_angle = max_angle
+        self.initial_guess_delta = initial_guess_delta
+        self.mode = image_loader.mode
+        self.computed_points={}
+        self.optimums={}
+        self.optimals={}
+        self.precisions={}
+        self.times={}
+
+
+    def save_images(self, images, output_path, names):
+        if type(names) is not list:
+            images=[images,]
+            names = [names,]
+        for name, image in zip(names, images):
+            cv2.imwrite(f"{output_path}/{name}.png", image)
+
+
+    def rotate_image_by(self, image_array, angle):
+      image_center = (self.mode+1.5, self.mode+1.5) # should it be 1.5????
+      rot_mat = cv2.getRotationMatrix2D(image_center, angle*180/np.pi, 1.0)
+      result = cv2.warpAffine(image_array, rot_mat, image_array.shape, flags=self.interpolation_flag)
+      return result.astype(image_array.dtype)
+
+
+    def evaluate_image_rotation(self, image_array, reference_image,  angle):
+        return np.sum(np.abs(self.rotate_image_by(image_array, angle)-reference_image))
+
+
+    def _round_to_sig(self, x_to_round, reference=None, sig=2):
+        reference = x_to_round if reference is None else reference
+        return round(x_to_round, sig-int(np.floor(np.log10(abs(reference))))-1)
 
 
     def brute_force_search(self, angle_steps, zoom_ratios):
@@ -287,10 +342,36 @@ class Rotation_Algorithm:
             they should be numbers in (0,1].
 
         """
-        logging.info("Hey")
+        zoom_ratios.append(1) #to avoid out of index in the last iteration
+        for image_name, image_flip, image_orig in zip(self.original_images.raw_images_names,
+                self.mirror_images_wrt_width_axis, self.original_images.centered_ring_images):
+            a=self.min_angle
+            b=self.max_angle
+            # prepare to output data
+            self.times[f"Brute_Force_{image_name}"]={}
+            self.computed_points[f"Brute_Force_{image_name}"]={}
+            self.optimals[f"Brute_Force_{image_name}"]={}
+            self.optimums[f"Brute_Force_{image_name}"]={}
+            self.precisions[f"Brute_Force_{image_name}"]={}
 
+            # Execute all the stages
+            for stage, angle_step in enumerate(angle_steps):
+                t=time()
+                angles = np.arange(start=a, stop=b, step=angle_step, dtype=np.float64)
+                costs = [self.evaluate_image_rotation(image_flip, image_orig, angle) for angle in angles]
+                x_min = angles[np.argmin(costs)]
+                a=x_min-(b-a)*zoom_ratios[stage]/2.0
+                b=x_min+(b-a)*zoom_ratios[stage]/2.0
+                t = time()-t
 
-    def fibonacci_ratio_search(self, precision, maximum_points):
+                # output data
+                self.times[f"Brute_Force_{image_name}"][f"Stage_{stage}"]=self._round_to_sig(t)
+                self.computed_points[f"Brute_Force_{image_name}"][f"Stage_{stage}"]=np.stack((angles, costs)).transpose()
+                self.optimals[f"Brute_Force_{image_name}"][f"Stage_{stage}"] = self._round_to_sig(x_min, angle_step)
+                self.optimums[f"Brute_Force_{image_name}"][f"Stage_{stage}"] = np.min(costs)
+                self.precisions[f"Brute_Force_{image_name}"][f"Stage_{stage}"]=angle_step
+
+    def fibonacci_ratio_search(self, precision, maximum_points, cost_tol):
         """
 
         Arguments
@@ -306,11 +387,95 @@ class Rotation_Algorithm:
         - maximum_points (int): Maximum number of points to use in the minimum search. It is also
             the number of times to make an interval reduction.
 
+        - cost_tol (float): Maximum relative difference between the cost function active points
+            tolerated before convergence assumption.
         """
-        logging.info("Hey")
+
+        # we compute the necessary fibonacci iteration to achieve this precision
+        F_Nplus1 = (self.max_angle-self.min_angle)/(2.0*precision)+1
+        F_n=[1.0,1.0,2.0]
+        # compute fibonacci series till there
+        while F_n[-1]<=F_Nplus1:
+            F_n.append(F_n[-1]+F_n[-2])
+
+        for image_name, image_flip, image_orig in zip(self.original_images.raw_images_names,
+                self.mirror_images_wrt_width_axis, self.original_images.centered_ring_images):
+            t=time()
+            # prepare the first point triad just like in quadratic fit search
+            active_points = self.initialize_correct_point_quad(image_flip, image_orig)
+            # for plotting
+            computed_points = active_points.transpose().tolist() # list of all the pairs of (xj,f(xj))
+
+            for it in range(len(F_n)-1):
+                rho = 1-F_n[-1-it-1]/F_n[-1-it] # interval reduction factor then is (1-rho)
+                min_triad = np.argmin(active_points[1]) # 1 or 2 if first 3 or last 3
+                if min_triad==1: # we preserve the first 3 points of the quad
+                    if rho<1.0/3:
+                        active_points[0,-1]=active_points[0,2]-rho*(active_points[0,2]-active_points[0,0])
+                    else:
+                        active_points[0,-1]=active_points[0,0]+rho*(active_points[0,2]-active_points[0,0])
+                    active_points[1,-1] = self.evaluate_image_rotation(image_flip, image_orig, active_points[0,-1])
+                    # save new point for plotting
+                    computed_points.append(active_points[:,0])
+                else: # if 2, we preserve last 3 points
+                    if rho>1.0/3:
+                        active_points[0,0]=active_points[0,3]-rho*(active_points[0,3]-active_points[0,1])
+                    else:
+                        active_points[0,0]=active_points[0,1]+rho*(active_points[0,3]-active_points[0,1])
+                    active_points[1,0] = self.evaluate_image_rotation(image_flip, image_orig, active_points[0,0])
+                    # save new point for plotting
+                    computed_points.append(active_points[:,0])
+
+                # order the four pairs of points by their angle
+                active_points = active_points[:, np.argsort(active_points[0])]
+
+                if np.abs(active_points[0,-1]-active_points[0,0]) < 2*precision or np.allclose(active_points[1,:], active_points[1,0], rtol=cost_tol) or it==maximum_points:
+                    print(f"Its={it}, Ns={len(F_n)}")
+                    break
+
+            t = time()-t
+            # save all the data
+            min_point = np.argmin(active_points[1]) # index of minimum f(xj) from the four active points
+            ach_precision = self._round_to_sig((active_points[0, min_point+1]-active_points[0, min_point-1])/2.0)
+            self.computed_points[f"Fibonacci_{image_name}"] = np.array(computed_points)
+            self.optimums[f"Fibonacci_{image_name}"] = active_points[1,min_point]
+            self.optimals[f"Fibonacci_{image_name}"] = self._round_to_sig(active_points[0,min_point], ach_precision)
+            self.precisions[f"Fibonacci_{image_name}"] = ach_precision
+            self.times[f"Fibonacci_{image_name}"]=self._round_to_sig(t)
 
 
-    def quadratic_fit_search(self, precision, initial_guess_angle_delta, max_iterations):
+
+    def initialize_correct_point_quad(self, image_flip, image_orig):
+        """
+        We initialize a point quad where the minimum of the cost function is for sure not in the
+        boundaries of the quad.
+        This is necessary for the quadratic fit search, and at least convenient for the fibonacci
+        search.
+
+        Returns an array [2,4] with the zero-th row having the ordered angles and the first row
+        their cost function values, such that the minimum cost of the four pairs of points
+        is in position 1 or 2.
+        """
+        # Initialize the active points to consider in the first iteration
+        active_xs = np.array([self.min_angle,
+                                0.5*(self.max_angle+self.min_angle-self.initial_guess_delta),
+                                0.5*(self.max_angle+self.min_angle+self.initial_guess_delta),
+                                self.max_angle], dtype=np.float64)
+
+        # Evaluate cost function for each angle
+        active_points = np.stack((active_xs, [ self.evaluate_image_rotation(image_flip, image_orig, angle) for angle in active_xs])) # [2 (xj,f(xj)),4]
+
+        # if the minium is in the boundary of the interval, make it not be the boundary
+        if np.argmin(active_points[1])==0:
+            active_points[0, 3] -= 3*np.pi
+            active_points[1,3] = self.evaluate_image_rotation(image_flip, image_orig, active_points[0, 3])
+        elif np.argmin(active_points[1])==3:
+            active_points[0, 0] += 3*np.pi
+            active_points[1,0] = self.evaluate_image_rotation(image_flip, image_orig, active_points[0,0])
+        # order the four pairs of points by their angle
+        return active_points[:, np.argsort(active_points[0])]
+
+    def quadratic_fit_search(self, precision, max_iterations, cost_tol):
         """
         Quadratic
 
@@ -324,19 +489,84 @@ class Rotation_Algorithm:
             will stop: the cost function has arrived to the plateau. In that case the precision will
             be outputed accordingly.
 
-        - initial_guess_angle_delta (float): The two initial point ssampled in the middle of the
-            initial interval should be almost exactly in the middle, but still slightly separted
-            netween them. This will maximize the interval reduction. The present parameter
-            will measure their distance.
-
         - max_iterations (int): Number of maximum iterations of quadratic function fit and
             minimization to tolerate.
 
+        - cost_tol (float): Maximum relative difference between the cost function active points
+            tolerated before convergence assumption.
+
         """
-        logging.info("Hey")
+        for image_name, image_flip, image_orig in zip(self.original_images.raw_images_names,
+                self.mirror_images_wrt_width_axis, self.original_images.centered_ring_images):
+            t=time()
+            it=0
 
-    def plot_results_fibonacci_or_quadratic(self):
+            active_points = self.initialize_correct_point_quad( image_flip, image_orig)
 
-        pass
+            computed_points = active_points.transpose().tolist() # list of all the pairs of (xj,f(xj))
 
-    def plot_results_brute_force(self):
+            while( np.abs(active_points[0,-1]-active_points[0,0]) >= 2*precision and not np.allclose(active_points[1,:], active_points[1,0], rtol=cost_tol) and it<=max_iterations):
+                # Choose new triad of angles
+                min_point = np.argmin(active_points[1]) # index of minimum f(xj) from the four active points
+                # using the fact that the minimum of the four points will never be in the boundary
+                active_points[:, :3] = active_points[:, (min_point-1):(min_point+2)]
+
+                # compute the interpolation polynomial parameters and the minimum
+                x_min = 0.5*( active_points[0,0]+active_points[0,1] + (active_points[0,0]-active_points[0,2])*(active_points[0,1]-active_points[0,2])/( ( active_points[0,0]*(active_points[1,2]-active_points[1,1])+active_points[0,1]*(active_points[1,0]-active_points[1,2]) )/(active_points[1,1]-active_points[1,0]) + active_points[0,2] ) )
+                active_points[0,3] = x_min
+                active_points[1,3] = self.evaluate_image_rotation(image_flip, image_orig, x_min)
+
+                # save new point for plotting
+                computed_points.append(active_points[:,3])
+
+                # order the four pairs of points by their angle
+                active_points = active_points[:, np.argsort(active_points[0])]
+                # increment iterations
+                it+=1
+
+            t = time()-t
+            # save al the data
+            min_point = np.argmin(active_points[1]) # index of minimum f(xj) from the four active points
+            ach_precision = self._round_to_sig((active_points[0, min_point+1]-active_points[0, min_point-1])/2.0)
+            self.computed_points[f"Quadratic_{image_name}"] = np.array(computed_points)
+            self.optimums[f"Quadratic_{image_name}"] = active_points[1,min_point]
+            self.optimals[f"Quadratic_{image_name}"] = self._round_to_sig(active_points[0,min_point], ach_precision)
+            self.precisions[f"Quadratic_{image_name}"] = ach_precision
+            self.times[f"Quadratic_{image_name}"]=self._round_to_sig(t)
+
+
+
+    def save_result_plots_fibonacci_or_quadratic(self, output_path):
+        """
+        Save the resulting explored points in cost function vs angle, together with the info
+        about the optimization.
+        """
+        os.makedirs(f"{output_path}/Rotation_Algorithm/", exist_ok=True)
+        fig = plt.figure(figsize=(10,5))
+        ax = fig.add_subplot(1, 1, 1)
+        for name, computed_points in self.computed_points.items():
+            ax.plot(computed_points[:,0], computed_points[:,1], 'o', label=name)
+            ax.set_title(f"Optimal angle={self.optimals[name]}+-{self.precisions[name]} rad\nComputed Points={len(computed_points)} . Time Required={self.times[name]}s")
+            ax.set_xlabel("Angle (rad)")
+            ax.set_ylabel("|Rotated-Original|")
+            #ax.set_yscale('log')
+            ax.grid(True)
+            plt.savefig(f"{output_path}/Rotation_Algorithm/{name}.png")
+            ax.clear()
+
+    def save_result_plots_brute_force(self, output_path):
+        os.makedirs(f"{output_path}/Rotation_Algorithm/", exist_ok=True)
+        fig, axes = plt.subplots(len(next(iter(self.times.values())).values()), 1, figsize=(10,15))
+        fig.tight_layout(pad=5.0)
+        for name, computed_points in self.computed_points.items():
+            for stage, ax in enumerate(axes):
+                ax.clear()
+                ax.plot(computed_points[f"Stage_{stage}"][:,0],
+                    computed_points[f"Stage_{stage}"][:,1], 'o', markersize=2,
+                    label=f"{name}_Stage_{stage}")
+                ax.set_title(f"STAGE {stage}: Optimal angle={self.optimals[name][f'Stage_{stage}']}+-{self.precisions[name][f'Stage_{stage}']} rad\nComputed Points={len(computed_points[f'Stage_{stage}'])}. Time Required={self.times[name][f'Stage_{stage}']}s")
+                ax.set_xlabel("Angle (rad)")
+                ax.set_ylabel("|Rotated-Original|")
+                #ax.set_yscale('log')
+                ax.grid(True)
+            plt.savefig(f"{output_path}/Rotation_Algorithm/{name}.png")

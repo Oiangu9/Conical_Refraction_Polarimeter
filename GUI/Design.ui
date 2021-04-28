@@ -190,6 +190,65 @@
        <string>Convert Selected Images</string>
       </property>
      </widget>
+     <widget class="QLabel" name="label_19">
+      <property name="geometry">
+       <rect>
+        <x>560</x>
+        <y>510</y>
+        <width>181</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Affine Transformation
+Interpolation Algorithm:</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="interpolation_alg_centering">
+      <property name="geometry">
+       <rect>
+        <x>570</x>
+        <y>560</y>
+        <width>251</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <item>
+       <property name="text">
+        <string>bicubic interpolation</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>bilinear interpolation</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>nearest neighbor interpolation</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Lanczos interpolation over 8x8 neighborhood</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Bit exact bilinear interpolation</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Bit exact nearest neighbor interpolation</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>resampling using pixel area relation</string>
+       </property>
+      </item>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
@@ -198,10 +257,10 @@
      <widget class="QTabWidget" name="tabWidget_2">
       <property name="geometry">
        <rect>
-        <x>9</x>
+        <x>20</x>
         <y>0</y>
         <width>1191</width>
-        <height>531</height>
+        <height>411</height>
        </rect>
       </property>
       <property name="currentIndex">
@@ -220,7 +279,7 @@
         <property name="geometry">
          <rect>
           <x>30</x>
-          <y>100</y>
+          <y>120</y>
           <width>231</width>
           <height>32</height>
          </rect>
@@ -236,7 +295,7 @@
         <property name="geometry">
          <rect>
           <x>30</x>
-          <y>150</y>
+          <y>170</y>
           <width>271</width>
           <height>32</height>
          </rect>
@@ -254,8 +313,8 @@
        <widget class="QRadioButton" name="quadratic_rot">
         <property name="geometry">
          <rect>
-          <x>40</x>
-          <y>190</y>
+          <x>30</x>
+          <y>210</y>
           <width>251</width>
           <height>61</height>
          </rect>
@@ -338,9 +397,9 @@
          <property name="geometry">
           <rect>
            <x>20</x>
-           <y>110</y>
+           <y>100</y>
            <width>121</width>
-           <height>16</height>
+           <height>31</height>
           </rect>
          </property>
          <property name="text">
@@ -417,10 +476,10 @@ Precision:</string>
        <widget class="QGroupBox" name="groupBox_2">
         <property name="geometry">
          <rect>
-          <x>360</x>
-          <y>230</y>
+          <x>700</x>
+          <y>200</y>
           <width>321</width>
-          <height>101</height>
+          <height>121</height>
          </rect>
         </property>
         <property name="title">
@@ -478,50 +537,50 @@ Precision:</string>
           <string>10000</string>
          </property>
         </widget>
-       </widget>
-       <widget class="QGroupBox" name="groupBox_3">
-        <property name="geometry">
-         <rect>
-          <x>360</x>
-          <y>350</y>
-          <width>321</width>
-          <height>141</height>
-         </rect>
-        </property>
-        <property name="title">
-         <string>Parameters for Quadratic Search</string>
-        </property>
-        <widget class="QLabel" name="label_14">
+        <widget class="QLabel" name="label_20">
          <property name="geometry">
           <rect>
-           <x>40</x>
-           <y>40</y>
-           <width>181</width>
+           <x>30</x>
+           <y>100</y>
+           <width>101</width>
            <height>16</height>
           </rect>
          </property>
          <property name="text">
-          <string>Initial guess angle delta (rad):</string>
+          <string>Cost tolerance:</string>
          </property>
         </widget>
-        <widget class="QLineEdit" name="initial_guess_delta">
+        <widget class="QLineEdit" name="cost_tolerance_fib">
          <property name="geometry">
           <rect>
-           <x>230</x>
-           <y>40</y>
+           <x>170</x>
+           <y>100</y>
            <width>71</width>
            <height>23</height>
           </rect>
          </property>
          <property name="text">
-          <string>0.1</string>
+          <string>0</string>
          </property>
         </widget>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="geometry">
+         <rect>
+          <x>700</x>
+          <y>20</y>
+          <width>321</width>
+          <height>171</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Parameters for Quadratic Search</string>
+        </property>
         <widget class="QLineEdit" name="precision_quad">
          <property name="geometry">
           <rect>
-           <x>230</x>
-           <y>80</y>
+           <x>220</x>
+           <y>50</y>
            <width>71</width>
            <height>23</height>
           </rect>
@@ -533,8 +592,8 @@ Precision:</string>
         <widget class="QLabel" name="label_15">
          <property name="geometry">
           <rect>
-           <x>40</x>
-           <y>80</y>
+           <x>30</x>
+           <y>50</y>
            <width>101</width>
            <height>16</height>
           </rect>
@@ -546,8 +605,8 @@ Precision:</string>
         <widget class="QLabel" name="label_16">
          <property name="geometry">
           <rect>
-           <x>40</x>
-           <y>120</y>
+           <x>30</x>
+           <y>90</y>
            <width>131</width>
            <height>16</height>
           </rect>
@@ -559,8 +618,8 @@ Precision:</string>
         <widget class="QLineEdit" name="max_it_quad">
          <property name="geometry">
           <rect>
-           <x>230</x>
-           <y>120</y>
+           <x>220</x>
+           <y>90</y>
            <width>71</width>
            <height>23</height>
           </rect>
@@ -569,12 +628,38 @@ Precision:</string>
           <string>10000</string>
          </property>
         </widget>
+        <widget class="QLabel" name="label_21">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>120</y>
+           <width>161</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Cost tolerance (relative):</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="cost_tolerance_quad">
+         <property name="geometry">
+          <rect>
+           <x>220</x>
+           <y>120</y>
+           <width>71</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
        </widget>
        <widget class="QLabel" name="label">
         <property name="geometry">
          <rect>
           <x>30</x>
-          <y>60</y>
+          <y>90</y>
           <width>251</width>
           <height>31</height>
          </rect>
@@ -586,7 +671,7 @@ Precision:</string>
        <widget class="QPushButton" name="run_rotation_algorithm">
         <property name="geometry">
          <rect>
-          <x>100</x>
+          <x>430</x>
           <y>280</y>
           <width>121</width>
           <height>41</height>
@@ -601,7 +686,7 @@ Precision:</string>
          <rect>
           <x>220</x>
           <y>20</y>
-          <width>41</width>
+          <width>51</width>
           <height>23</height>
          </rect>
         </property>
@@ -651,9 +736,9 @@ Precision:</string>
        <widget class="QLabel" name="label_13">
         <property name="geometry">
          <rect>
-          <x>0</x>
-          <y>360</y>
-          <width>551</width>
+          <x>460</x>
+          <y>320</y>
+          <width>401</width>
           <height>101</height>
          </rect>
         </property>
@@ -661,6 +746,92 @@ Precision:</string>
          <string>*Remember that the precision will have a minimum depending
  on the image quality and the minimum rotation arithmetics.
 Noise or discretization can induce plateaus in the minimum</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_18">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>270</y>
+          <width>181</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Affine Transformation
+Interpolation Algorithm:</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="interpolation_alg_angle">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>320</y>
+          <width>251</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <item>
+         <property name="text">
+          <string>bicubic interpolation</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>bilinear interpolation</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>nearest neighbor interpolation</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Lanczos interpolation over 8x8 neighborhood</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Bit exact bilinear interpolation</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Bit exact nearest neighbor interpolation</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>resampling using pixel area relation</string>
+         </property>
+        </item>
+       </widget>
+       <widget class="QLineEdit" name="initial_guess_delta">
+        <property name="geometry">
+         <rect>
+          <x>240</x>
+          <y>60</y>
+          <width>71</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>0.1</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_14">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>50</y>
+          <width>211</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Initial guess angle delta (rad)
+used for Fibonacci and Quadratic:</string>
         </property>
        </widget>
       </widget>
@@ -682,6 +853,9 @@ Noise or discretization can induce plateaus in the minimum</string>
       <property name="text">
        <string> ./i203_converted_images</string>
       </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup</string>
+      </attribute>
      </widget>
      <widget class="QRadioButton" name="use_converted_i607">
       <property name="geometry">
@@ -695,13 +869,19 @@ Noise or discretization can induce plateaus in the minimum</string>
       <property name="text">
        <string> ./i607_converted_images</string>
       </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup</string>
+      </attribute>
      </widget>
      <widget class="QLabel" name="label_7">
       <property name="geometry">
        <rect>
         <x>280</x>
         <y>590</y>
-        <width>241</width>
+        <width>181</width>
         <height>31</height>
        </rect>
       </property>
@@ -726,6 +906,9 @@ converted it will be done now)</string>
       <property name="checked">
        <bool>false</bool>
       </property>
+      <attribute name="buttonGroup">
+       <string notr="true">buttonGroup</string>
+      </attribute>
      </widget>
      <widget class="QRadioButton" name="show_plots">
       <property name="geometry">
@@ -770,7 +953,7 @@ converted it will be done now)</string>
       <x>10</x>
       <y>690</y>
       <width>1191</width>
-      <height>171</height>
+      <height>121</height>
      </rect>
     </property>
     <property name="plainText">
@@ -789,7 +972,7 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
      <x>0</x>
      <y>0</y>
      <width>1237</width>
-     <height>31</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>
@@ -799,5 +982,6 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>

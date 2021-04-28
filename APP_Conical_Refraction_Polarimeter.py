@@ -4,6 +4,7 @@ from glob import glob
 import logging
 import sys
 import os
+import cv2
 
 # pyuic5 -x ./GUI/Design.ui -o ./GUI/Design_ui.py
 
@@ -90,6 +91,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # You can control the logging level
         logging.getLogger().setLevel(logging.DEBUG)
 
+        # avoid matplotlib logging to user GUI
+        logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
         # We connect the events with their actions
 
@@ -198,7 +201,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # save the mode chosen by the user
         self.mode = 607 if self.use_i607.isChecked() else 203
         # initialize instance
-        self.image_loader = Image_Loader(mode=self.mode)
+        self.image_loader = Image_Loader(self.mode,
+            self.choose_interpolation_falg(self.interpolation_alg_centering))
 
         # Run worker for non-blocking computations
         self.strong_worker.set_new_task_and_arguments(
@@ -241,9 +245,14 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         ret = self._check_image_loader_ready()
         if ret==1: # failed!
             return 1
+        logging.info(" Image loader ready!")
         # Initialize instance of Rotation Algorithm calculator
-        rotation_algorithm = Rotation_Algorithm(self.image_loader)
+        rotation_algorithm = Rotation_Algorithm(self.image_loader,
+            eval(self.theta_min.text()), eval(self.theta_max.text()),
+            self.choose_interpolation_falg(self.interpolation_alg_angle),
+            float(self.initial_guess_delta.text()))
         # Get arguments and run algorithm depending on the chosen stuff
+        logging.info(" Running Rotation Algorithm...")
         if self.brute_rot.isChecked():
             rotation_algorithm.brute_force_search(
                 [float(self.angle_step_1.text()), float(self.angle_step_2.text()),
@@ -252,13 +261,21 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             )
         elif self.fibonacci_rot.isChecked():
             rotation_algorithm.fibonacci_ratio_search(
-                float(self.precision_fib.text()), int(self.max_points_fib.text())
+                float(self.precision_fib.text()), int(self.max_points_fib.text()),
+                float(self.cost_tolerance_fib.text())
             )
         else:
             rotation_algorithm.quadratic_fit_search(
-                float(self.precision_quad.text()), float(self.initial_guess_delta.text()),
-                int(self.max_it_quad.text())
+                float(self.precision_quad.text()),
+                int(self.max_it_quad.text()),
+                float(self.cost_tolerance_quad.text())
             )
+        logging.info(f"Found optimal angles in rad = {rotation_algorithm.optimals}\n\nPrecisions (rad) = {rotation_algorithm.precisions}\n\nTimes (s) = {rotation_algorithm.times}")
+
+        if (self.output_plots.isChecked() and self.brute_rot.isChecked()):
+            rotation_algorithm.save_result_plots_brute_force(self.output_directory.text())
+        else:
+            rotation_algorithm.save_result_plots_fibonacci_or_quadratic(self.output_directory.text())
 
 
     def _check_image_loader_ready(self):
@@ -273,19 +290,29 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             if not self.image_loader_initialized:
                 self.mode = 607 if self.use_i607.isChecked() else 203
                 # initialize instance
-                self.image_loader = Image_Loader(mode=self.mode)
+                self.image_loader = Image_Loader(self.mode,
+                    self.choose_interpolation_falg(self.interpolation_alg_centering))
                 ret = self._initialize_Angle_Calculator_instance_convert_images()
                 if ret==1:
                     return 1
         else: # use all the images in the output directory
             self.mode = 607 if self.use_converted_i607.isChecked() else 203
-            self.image_loader = Image_Loader(mode=self.mode)
+            self.image_loader = Image_Loader(self.mode,
+                self.choose_interpolation_falg(self.interpolation_alg_centering))
             ret = self.image_loader.import_converted_images(
-                sorted(glob(f"{self.output_directory}/i{self.mode}_converted_images/*")))
+                sorted(glob(f"{self.output_directory.text()}/i{self.mode}_converted_images/*")))
             if ret==1:
                 return 1
 
-
+    def choose_interpolation_falg(self, combo_widget):
+        flags = {"nearest neighbor interpolation":cv2.INTER_NEAREST,
+            "bilinear interpolation":cv2.INTER_LINEAR,
+            "bicubic interpolation":cv2.INTER_CUBIC,
+            "resampling using pixel area relation":cv2.INTER_AREA,
+            "Lanczos interpolation over 8x8 neighborhood":cv2.INTER_LANCZOS4,
+            "Bit exact bilinear interpolation":cv2.INTER_LINEAR_EXACT,
+            "Bit exact nearest neighbor interpolation":cv2.INTER_NEAREST_EXACT}
+        return flags[combo_widget.currentText()]
 
 
 
