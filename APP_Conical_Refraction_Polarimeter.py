@@ -115,6 +115,12 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # when the button to execute an algorithm is clicked run it
         self.run_rotation_algorithm.clicked.connect(
             self.execute_rotation_algorithm)
+        self.run_mirror_algorithm.clicked.connect(
+            self.execute_mirror_algorithm)
+        self.run_histogram_algorithm.clicked.connect(
+            self.execute_histogram_algorithm)
+        self.run_gradient_algorithm.clicked.connect(
+            self.execute_gradient_algorithm)
 
         # Initialize a worker for the hard tasks
         self.strong_worker = Worker( None, None)
@@ -248,34 +254,184 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         logging.info(" Image loader ready!")
         # Initialize instance of Rotation Algorithm calculator
         rotation_algorithm = Rotation_Algorithm(self.image_loader,
-            eval(self.theta_min.text()), eval(self.theta_max.text()),
-            self.choose_interpolation_falg(self.interpolation_alg_angle),
-            float(self.initial_guess_delta.text()))
+            eval(self.theta_min_R.text()), eval(self.theta_max_R.text()),
+            self.choose_interpolation_falg(self.interpolation_alg_opt),
+            float(self.initial_guess_delta_rad.text()))
         # Get arguments and run algorithm depending on the chosen stuff
         logging.info(" Running Rotation Algorithm...")
-        if self.brute_rot.isChecked():
+        if self.brute.isChecked():
             rotation_algorithm.brute_force_search(
-                [float(self.angle_step_1.text()), float(self.angle_step_2.text()),
-                 float(self.angle_step_3.text())], [float(self.zoom1_ratio.text()),
+                [float(self.angle_step_1_rad.text()), float(self.angle_step_2_rad.text()),
+                 float(self.angle_step_3_rad.text())], [float(self.zoom1_ratio.text()),
                  float(self.zoom2_ratio.text())]
             )
-        elif self.fibonacci_rot.isChecked():
+        elif self.fibonacci.isChecked():
             rotation_algorithm.fibonacci_ratio_search(
-                float(self.precision_fib.text()), int(self.max_points_fib.text()),
+                float(self.precision_fib_rad.text()), int(self.max_points_fib.text()),
                 float(self.cost_tolerance_fib.text())
             )
         else:
             rotation_algorithm.quadratic_fit_search(
-                float(self.precision_quad.text()),
+                float(self.precision_quad_rad.text()),
                 int(self.max_it_quad.text()),
                 float(self.cost_tolerance_quad.text())
             )
         logging.info(f"Found optimal angles in rad = {rotation_algorithm.optimals}\n\nPrecisions (rad) = {rotation_algorithm.precisions}\n\nTimes (s) = {rotation_algorithm.times}")
 
-        if (self.output_plots.isChecked() and self.brute_rot.isChecked()):
+        if (self.output_plots.isChecked() and self.brute.isChecked()):
             rotation_algorithm.save_result_plots_brute_force(self.output_directory.text())
         else:
             rotation_algorithm.save_result_plots_fibonacci_or_quadratic(self.output_directory.text())
+
+    def execute_mirror_algorithm(self):
+        """
+        Executes the mirror flip algorithm according to the requirements of the user.
+        """
+        # Block everything to user
+        self.block_hard_user_interaction(False)
+        # Run worker for non-blocking computations
+        self.strong_worker.set_new_task_and_arguments(
+            self._execute_mirror_algorithm, []
+        )
+        self.strong_worker.start()
+
+    def _execute_mirror_algorithm(self):
+        """
+            Thread stuff for the mirror flip algorithm execution scheduling.
+        """
+        ret = self._check_image_loader_ready()
+        if ret==1: # failed!
+            return 1
+        logging.info(" Image loader ready!")
+        # Initialize instance of Rotation Algorithm calculator
+        mirror_algorithm = Mirror_Flip_Algorithm(self.image_loader,
+            eval(self.theta_min_M.text()), eval(self.theta_max_M.text()),
+            self.choose_interpolation_falg(self.interpolation_alg_opt),
+            float(self.initial_guess_delta_rad.text()))
+        # Get arguments and run algorithm depending on the chosen stuff
+        logging.info(" Running Mirror Flip Algorithm...")
+        if self.brute.isChecked():
+            mirror_algorithm.brute_force_search(
+                [float(self.angle_step_1_rad.text()), float(self.angle_step_2_rad.text()),
+                 float(self.angle_step_3_rad.text())], [float(self.zoom1_ratio.text()),
+                 float(self.zoom2_ratio.text())]
+            )
+        elif self.fibonacci.isChecked():
+            mirror_algorithm.fibonacci_ratio_search(
+                float(self.precision_fib_rad.text()), int(self.max_points_fib.text()),
+                float(self.cost_tolerance_fib.text())
+            )
+        else:
+            mirror_algorithm.quadratic_fit_search(
+                float(self.precision_quad_rad.text()),
+                int(self.max_it_quad.text()),
+                float(self.cost_tolerance_quad.text())
+            )
+        logging.info(f"Found optimal angles in rad = {mirror_algorithm.optimals}\n\nPrecisions (rad) = {mirror_algorithm.precisions}\n\nTimes (s) = {mirror_algorithm.times}")
+
+        if (self.output_plots.isChecked() and self.brute.isChecked()):
+            mirror_algorithm.save_result_plots_brute_force(self.output_directory.text())
+        else:
+            mirror_algorithm.save_result_plots_fibonacci_or_quadratic(self.output_directory.text())
+
+    def execute_gradient_algorithm(self):
+        """
+        Executes the gradient algorithm according to the requirements of the user.
+        """
+        # Block everything to user
+        self.block_hard_user_interaction(False)
+        # Run worker for non-blocking computations
+        self.strong_worker.set_new_task_and_arguments(
+            self._execute_gradient_algorithm, []
+        )
+        self.strong_worker.start()
+
+    def _execute_gradient_algorithm(self):
+        """
+            Thread stuff for the gradient algorithm execution scheduling.
+        """
+        ret = self._check_image_loader_ready()
+        if ret==1: # failed!
+            return 1
+        logging.info(" Image loader ready!")
+        # Initialize instance of Rotation Algorithm calculator
+        gradient_algorithm = Gradient_Algorithm(self.image_loader,
+            eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
+            self.choose_interpolation_falg(self.interpolation_alg_opt),
+            float(self.initial_guess_delta_pix.text()))
+        # Get arguments and run algorithm depending on the chosen stuff
+        logging.info(" Running Mirror Flip Algorithm...")
+        if self.brute.isChecked():
+            gradient_algorithm.brute_force_search(
+                [float(self.angle_step_1_pix.text()), float(self.angle_step_2_pix.text()),
+                 float(self.angle_step_3_pix.text())], [float(self.zoom1_ratio.text()),
+                 float(self.zoom2_ratio.text())]
+            )
+        elif self.fibonacci.isChecked():
+            gradient_algorithm.fibonacci_ratio_search(
+                float(self.precision_fib_pix.text()), int(self.max_points_fib.text()),
+                float(self.cost_tolerance_fib.text())
+            )
+        else:
+            gradient_algorithm.quadratic_fit_search(
+                float(self.precision_quad_pix.text()),
+                int(self.max_it_quad.text()),
+                float(self.cost_tolerance_quad.text())
+            )
+        logging.info(f"Found optimal angles in rad = {gradient_algorithm.optimals}\n\nPrecisions (rad) = {gradient_algorithm.precisions}\n\nTimes (s) = {gradient_algorithm.times}")
+
+        if (self.output_plots.isChecked() and self.brute.isChecked()):
+            gradient_algorithm.save_result_plots_brute_force(self.output_directory.text())
+        else:
+            gradient_algorithm.save_result_plots_fibonacci_or_quadratic(self.output_directory.text())
+
+
+
+    def execute_histogram_algorithm(self):
+        """
+        Executes the histogram algorithm according to the requirements of the user.
+        """
+        # Block everything to user
+        self.block_hard_user_interaction(False)
+        # Run worker for non-blocking computations
+        self.strong_worker.set_new_task_and_arguments(
+            self._execute_histogram_algorithm, []
+        )
+        self.strong_worker.start()
+
+    def _execute_histogram_algorithm(self):
+        """
+            Thread stuff for the histogram algorithm execution scheduling.
+        """
+        ret = self._check_image_loader_ready()
+        if ret==1: # failed!
+            return 1
+        logging.info(" Image loader ready!")
+        # Initialize instance of Rotation Algorithm calculator
+        histogram_algorithm = Radial_Histogram_Algorithm(self.image_loader,
+            self.use_exact_grav_H.isChecked())
+        # Get arguments and run algorithm depending on the chosen stuff
+        logging.info(" Running Histogram Algorithm...")
+        if self.use_raw_idx_mask_H.isChecked():
+            histogram_algorithm.compute_histogram_masking(
+                float(self.angle_bin_size_H.text())
+                )
+        elif self.use_raw_idx_bin_H.isChecked():
+            histogram_algorithm.compute_histogram_binning(
+                float(self.angle_bin_size_H.text())
+                )
+        else:
+            histogram_algorithm.compute_histogram_interpolate(
+                float(self.angle_bin_size_H.text())
+            )
+        if self.fit_cos_H.isChecked():
+            histogram_algorithm.refine_by_cosine_fit()
+
+        logging.info(f"Found optimal angles in rad = {histogram_algorithm.optimals}\n\nPrecisions (rad) = {histogram_algorithm.precisions}\n\nTimes (s) = {histogram_algorithm.times}")
+
+        if (self.output_plots.isChecked()):
+            histogram_algorithm.save_result_plots(self.output_directory.text())
+
 
 
     def _check_image_loader_ready(self):
@@ -303,6 +459,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                 sorted(glob(f"{self.output_directory.text()}/i{self.mode}_converted_images/*")))
             if ret==1:
                 return 1
+
+
 
     def choose_interpolation_falg(self, combo_widget):
         flags = {"nearest neighbor interpolation":cv2.INTER_NEAREST,

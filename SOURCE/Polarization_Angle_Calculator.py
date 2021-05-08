@@ -239,7 +239,170 @@ class Image_Loader:
             # Then no valid images were introduced!
             logging.error(" No valid images were selected!")
             return 1
+        # We recompute the gravity centers [N_images, 2 (h,w)]
+        self.g_centered = self.compute_intensity_gravity_center(self.centered_ring_images)
 
+
+
+class Radial_Histogram_Algorithm:
+    def __init__(self, image_loader, use_exact_gravicenter):
+        self.images = image_loader.centered_ring_images
+        self.image_names = image_loader.raw_images_names
+        self.mode = image_loader.mode
+        self.use_exact_gravicenter=use_exact_gravicenter
+        if use_exact_gravicenter:
+            self.grav = image_loader.g_centered.squeeze() # squeeze for the case ther is only one im
+        else: # then use the image center as radial histogram origin
+            self.grav = np.array([self.mode*2+1]*2)+0.5
+        self.min_angle=0
+        self.max_angle=2*np.pi
+        self.optimals={}
+
+    def compute_histogram_binning(self, angle_bin_size):
+        t=time()
+        cols = np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1) ) #[h,w]
+        rows = cols.swapaxes(0,1) #[h,w]
+        # angles relative to the  gravicenter in range [-pi,pi] but for the reversed image
+        index_angles = np.arctan2( rows-self.grav[0], cols-self.grav[1] ) #[h,w]
+        # unfortunately in order for the binning to work we will need to have it in 0,2pi (else the 0 bin gets too big)
+        print(index_angles.shape)
+        index_angles[index_angles<0] += 2*np.pi
+        bins = (index_angles//angle_bin_size).astype(int)
+        # assign angles to bins and sum intensities of pixels in the same bins
+        histograms=np.array([np.bincount( bins.flatten(), im.flatten() ) for im in self.images])
+        t=time()-t
+
+        print(histograms.shape, histograms)
+        self.histograms=histograms
+        self.angles=2*np.pi-np.arange(start=self.min_angle, stop=self.max_angle, step=angle_bin_size, dtype=np.float64)
+        for image_name, histogram in zip(self.image_names, histograms):
+            self.optimals[image_name] = self.angles[np.argmax(histogram)]+angle_bin_size/2
+        self.precisions = angle_bin_size/2
+        self.times = t
+
+    def compute_histogram_masking(self, angle_bin_size):
+        # if use img center or only one image
+        t=time()
+        if self.use_exact_gravicenter==False or len(self.grav.shape)==1:
+            # create an array with the column number at each element and one with row numbers
+            cols = np.expand_dims(np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)),2) #[h,w, 1]
+            rows = cols.swapaxes(0,1) #[h,w, 1]
+            # note that we set a minus sign for the angles in order to account for the pixel coordinate system and agree with the rest of algorithms (but in reality wrt the image the angles representing them are the same but *-1)
+            angles = np.arange(start=-self.max_angle, stop=-self.min_angle, step=angle_bin_size, dtype=np.float64) #[N_theta]
+            # create masks for each half plane at different orientations
+            greater=np.greater(rows, np.tan(angles)*(cols-self.grav[0])+self.grav[1]) #[h,w,N_theta]
+            #smaller=np.logical_not(greater) #[h,w,N_theta]
+            # for angles in [-2pi,-3pi/2] and [-pi/2,0] the mask should be true if col greater than smallest angle and col smaller than greatest angle of bin
+            # for angles in [-3pi/2, -pi/2] the mask should be true if smaller than smallest angle and greater than greatest angle of bin
+            bin_lower = np.concatenate((greater[:,:,angles<-3*np.pi/2], np.logical_not(greater)[:,:,(angles>-3*np.pi/2)&(angles<-np.pi/2)], greater[:,:,angles>-np.pi/2]), axis=2) #[h,w,N_theta]
+            #bin_higher = np.logical_not(bin_lower) #[h,w,N_theta]
+            # get the pizza like masks. We have one mask per bin (N_bins=N_theta-1)
+            masks=np.logical_and(bin_lower[:,:,:-1], np.logical_not(bin_lower)[:,:,1:]) # [h,w,N_theta-1]
+
+            # Prepare the images for being masked for each bin
+            # [N_images, h, w]-> [N_theta-1, N_images, h, w]->[N_images, h, w, N_theta-1]
+            #images = np.moveaxis( np.broadcast_to(self.images,
+            #                               (angles.shape[0]-1)+self.images.shape), 0,-1)
+            # apparently there is no way to broadcast correctly the mask preserving that dimension, so will need a comprehension instead
+            histograms=np.array([np.sum(self.images[:, masks[:,:,j]], axis=1) for j in range(angles.shape[0]-1)]).swapaxes(0,-1) #[N_images, N_theta-1] Intensities per bin
+            print(histograms)
+
+        else: # then each image has its own masks (they will be slightly different)
+            # create an array with the column number at each element and one with row numbers
+            cols = np.expand_dims(np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)),(2,3)) #[h,w, 1,1]
+            rows = cols.swapaxes(0,1) #[h,w, 1]
+            # note that we set a minus sign for the angles in order to account for the pixel coordinate system and agree with the rest of algorithms (but in reality wrt the image the angles representing them are the same but *-1)
+            angles = np.arange(start=-self.max_angle, stop=-self.min_angle, step=angle_bin_size, dtype=np.float64) #[N_theta]
+            # create masks for each half plane at different orientations
+            print("pene1")
+            # ESTE ES EL PROBLEMA!!! Bueno, la soluicion es hacer un loop for y hacerlo todo una vez por cada imagen como se hacia antes. Solo pudiendose reutlizar las cosas de hasta aqui.
+            greater=np.greater(rows, (np.tan(angles)*((cols-self.grav[:,0]).swapaxes(-2,-1))).swapaxes(-2,-1)+self.grav[:,1]) #[h,w,N_theta, N_images]
+            # for angles in [-2pi,-3pi/2] and [-pi/2,0] the mask should be true if col greater than smallest angle and col smaller than greatest angle of bin
+            # for angles in [-3pi/2, -pi/2] the mask should be true if smaller than smallest angle and greater than greatest angle of bin
+            print("pene2")
+
+            bin_lower = np.concatenate((greater[:,:,angles<-3*np.pi/2,:], np.logical_not(greater)[:,:,(angles>-3*np.pi/2)&(angles<-np.pi/2),:], greater[:,:,angles>-np.pi/2,:]), axis=2) #[h,w,N_theta,N_images]
+            #bin_higher = np.logical_not(bin_lower) #[h,w,N_theta,N_images]
+            # get the pizza like masks. We have one mask per bin (N_bins=N_theta-1)
+            masks=np.logical_and(bin_lower[:,:,:-1,:], np.logical_not(bin_lower)[:,:,1:,:]) # [h,w,N_theta-1,N_images]
+            print("pene3")
+            histograms=[]
+            for im in range(masks.shape[-1]):
+                histograms.append([np.sum(self.images[im, masks[:,:,j,im]]) for j in range(angles.shape[0]-1)]) #[N_images, N_theta-1]
+            print(histograms)
+        t=time()-t
+        self.histograms=histograms
+        self.angles=-angles
+        for image_name, histogram in zip(self.image_names, histograms):
+            self.optimals[image_name] = -(angles[np.argmax(histogram)]+angle_bin_size/2)
+        self.precisions = angle_bin_size/2
+        self.times = t
+
+
+    def compute_histogram_interpolate(self, angle_bin_size):
+        pass
+
+    def refine_by_cosine_fit(self):
+        pass
+
+    def save_result_plots(self, output_path):
+        "Maybe add the option or check of whether cosine fit should also be plotted"
+        pass
+
+class Mirror_Flip_Algorithm:
+    def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta):
+        self.original_images = image_loader
+        self.interpolation_flag = interpolation_flag
+        self.mirror_images_wrt_width_axis = np.flip(image_loader.centered_ring_images, 1)
+        #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
+        self.min_angle = min_angle
+        self.max_angle = max_angle
+        self.initial_guess_delta = initial_guess_delta
+        self.mode = image_loader.mode
+        self.computed_points={}
+        self.optimums={}
+        self.optimals={}
+        self.precisions={}
+        self.times={}
+    def mirror_flip_at_angle(self, image_array, angle):
+      pass
+
+    def evaluate_image_flip(self, image_array, angle, mode, reference_image=None):
+        pass
+
+
+    def _round_to_sig(self, x_to_round, reference=None, sig=2):
+        reference = x_to_round if reference is None else reference
+        return round(x_to_round, sig-int(np.floor(np.log10(abs(reference))))-1)
+
+    # Y el resto de fknes habra que copy pastearlas e ir cambiando y viendo si merece + la pena kisas ponerlas en una misma clase
+
+class Gradient_Algorithm:
+    def __init__(self, image_loader, min_radious, max_radious, interpolation_flag, initial_guess_delta):
+        self.original_images = image_loader
+        self.interpolation_flag = interpolation_flag
+        self.mirror_images_wrt_width_axis = np.flip(image_loader.centered_ring_images, 1)
+        #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
+        self.min_radious = min_radious
+        self.max_radious = max_radious
+        self.initial_guess_delta = initial_guess_delta
+        self.mode = image_loader.mode
+        self.computed_points={}
+        self.optimums={}
+        self.optimals={}
+        self.precisions={}
+        self.times={}
+    def fk_gravicenter_de_mask_centrada_en_g_y_radio_custom(self, image_array, angle):
+      pass
+
+    def fk_evaluar_distce_g_c2_en_fk_de_radious_red_circle(self, image_array, angle, mode, reference_image=None):
+        pass
+
+
+    def _round_to_sig(self, x_to_round, reference=None, sig=2):
+        reference = x_to_round if reference is None else reference
+        return round(x_to_round, sig-int(np.floor(np.log10(abs(reference))))-1)
+    # y es que el resto es un poco lo mismo, lo que pasa es que aki lo ke optimizarias seria un radio de un numero complejo, que tiene asociado un angulo. Asike aqui el angulo tb esta en cada punto pero vamos, lo ke importara sera el radio en la minimizacion. Tb luego el plot podriamos poner el circulo y tal si acaso, mas que nada para ver que efectivamente el Pogdorf que se obtiene es chachi piruli
 
 class Rotation_Algorithm:
     """
@@ -430,7 +593,6 @@ class Rotation_Algorithm:
                 active_points = active_points[:, np.argsort(active_points[0])]
 
                 if np.abs(active_points[0,-1]-active_points[0,0]) < 2*precision or np.allclose(active_points[1,:], active_points[1,0], rtol=cost_tol) or it==maximum_points:
-                    print(f"Its={it}, Ns={len(F_n)}")
                     break
 
             t = time()-t
