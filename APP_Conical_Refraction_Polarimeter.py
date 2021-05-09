@@ -357,10 +357,10 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # Initialize instance of Rotation Algorithm calculator
         gradient_algorithm = Gradient_Algorithm(self.image_loader,
             eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
-            self.choose_interpolation_falg(self.interpolation_alg_opt),
-            float(self.initial_guess_delta_pix.text()))
+            float(self.initial_guess_delta_pix.text()),
+            self.use_exact_grav_G.isChecked())
         # Get arguments and run algorithm depending on the chosen stuff
-        logging.info(" Running Mirror Flip Algorithm...")
+        logging.info(" Running Gradient Algorithm...")
         if self.brute.isChecked():
             gradient_algorithm.brute_force_search(
                 [float(self.angle_step_1_pix.text()), float(self.angle_step_2_pix.text()),
@@ -416,21 +416,25 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             histogram_algorithm.compute_histogram_masking(
                 float(self.angle_bin_size_H.text())
                 )
+            title="Masking_Histogram"
         elif self.use_raw_idx_bin_H.isChecked():
             histogram_algorithm.compute_histogram_binning(
                 float(self.angle_bin_size_H.text())
                 )
+            title="Binning_Histogram"
         else:
             histogram_algorithm.compute_histogram_interpolate(
                 float(self.angle_bin_size_H.text())
             )
+            title="Interpolating_Histogram"
         if self.fit_cos_H.isChecked():
             histogram_algorithm.refine_by_cosine_fit()
 
         logging.info(f"Found optimal angles in rad = {histogram_algorithm.optimals}\n\nPrecisions (rad) = {histogram_algorithm.precisions}\n\nTimes (s) = {histogram_algorithm.times}")
 
         if (self.output_plots.isChecked()):
-            histogram_algorithm.save_result_plots(self.output_directory.text())
+            histogram_algorithm.save_result_plots(self.output_directory.text(),
+            title)
 
 
 
