@@ -378,7 +378,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                 int(self.max_it_quad.text()),
                 float(self.cost_tolerance_quad.text())
             )
-        logging.info(f"Found optimal angles in rad = {gradient_algorithm.optimals}\n\nPrecisions (rad) = {gradient_algorithm.precisions}\n\nTimes (s) = {gradient_algorithm.times}")
+        logging.info(f"Found optimal radii in pixels = {gradient_algorithm.optimals}\n\nPrecisions (rad) = {gradient_algorithm.precisions}\n\nTimes (s) = {gradient_algorithm.times}\n\nPolarization Angle (rad)={gradient_algorithm.angles}")
 
         if (self.output_plots.isChecked() and self.brute.isChecked()):
             gradient_algorithm.save_result_plots_brute_force(self.output_directory.text())

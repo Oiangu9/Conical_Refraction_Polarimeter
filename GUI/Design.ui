@@ -333,7 +333,7 @@ Precision:</string>
               <item row="1" column="2" colspan="2">
                <widget class="QLineEdit" name="angle_step_1_pix">
                 <property name="text">
-                 <string>0.3</string>
+                 <string>10</string>
                 </property>
                </widget>
               </item>
@@ -376,7 +376,7 @@ Precision:</string>
               <item row="2" column="2" colspan="2">
                <widget class="QLineEdit" name="angle_step_2_pix">
                 <property name="text">
-                 <string>0.07</string>
+                 <string>4</string>
                 </property>
                </widget>
               </item>
@@ -398,7 +398,7 @@ Precision:</string>
               <item row="3" column="2" colspan="2">
                <widget class="QLineEdit" name="angle_step_3_pix">
                 <property name="text">
-                 <string>0.005</string>
+                 <string>2</string>
                 </property>
                </widget>
               </item>
@@ -599,7 +599,7 @@ Precision:</string>
               <item row="3" column="1" colspan="2">
                <widget class="QLineEdit" name="cost_tolerance_quad">
                 <property name="text">
-                 <string>0</string>
+                 <string>0.0001</string>
                 </property>
                </widget>
               </item>
@@ -1168,7 +1168,7 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
      <x>0</x>
      <y>0</y>
      <width>1363</width>
-     <height>25</height>
+     <height>31</height>
     </rect>
    </property>
   </widget>
@@ -1179,9 +1179,9 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
  <buttongroups>
   <buttongroup name="buttonGroup_4"/>
   <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_9"/>
   <buttongroup name="buttonGroup_8"/>
   <buttongroup name="buttonGroup_3"/>
   <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_9"/>
  </buttongroups>
 </ui>

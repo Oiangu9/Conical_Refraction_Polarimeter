@@ -432,6 +432,8 @@ class Gradient_Algorithm:
         self.optimals={}
         self.precisions={}
         self.times={}
+        self.angles={}
+        self.masked_gravs={}
 
         if use_exact_gravicenter: #[N_images, 2 (h,w)]
             self.grav = image_loader.g_centered.squeeze() # squeeze in case there is only one image
@@ -449,7 +451,7 @@ class Gradient_Algorithm:
                 for grav in self.grav])
 
     def compute_new_gravicenter(self, image, radious, distances_to_grav):
-        circle=np.where(distances_to_grav<=radious, image, 0) #[h,w]
+        circle=np.where(distances_to_grav<=radious**2, image, 0) #[h,w]
         # compute the gravicenter of the masked image
         intensity_in_w = np.sum(circle, axis=0) # weights for x [w]
         intensity_in_h = np.sum(circle, axis=1) # weights for y [h]
@@ -457,22 +459,30 @@ class Gradient_Algorithm:
         return [np.dot(intensity_in_h, np.arange(circle.shape[0]))/total_intensity,
          np.dot(intensity_in_w, np.arange(circle.shape[1]))/total_intensity]
 
+    def save_images(self, images, output_path, names):
+        if type(names) is not list:
+            images=[images,]
+            names = [names,]
+        for name, image in zip(names, images):
+            cv2.imwrite(f"{output_path}/{name}.png", image)
+
     def evaluate_mask_radious(self, image, radious, distances_to_grav, grav):
         # mask the image in the circumference
-        circle=np.where(distances_to_grav<=radious, image, 0) #[h,w]
+        circle=np.where(distances_to_grav<=radious**2, image, 0) #[h,w]
+        #self.save_images(circle.astype(np.uint8), '.', f"Rad={radious}")
         # compute the gravicenter of the masked image
         intensity_in_w = np.sum(circle, axis=0) # weights for x [w]
         intensity_in_h = np.sum(circle, axis=1) # weights for y [h]
         total_intensity = intensity_in_h.sum()
         new_grav = [np.dot(intensity_in_h, np.arange(circle.shape[0]))/total_intensity,
-         np.dot(intensity_in_w, np.arange(circle.shape[1]))/total_intensity]
+            np.dot(intensity_in_w, np.arange(circle.shape[1]))/total_intensity]
         return -((new_grav[1]-grav[1])**2+(new_grav[0]-grav[0])**2)
         # the minus sign is because the algorithms will try to minimize the cost (and here we
         # are looking for the maximum)
 
     def brute_force_search(self, radii_steps, zoom_ratios):
         zoom_ratios.append(1) #to avoid out of index in the last iteration
-        mul=False if len(self.distances_to_grav.shape)==1 else True
+        mul=False if len(self.distances_to_grav.shape)==2 else True
         for im, image_name in enumerate(self.original_images.raw_images_names):
             grav= self.grav[im] if mul else self.grav
             (self.times[f"Brute_Force_{image_name}"],
@@ -488,8 +498,8 @@ class Gradient_Algorithm:
                 self.original_images.centered_ring_images[im],
                 self.optimals[f"Brute_Force_{image_name}"][f"Stage_{len(radii_steps)-1}"],
                 self.distances_to_grav[im] if mul else self.distances_to_grav)
-            self.angles[f"Brute_Force_{image_name}"]=np.atan2(grav[0]-masked_grav[0], grav[1]-masked_grav[1])
-            self.masked_gravs[f"Brute_Force_{image_name}"]=masked_gravs
+            self.angles[f"Brute_Force_{image_name}"]=-np.arctan2(masked_grav[0]-grav[0], masked_grav[1]-grav[1])
+            self.masked_gravs[f"Brute_Force_{image_name}"]=masked_grav
 
 
     def fibonacci_ratio_search(self, precision, maximum_points, cost_tol):
@@ -511,7 +521,7 @@ class Gradient_Algorithm:
             tolerated before convergence assumption.
         """
 
-        mul=False if len(self.distances_to_grav.shape)==1 else True
+        mul=False if len(self.distances_to_grav.shape)==2 else True
         for im, image_name in enumerate(self.original_images.raw_images_names):
             grav= self.grav[im] if mul else self.grav
             (self.times[f"Fibonacci_Search_{image_name}"],
@@ -528,8 +538,8 @@ class Gradient_Algorithm:
                 self.original_images.centered_ring_images[im],
                 self.optimals[f"Fibonacci_Search_{image_name}"],
                 self.distances_to_grav[im] if mul else self.distances_to_grav)
-            self.angles[f"Fibonacci_Search_{image_name}"]=np.atan2(grav[0]-masked_grav[0], grav[1]-masked_grav[1])
-            self.masked_gravs[f"Fibonacci_Search_{image_name}"]=masked_gravs
+            self.angles[f"Fibonacci_Search_{image_name}"]=-np.arctan2(masked_grav[0]-grav[0], masked_grav[1]-grav[1])
+            self.masked_gravs[f"Fibonacci_Search_{image_name}"]=masked_grav
 
 
 
@@ -554,7 +564,7 @@ class Gradient_Algorithm:
             tolerated before convergence assumption.
 
         """
-        mul=False if len(self.distances_to_grav.shape)==1 else True
+        mul=False if len(self.distances_to_grav.shape)==2 else True
         for im, image_name in enumerate(self.original_images.raw_images_names):
             grav= self.grav[im] if mul else self.grav
             (self.times[f"Quadratic_Search_{image_name}"],
@@ -568,21 +578,21 @@ class Gradient_Algorithm:
                 grav))
             masked_grav=self.compute_new_gravicenter(
                 self.original_images.centered_ring_images[im],
-                self.optimals[f"Fibonacci_Search_{image_name}"],
+                self.optimals[f"Quadratic_Search_{image_name}"],
                 self.distances_to_grav[im] if mul else self.distances_to_grav)
-            self.angles[f"Fibonacci_Search_{image_name}"]=np.atan2(grav[0]-masked_grav[0], grav[1]-masked_grav[1])
-            self.masked_gravs[f"Fibonacci_Search_{image_name}"]=masked_gravs
+            self.angles[f"Quadratic_Search_{image_name}"]=-np.arctan2(masked_grav[0]-grav[0], masked_grav[1]-grav[1])
+            self.masked_gravs[f"Quadratic_Search_{image_name}"]=masked_grav
 
 
     def plot_gravicenter_mask_diagram(self, image, grav, masked_grav, distances_to_grav, radious, ax, title):
-        ax.imshow(image.transpose(), label="Image")
+        ax.clear()
+        ax.imshow(image, label="Image")
         ax.set_ylabel("height")
         ax.set_xlabel("width")
         ax.set_title(title)
-        ax.colorbar()
-        ax.plot(grav, 'or', markersie=4, label="Full image gravicenter")
-        ax.plot(masked_grav, 'ob', markersie=4, label="Masked circle gravicenter")
-        ax.imshow(distances_to_grav<radious, alpha=0.5, label="Optimal Radious Mask")
+        ax.plot(grav[1], grav[0], 'or', markersize=4, label="Full image gravicenter")
+        ax.plot(masked_grav[1], masked_grav[0], 'ow', markersize=4, label="Masked circle gravicenter")
+        ax.imshow(distances_to_grav>radious**2, alpha=0.5, label="Optimal Radious Mask")
         ax.legend()
 
 
@@ -590,7 +600,7 @@ class Gradient_Algorithm:
         os.makedirs(f"{output_path}/Gradient_Algorithm/", exist_ok=True)
         fig, axes = plt.subplots(len(next(iter(self.times.values())).values())+1, 1, figsize=(10,15))
         fig.tight_layout(pad=5.0)
-        mul=False if len(self.distances_to_grav.shape)==1 else True # if using exact gravcter
+        mul=False if len(self.distances_to_grav.shape)==2 else True # if using exact gravcter
         for im, (name, computed_points) in enumerate(self.computed_points.items()):
             for stage, ax in enumerate(axes[:-1]):
                 ax.clear()
@@ -599,13 +609,13 @@ class Gradient_Algorithm:
                     label=f"{name}_Stage_{stage}")
                 ax.set_title(f"STAGE {stage}: Optimal radoius={self.optimals[name][f'Stage_{stage}']}+-{self.precisions[name][f'Stage_{stage}']} rad\nComputed Points={len(computed_points[f'Stage_{stage}'])}. Time Required={self.times[name][f'Stage_{stage}']}s")
                 ax.set_xlabel("Radious (pixels)")
-                ax.set_ylabel("|Masked Gravicenter-Full Gravicenter|")
+                ax.set_ylabel("-||Masked Gravicenter-Full Gravicenter||^2")
                 #ax.set_yscale('log')
                 ax.grid(True)
-            self.plot_gravicenter_mask_diagram(self.images.centered_ring_images[im],
+            self.plot_gravicenter_mask_diagram(self.original_images.centered_ring_images[im],
                 self.grav[im] if mul else self.grav, self.masked_gravs[name],
                 self.distances_to_grav[im] if mul else self.distances_to_grav,
-                self.optimals[name][f'Stage_{len(axes)-1}'], ax[-1],
+                self.optimals[name][f'Stage_{len(axes)-2}'], axes[-1],
                 f"Polarization Angle {self.angles[name]} rad" )
             plt.savefig(f"{output_path}/Gradient_Algorithm/{name}.png")
 
@@ -973,7 +983,6 @@ class Ad_Hoc_Optimizer:
 
         # Evaluate cost function for each angle
         active_points = np.stack((active_xs, [ self.evaluate_cost(image, angle, *args_for_cost) for angle in active_xs])) # [2 (xj,f(xj)),4]
-
         # if the minium is in the boundary of the interval, make it not be the boundary
         if np.argmin(active_points[1])==0:
             active_points[0, 3] -= 3*(self.b-self.a)/2
@@ -982,7 +991,7 @@ class Ad_Hoc_Optimizer:
             active_points[0, 0] += 3*(self.b-self.a)/2
             active_points[1,0] = self.evaluate_cost(image, active_points[0,0], *args_for_cost)
 
-        # order the four pairs of points by their angle
+        # order the four pairs of points by their support position
         return active_points[:, np.argsort(active_points[0])]
 
     def quadratic_fit_search(self, precision, max_iterations, cost_tol, image, args_for_cost):
@@ -1016,12 +1025,11 @@ class Ad_Hoc_Optimizer:
 
         computed_points = active_points.transpose().tolist() # list of all the pairs of (xj,f(xj))
 
-        while( np.abs(active_points[0,-1]-active_points[0,0]) >= 2*precision and not np.allclose(active_points[1,:], active_points[1,0], rtol=cost_tol) and it<=max_iterations):
+        while( np.abs(active_points[0,-1]-active_points[0,0]) >= 2*precision and not np.allclose(active_points[1,:-1], active_points[1,1], rtol=cost_tol) and it<=max_iterations):
             # Choose new triad of angles
             min_point = np.argmin(active_points[1]) # index of minimum f(xj) from the four active points
             # using the fact that the minimum of the four points will never be in the boundary
             active_points[:, :3] = active_points[:, (min_point-1):(min_point+2)]
-
             # compute the interpolation polynomial parameters and the minimum
             x_min = 0.5*( active_points[0,0]+active_points[0,1] + (active_points[0,0]-active_points[0,2])*(active_points[0,1]-active_points[0,2])/( ( active_points[0,0]*(active_points[1,2]-active_points[1,1])+active_points[0,1]*(active_points[1,0]-active_points[1,2]) )/(active_points[1,1]-active_points[1,0]) + active_points[0,2] ) )
             active_points[0,3] = x_min
