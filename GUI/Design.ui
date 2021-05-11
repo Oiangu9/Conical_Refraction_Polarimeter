@@ -707,7 +707,7 @@ Precision:</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
@@ -997,6 +997,16 @@ centered image</string>
             <string>M - Mirror Algorithm</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_5">
+            <item row="2" column="9">
+             <widget class="QRadioButton" name="left_vs_right_up_vs_down_M">
+              <property name="text">
+               <string>Mirror Up vs Down Mode (max dif)</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_6</string>
+              </attribute>
+             </widget>
+            </item>
             <item row="2" column="10" rowspan="2">
              <widget class="QPushButton" name="run_mirror_algorithm">
               <property name="enabled">
@@ -1013,32 +1023,6 @@ centered image</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="7">
-             <widget class="QLineEdit" name="theta_max_M">
-              <property name="maximumSize">
-               <size>
-                <width>100</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>np.pi</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="9">
-             <widget class="QRadioButton" name="left_vs_right_M">
-              <property name="text">
-               <string>Mirror Left vs Rigth Mode</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_6</string>
-              </attribute>
-             </widget>
-            </item>
             <item row="0" column="5">
              <widget class="QLineEdit" name="theta_min_M">
               <property name="maximumSize">
@@ -1052,16 +1036,6 @@ centered image</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="9">
-             <widget class="QRadioButton" name="left_vs_right_up_vs_down_M">
-              <property name="text">
-               <string>Mirror Left vs Rigth + Up vs Down Mode</string>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_6</string>
-              </attribute>
-             </widget>
-            </item>
             <item row="3" column="9">
              <widget class="QRadioButton" name="mirror_vs_original_M">
               <property name="text">
@@ -1069,16 +1043,6 @@ centered image</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroup_6</string>
-              </attribute>
-             </widget>
-            </item>
-            <item row="1" column="5" rowspan="2" colspan="4">
-             <widget class="QRadioButton" name="use_image_center_M">
-              <property name="text">
-               <string>Use centered image center</string>
-              </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_5</string>
               </attribute>
              </widget>
             </item>
@@ -1108,13 +1072,6 @@ centered image</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="9">
-             <widget class="QLabel" name="label_39">
-              <property name="text">
-               <string>Select variant:</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="4" rowspan="2">
              <widget class="QRadioButton" name="use_exact_grav_M">
               <property name="text">
@@ -1125,6 +1082,72 @@ centered image</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroup_5</string>
+              </attribute>
+             </widget>
+            </item>
+            <item row="1" column="9">
+             <widget class="QRadioButton" name="left_vs_right_M">
+              <property name="text">
+               <string>Mirror Left vs Rigth Mode (min dif)</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_6</string>
+              </attribute>
+             </widget>
+            </item>
+            <item row="0" column="9">
+             <widget class="QLabel" name="label_39">
+              <property name="text">
+               <string>Select variant:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="4">
+             <widget class="QRadioButton" name="use_image_center_M">
+              <property name="text">
+               <string>Use centered image center</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_5</string>
+              </attribute>
+             </widget>
+            </item>
+            <item row="3" column="6">
+             <widget class="QRadioButton" name="radioButton_2">
+              <property name="text">
+               <string>Use binning (for a,b)</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup</string>
+              </attribute>
+             </widget>
+            </item>
+            <item row="0" column="8" alignment="Qt::AlignLeft">
+             <widget class="QLineEdit" name="theta_max_M">
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>np.pi</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="6" rowspan="2">
+             <widget class="QRadioButton" name="radioButton">
+              <property name="text">
+               <string>Use Masking (for a,b)</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup</string>
               </attribute>
              </widget>
             </item>
@@ -1177,11 +1200,12 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup_6"/>
   <buttongroup name="buttonGroup_8"/>
   <buttongroup name="buttonGroup_3"/>
   <buttongroup name="buttonGroup_5"/>
   <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>

@@ -256,7 +256,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         rotation_algorithm = Rotation_Algorithm(self.image_loader,
             eval(self.theta_min_R.text()), eval(self.theta_max_R.text()),
             self.choose_interpolation_falg(self.interpolation_alg_opt),
-            float(self.initial_guess_delta_rad.text()))
+            float(self.initial_guess_delta_rad.text()), self.use_exact_grav_R.isChecked())
         # Get arguments and run algorithm depending on the chosen stuff
         logging.info(" Running Rotation Algorithm...")
         if self.brute.isChecked():

@@ -184,9 +184,9 @@ class Image_Loader:
         #logging.info(f"\n Intensity gravicenter in i{self.mode} images: {g_centered}, sizes {self.centered_ring_images.shape}")
 
         # We now compute a floating translation of the image so that the gravicenter is exactly
-        # centered at pixel (607.5, 607.5) (exact center of hte image in pixel coordinates staring
+        # centered at pixel (607.5, 607.5) (exact center of the image in pixel coordinates staring
         # form (0,0) and having size (607*2+1)x2), instead of being centered at the beginning of
-        # pixel (607,607) as is now
+        # around pixel (607,607) as is now
         translate_vectors = self.mode+0.5-g_centered #[N_images, 2(h,w)]
         for im in range(g_raw.shape[0]):
             T = np.float64([[1,0, translate_vectors[im, 1]], [0,1, translate_vectors[im, 0]]])
@@ -484,22 +484,23 @@ class Gradient_Algorithm:
         zoom_ratios.append(1) #to avoid out of index in the last iteration
         mul=False if len(self.distances_to_grav.shape)==2 else True
         for im, image_name in enumerate(self.original_images.raw_images_names):
+            name=f"Brute_Force_{image_name}"
             grav= self.grav[im] if mul else self.grav
-            (self.times[f"Brute_Force_{image_name}"],
-            self.computed_points[f"Brute_Force_{image_name}"],
-            self.optimals[f"Brute_Force_{image_name}"],
-            self.optimums[f"Brute_Force_{image_name}"],
-            self.precisions[f"Brute_Force_{image_name}"]) = self.optimizer.brute_force_search(
+            (self.times[name],
+            self.computed_points[name],
+            self.optimals[name],
+            self.optimums[name],
+            self.precisions[name]) = self.optimizer.brute_force_search(
                 radii_steps, zoom_ratios, self.original_images.centered_ring_images[im],
                 (self.distances_to_grav[im] if mul else self.distances_to_grav,
                  grav))
             # Now that the optimal Radious is set, we compute the polarization angle
             masked_grav=self.compute_new_gravicenter(
                 self.original_images.centered_ring_images[im],
-                self.optimals[f"Brute_Force_{image_name}"][f"Stage_{len(radii_steps)-1}"],
+                self.optimals[name][f"Stage_{len(radii_steps)-1}"],
                 self.distances_to_grav[im] if mul else self.distances_to_grav)
-            self.angles[f"Brute_Force_{image_name}"]=-np.arctan2(masked_grav[0]-grav[0], masked_grav[1]-grav[1])
-            self.masked_gravs[f"Brute_Force_{image_name}"]=masked_grav
+            self.angles[name]=-np.arctan2(masked_grav[0]-grav[0], masked_grav[1]-grav[1])
+            self.masked_gravs[name]=masked_grav
 
 
     def fibonacci_ratio_search(self, precision, maximum_points, cost_tol):
@@ -523,12 +524,13 @@ class Gradient_Algorithm:
 
         mul=False if len(self.distances_to_grav.shape)==2 else True
         for im, image_name in enumerate(self.original_images.raw_images_names):
+            name = f"Fibonacci_Search_{image_name}"
             grav= self.grav[im] if mul else self.grav
-            (self.times[f"Fibonacci_Search_{image_name}"],
-            self.computed_points[f"Fibonacci_Search_{image_name}"],
-            self.optimals[f"Fibonacci_Search_{image_name}"],
-            self.optimums[f"Fibonacci_Search_{image_name}"],
-            self.precisions[f"Fibonacci_Search_{image_name}"])=                self.optimizer.fibonacci_ratio_search(
+            (self.times[name],
+            self.computed_points[name],
+            self.optimals[name],
+            self.optimums[name],
+            self.precisions[name])=                self.optimizer.fibonacci_ratio_search(
                     precision, maximum_points, cost_tol,
                      self.original_images.centered_ring_images[im],
                     (self.distances_to_grav[im] if mul else self.distances_to_grav,
@@ -536,10 +538,10 @@ class Gradient_Algorithm:
             # Now that the optimal Radious is set, we compute the polarization angle
             masked_grav=self.compute_new_gravicenter(
                 self.original_images.centered_ring_images[im],
-                self.optimals[f"Fibonacci_Search_{image_name}"],
+                self.optimals[name],
                 self.distances_to_grav[im] if mul else self.distances_to_grav)
-            self.angles[f"Fibonacci_Search_{image_name}"]=-np.arctan2(masked_grav[0]-grav[0], masked_grav[1]-grav[1])
-            self.masked_gravs[f"Fibonacci_Search_{image_name}"]=masked_grav
+            self.angles[name]=-np.arctan2(masked_grav[0]-grav[0], masked_grav[1]-grav[1])
+            self.masked_gravs[name]=masked_grav
 
 
 
@@ -566,22 +568,23 @@ class Gradient_Algorithm:
         """
         mul=False if len(self.distances_to_grav.shape)==2 else True
         for im, image_name in enumerate(self.original_images.raw_images_names):
+            name=f"Quadratic_Search_{image_name}"
             grav= self.grav[im] if mul else self.grav
-            (self.times[f"Quadratic_Search_{image_name}"],
-            self.computed_points[f"Quadratic_Search_{image_name}"],
-            self.optimals[f"Quadratic_Search_{image_name}"],
-            self.optimums[f"Quadratic_Search_{image_name}"],
-            self.precisions[f"Quadratic_Search_{image_name}"])=self.optimizer.quadratic_fit_search(
+            (self.times[name],
+            self.computed_points[name],
+            self.optimals[name],
+            self.optimums[name],
+            self.precisions[name])=self.optimizer.quadratic_fit_search(
                 precision, max_iterations, cost_tol,
                 self.original_images.centered_ring_images[im],
                (self.distances_to_grav[im] if mul else self.distances_to_grav,
                 grav))
             masked_grav=self.compute_new_gravicenter(
                 self.original_images.centered_ring_images[im],
-                self.optimals[f"Quadratic_Search_{image_name}"],
+                self.optimals[name],
                 self.distances_to_grav[im] if mul else self.distances_to_grav)
-            self.angles[f"Quadratic_Search_{image_name}"]=-np.arctan2(masked_grav[0]-grav[0], masked_grav[1]-grav[1])
-            self.masked_gravs[f"Quadratic_Search_{image_name}"]=masked_grav
+            self.angles[name]=-np.arctan2(masked_grav[0]-grav[0], masked_grav[1]-grav[1])
+            self.masked_gravs[name]=masked_grav
 
 
     def plot_gravicenter_mask_diagram(self, image, grav, masked_grav, distances_to_grav, radious, ax, title):
@@ -620,7 +623,25 @@ class Gradient_Algorithm:
             plt.savefig(f"{output_path}/Gradient_Algorithm/{name}.png")
 
     def save_result_plots_fibonacci_or_quadratic(self, output_path):
-        pass
+        os.makedirs(f"{output_path}/Gradient_Algorithm/", exist_ok=True)
+        fig = plt.figure(figsize=(10,5))
+        ax1 = fig.add_subplot(1, 2, 1)
+        ax2 = fig.add_subplot(1, 2, 2)
+        mul=False if len(self.distances_to_grav.shape)==2 else True # if using exact gravcter
+        for im, (name, computed_points) in enumerate(self.computed_points.items()):
+            ax1.plot(computed_points[:,0], computed_points[:,1], 'o', label=name)
+            ax1.set_title(f"Optimal Radious={self.optimals[name]}+-{self.precisions[name]} rad\nComputed Points={len(computed_points)} . Time Required={self.times[name]}s")
+            ax1.set_xlabel("Radious (pixels)")
+            ax1.set_ylabel("-||Masked Gravicenter-Full Gravicenter||^2")
+            #ax.set_yscale('log')
+            ax1.grid(True)
+            self.plot_gravicenter_mask_diagram(self.original_images.centered_ring_images[im],
+                self.grav[im] if mul else self.grav, self.masked_gravs[name],
+                self.distances_to_grav[im] if mul else self.distances_to_grav,
+                self.optimals[name], ax2,
+                f"Polarization Angle {self.angles[name]} rad" )
+            plt.savefig(f"{output_path}/Gradient_Algorithm/{name}.png")
+            ax1.clear()
 
 
 
@@ -654,7 +675,7 @@ class Rotation_Algorithm:
     facil de hacerlo y se pueden usar los mismos tres algoritmos de busqueda si cambias la
     funcion de coste
     """
-    def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta):
+    def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta, use_exact_gravicenter):
         """
             Argument image_loader is expected to be an instance of class Image_Loader,
             which has already been initialized and has non-null attributes:
@@ -671,8 +692,6 @@ class Rotation_Algorithm:
         """
         self.original_images = image_loader
         self.interpolation_flag = interpolation_flag
-        self.mirror_images_wrt_width_axis = np.flip(image_loader.centered_ring_images, 1)
-        #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
         self.min_angle = min_angle
         self.max_angle = max_angle
         self.initial_guess_delta = initial_guess_delta
@@ -683,7 +702,21 @@ class Rotation_Algorithm:
         self.precisions={}
         self.times={}
         self.optimizer = Ad_Hoc_Optimizer(min_angle, max_angle, initial_guess_delta, self.evaluate_image_rotation)
-
+        self.use_exact_gravicenter=use_exact_gravicenter
+        if use_exact_gravicenter:
+            self.grav=self.original_images.g_centered #[N_images, 2(h,w)]
+            # custom mirror flip the images about the line through gravicenter
+            self.mirror_images_wrt_width_axis=np.array([
+                self.horizontal_mirror_flip_crossing(
+                    self.original_images.centered_ring_images[im], self.grav[im][0])
+                for im in range(self.grav.shape[0])]) #[N_images, h,w]
+        else:
+            # gravicenter the same for all
+            self.grav=np.array(2*[self.mode])+0.5
+            # mirror flipping image is trivial
+            self.mirror_images_wrt_width_axis = np.flip(image_loader.centered_ring_images, 1)
+            #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
+        
 
     def save_images(self, images, output_path, names):
         if type(names) is not list:
@@ -692,16 +725,27 @@ class Rotation_Algorithm:
         for name, image in zip(names, images):
             cv2.imwrite(f"{output_path}/{name}.png", image)
 
+    def horizontal_mirror_flip_crossing(self, image_array, h_point):
+        # h_point is expected to be point in height such that the flip is made on w
+        mirror_mat = np.float32([[1,0,0],[0,-1,2*h_point]]) # apparently 3rd row of affine transformation is redundant for the warAffine function
+        return cv2.warpAffine( image_array, mirror_mat, image_array.shape,
+                              flags=self.interpolation_flag).astype(image_array.dtype)
+    # Perhaps after affine transformation image should be left in float type instead of 
+    # cropping to int, as it is meant to be used simply for calculations
 
-    def rotate_image_by(self, image_array, angle):
-      image_center = (self.mode+0.5, self.mode+0.5) # should it be 1.5????
-      rot_mat = cv2.getRotationMatrix2D(image_center, angle*180/np.pi, 1.0)
-      result = cv2.warpAffine(image_array, rot_mat, image_array.shape, flags=self.interpolation_flag)
-      return result.astype(image_array.dtype)
+    def rotate_image_by(self, image_array, angle, center):
+        """
+        Center is expected to be a point [h,w]
+        """
+        a=np.cos(angle)
+        b=np.sin(angle)
+        rot_mat=np.float32([[a, b, center[1]*(1-a)-center[0]*b],
+                             [-b, a, center[1]*b+center[0]*(1-a)]])
+        return cv2.warpAffine(image_array, rot_mat, image_array.shape, flags=self.interpolation_flag).astype(image_array.dtype)
 
 
-    def evaluate_image_rotation(self, reference_image, angle, image_to_rotate):
-        return np.sum(np.abs(self.rotate_image_by(image_to_rotate, angle)-reference_image))
+    def evaluate_image_rotation(self, reference_image, angle, image_to_rotate, center):
+        return np.sum(np.abs(self.rotate_image_by(image_to_rotate, angle, center)-reference_image))
 
 
     def brute_force_search(self, angle_steps, zoom_ratios):
@@ -722,14 +766,15 @@ class Rotation_Algorithm:
 
         """
         zoom_ratios.append(1) #to avoid out of index in the last iteration
-        for image_name, image_flip, image_orig in zip(self.original_images.raw_images_names,
-                self.mirror_images_wrt_width_axis, self.original_images.centered_ring_images):
+        for im, image_name in enumerate(self.original_images.raw_images_names):
             (self.times[f"Brute_Force_{image_name}"],
             self.computed_points[f"Brute_Force_{image_name}"],
             self.optimals[f"Brute_Force_{image_name}"],
             self.optimums[f"Brute_Force_{image_name}"],
             self.precisions[f"Brute_Force_{image_name}"]) = self.optimizer.brute_force_search(
-                    angle_steps, zoom_ratios, image_orig, image_flip)
+                    angle_steps, zoom_ratios,
+                    self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
+                    self.grav[im] if self.use_exact_gravicenter else self.grav))
 
 
     def fibonacci_ratio_search(self, precision, maximum_points, cost_tol):
@@ -751,14 +796,16 @@ class Rotation_Algorithm:
             tolerated before convergence assumption.
         """
 
-        for image_name, image_flip, image_orig in zip(self.original_images.raw_images_names,
-                self.mirror_images_wrt_width_axis, self.original_images.centered_ring_images):
+        for im, image_name in enumerate(self.original_images.raw_images_names):
             (self.times[f"Fibonacci_Search_{image_name}"],
             self.computed_points[f"Fibonacci_Search_{image_name}"],
             self.optimals[f"Fibonacci_Search_{image_name}"],
             self.optimums[f"Fibonacci_Search_{image_name}"],
             self.precisions[f"Fibonacci_Search_{image_name}"])=                self.optimizer.fibonacci_ratio_search(
-                    precision, maximum_points, cost_tol, image_orig, image_flip)
+                    precision, maximum_points, cost_tol, 
+                    self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
+                    self.grav[im] if self.use_exact_gravicenter else self.grav))
+
 
 
     def quadratic_fit_search(self, precision, max_iterations, cost_tol):
@@ -782,15 +829,15 @@ class Rotation_Algorithm:
             tolerated before convergence assumption.
 
         """
-        for image_name, image_flip, image_orig in zip(self.original_images.raw_images_names,
-                self.mirror_images_wrt_width_axis, self.original_images.centered_ring_images):
+        for im, image_name in enumerate(self.original_images.raw_images_names):
             (self.times[f"Quadratic_Search_{image_name}"],
             self.computed_points[f"Quadratic_Search_{image_name}"],
             self.optimals[f"Quadratic_Search_{image_name}"],
             self.optimums[f"Quadratic_Search_{image_name}"],
             self.precisions[f"Quadratic_Search_{image_name}"])=self.optimizer.quadratic_fit_search(
-                precision, max_iterations, cost_tol, image_orig, image_flip)
-
+                precision, max_iterations, cost_tol,
+                self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
+                    self.grav[im] if self.use_exact_gravicenter else self.grav))
 
 
     def save_result_plots_fibonacci_or_quadratic(self, output_path):
