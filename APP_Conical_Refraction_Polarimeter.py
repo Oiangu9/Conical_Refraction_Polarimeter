@@ -1,5 +1,6 @@
 from GUI.Design_ui import *
-from SOURCE.Polarization_Angle_Calculator import *
+from SOURCE.Image_Loader import *
+from SOURCE.Polarization_Obtention_Algorithms import *
 from glob import glob
 import logging
 import sys
@@ -7,14 +8,6 @@ import os
 import cv2
 
 # pyuic5 -x ./GUI/Design.ui -o ./GUI/Design_ui.py
-
-"""
-    TODOs
-    -----
-    > Make a function that blocks all the stuff and unblocks it (all the buttons etc)
-    > Make a non-blocking client perhaps
-
-"""
 
 
 class QPlainTextEditLogger_NonBlocking(logging.Handler, QtCore.QObject):
@@ -193,6 +186,9 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.convert_selected_images.setEnabled(state)
         self.run_rotation_algorithm.setEnabled(state)
+        self.run_gradient_algorithm.setEnabled(state)
+        self.run_mirror_algorithm.setEnabled(state)
+        self.run_histogram_algorithm.setEnabled(state)
 
     def initialize_Angle_Calculator_instance_convert_images(self):
         """
