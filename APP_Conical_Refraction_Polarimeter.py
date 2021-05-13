@@ -272,7 +272,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                 int(self.max_it_quad.text()),
                 float(self.cost_tolerance_quad.text())
             )
-        logging.info(f"Found optimal angles in rad = {rotation_algorithm.optimals}\n\nPrecisions (rad) = {rotation_algorithm.precisions}\n\nTimes (s) = {rotation_algorithm.times}")
+        logging.info(f"Found Polarization Angles in rad = {rotation_algorithm.angles}\nFound optimals in rad = {rotation_algorithm.optimals}\n\nPrecisions (rad) = {rotation_algorithm.precisions}\n\nTimes (s) = {rotation_algorithm.times}")
 
         if (self.output_plots.isChecked() and self.brute.isChecked()):
             rotation_algorithm.save_result_plots_brute_force(self.output_directory.text())
@@ -300,10 +300,11 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             return 1
         logging.info(" Image loader ready!")
         # Initialize instance of Rotation Algorithm calculator
+        method="bin" if self.use_binning_M.isChecked() else "mask" if self.use_masking_M.isChecked() else "aff"
         mirror_algorithm = Mirror_Flip_Algorithm(self.image_loader,
             eval(self.theta_min_M.text()), eval(self.theta_max_M.text()),
             self.choose_interpolation_falg(self.interpolation_alg_opt),
-            float(self.initial_guess_delta_rad.text()))
+            float(self.initial_guess_delta_rad.text()), method, self.left_vs_right_M.isChecked(), self.use_exact_grav_M.isChecked())
         # Get arguments and run algorithm depending on the chosen stuff
         logging.info(" Running Mirror Flip Algorithm...")
         if self.brute.isChecked():
@@ -323,7 +324,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                 int(self.max_it_quad.text()),
                 float(self.cost_tolerance_quad.text())
             )
-        logging.info(f"Found optimal angles in rad = {mirror_algorithm.optimals}\n\nPrecisions (rad) = {mirror_algorithm.precisions}\n\nTimes (s) = {mirror_algorithm.times}")
+        logging.info(f"Found polarization angles in rad = {mirror_algorithm.angles}\nFound optimals in rad = {mirror_algorithm.optimals}\n\nPrecisions (rad) = {mirror_algorithm.precisions}\n\nTimes (s) = {mirror_algorithm.times}")
 
         if (self.output_plots.isChecked() and self.brute.isChecked()):
             mirror_algorithm.save_result_plots_brute_force(self.output_directory.text())

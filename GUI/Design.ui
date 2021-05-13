@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1363</width>
-    <height>936</height>
+    <width>1515</width>
+    <height>1105</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -207,6 +207,9 @@ Interpolation Algorithm:</string>
            </item>
            <item row="1" column="0" rowspan="2">
             <widget class="QRadioButton" name="show_plots">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="maximumSize">
               <size>
                <width>300</width>
@@ -707,7 +710,7 @@ Precision:</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>3</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
@@ -1035,7 +1038,7 @@ centered image</string>
                </size>
               </property>
               <property name="text">
-               <string>-np.pi/2</string>
+               <string>0</string>
               </property>
              </widget>
             </item>
@@ -1084,7 +1087,7 @@ centered image</string>
                </size>
               </property>
               <property name="text">
-               <string>np.pi/2</string>
+               <string>np.pi</string>
               </property>
              </widget>
             </item>
@@ -1104,7 +1107,7 @@ centered image</string>
             <item row="4" column="4">
              <widget class="QRadioButton" name="use_affine_M">
               <property name="text">
-               <string>Use Affine Mirrorring with interpolation:</string>
+               <string>Use Affine Mirrorring with interpolation</string>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroup</string>
@@ -1157,45 +1160,6 @@ centered image</string>
               </attribute>
              </widget>
             </item>
-            <item row="4" column="5" colspan="2">
-             <widget class="QComboBox" name="interpolation_alg_M">
-              <item>
-               <property name="text">
-                <string>bicubic interpolation</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Lanczos interpolation over 8x8 neighborhood</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>bilinear interpolation</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>nearest neighbor interpolation</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Bit exact bilinear interpolation</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Bit exact nearest neighbor interpolation</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>resampling using pixel area relation</string>
-               </property>
-              </item>
-             </widget>
-            </item>
            </layout>
           </widget>
          </widget>
@@ -1235,8 +1199,8 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1363</width>
-     <height>20</height>
+     <width>1515</width>
+     <height>31</height>
     </rect>
    </property>
   </widget>
@@ -1246,11 +1210,11 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroup_9"/>
-  <buttongroup name="buttonGroup_5"/>
   <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_3"/>
  </buttongroups>
 </ui>

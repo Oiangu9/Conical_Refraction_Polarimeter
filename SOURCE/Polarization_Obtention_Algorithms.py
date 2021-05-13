@@ -152,7 +152,7 @@ class Radial_Histogram_Algorithm:
         return round(x_to_round, sig-int(np.floor(np.log10(abs(reference))))-1)
 
 class Mirror_Flip_Algorithm:
-    def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta, method use_exact_gravicenter):
+    def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta, method, left_vs_right, use_exact_gravicenter):
         """
             Argument image_loader is expected to be an instance of class Image_Loader,
             which has already been initialized and has non-null attributes:
@@ -167,7 +167,8 @@ class Mirror_Flip_Algorithm:
             will measure their distance.
 
         """
-        self.original_images = image_loader
+        self.images_float = image_loader.centered_ring_images.astype(np.float32)
+        self.raw_images_names = image_loader.raw_images_names
         self.interpolation_flag = interpolation_flag
         self.min_angle = min_angle
         self.max_angle = max_angle
@@ -181,6 +182,7 @@ class Mirror_Flip_Algorithm:
         self.precisions={}
         self.times={}
         self.method=method
+        self.angles={}
         if method=="bin":
             self.optimizer = Ad_Hoc_Optimizer(min_angle, max_angle, initial_guess_delta, self.evaluate_mirror_bin)
         elif method=="mask":
@@ -195,7 +197,7 @@ class Mirror_Flip_Algorithm:
 
         self.use_exact_gravicenter=use_exact_gravicenter
         if use_exact_gravicenter:
-            self.grav=self.original_images.g_centered #[N_images, 2(h,w)]
+            self.grav=image_loader.g_centered #[N_images, 2(h,w)]
         else:
             # gravicenter the same for all
             self.grav=np.array(2*[self.mode])+0.5
@@ -214,51 +216,81 @@ class Mirror_Flip_Algorithm:
     def evaluate_mirror_affine(self, image_array, angle, center, udlr=1):
         # if udlr is 1 then we are minimizing the difference -> LR mode
         # if udlr is -1 then we are maximizing the difference -> UD mode
-        return udlr*np.sum(np.abs(self.mirror_flip_at_angle(image_array, angle, center)-image_array))
+        return udlr*np.sum(np.abs(self.mirror_flip_at_angle(image_array, -angle, center)-image_array))
 
 
     def evaluate_mirror_bin(self, image, angle, angles_to_grav, udlr=1):
-        # angles in [-pi/2, pi/2] are fine
-        mask=(angles_to_grav>angle) & (angles_to_grav<(angle+np.pi)) #[h,w]
+        # angles in [0, pi/2] are fine
+        if angle>0:
+            mask=(angles_to_grav>angle) | (angles_to_grav<(angle-np.pi)) #[h,w]
+        else:
+            mask=(angles_to_grav>angle) & (angles_to_grav<(angle+np.pi)) #[h,w]
         return udlr*np.abs(np.sum(image[mask])-np.sum(image[np.logical_not(mask)]))
 
-    def evaluate_mirror_mask(self, image, angle, rows, cols, center, udlr=1):
+    def evaluate_mirror_mask(self, image, angle, cols, rows, center, udlr=1):
         # angles must be in [-pi/2,pi/2] or [3pi/2,2pi]
-        mask=np.greater(rows, np.tan(angle)*(cols-center[0])+center[1]) #[h,w]
+        mask=np.greater(rows, np.tan(-angle)*(cols-center[0])+center[1]) #[h,w]
+        im2=image.copy()
+        im3=image.copy()
+        im2[np.logical_not(mask)]=0
+        im3[mask]=0
+        self.save_images(im2.astype(np.uint8), './pene', str(angle)+'A')
+        self.save_images(im3.astype(np.uint8), './pene', str(angle)+'B')
         return udlr*np.abs(np.sum(image[mask])-np.sum(image[np.logical_not(mask)]))
 
     def prepare_arguments(self, im):
-        if self.method="mask":
+        if self.method=="mask":
             # avoid this being generated for every image
-            self.cols = self.cols if self.cols is not None else np.expand_dims(np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)),2) #[h,w, 1]
+            self.cols = self.cols if self.cols is not None else np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
             return (self.cols, self.cols.swapaxes(0,1),
                 self.grav[im] if self.use_exact_gravicenter else self.grav, self.udlr)
 
-        elif self.method="bin":
-            self.cols = self.cols if self.cols is not None else np.expand_dims(np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)),2) #[h,w, 1]
+        elif self.method=="bin":
+            self.cols = self.cols if self.cols is not None else np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
             # angles relative to the  gravicenter in range [-pi,pi] but for the reversed image
             if self.use_exact_gravicenter:
-                index_angles = -np.arctan2( self.cols.swapaxes(0,1)-grav[im][0], cols-grav[im][1] ) #[h,w]
+                self.index_angles = -np.arctan2( self.cols.swapaxes(0,1)-self.grav[im][0], self.cols-self.grav[im][1] ) #[h,w]
             else:
-                self.index_angles = self.index_angles if self.index_angles is not None else -np.arctan2( self.cols.swapaxes(0,1)-grav[0], cols-grav[1] ) #[h,w]
-            return ( index_angles,self.udlr)
+                self.index_angles = self.index_angles if self.index_angles is not None else -np.arctan2( self.cols.swapaxes(0,1)-self.grav[0], self.cols-self.grav[1] ) #[h,w]
+            return ( self.index_angles, self.udlr)
         else: # affine
             return (self.grav[im] if self.use_exact_gravicenter else self.grav, self.udlr)
 
-    def given_axis_angle_subtract_L_to_R(self):
+    def given_axis_angle_greater_minus_lower(self, angle, image, center):
         # such that if the output is positive, then R has more intensity and you know immediately that the good angle is the bigger one?
         # de fet esto sugiere un algoritmo con el polano ortogonal que directamente te encuentra el angulo que toca, pero bueno con los que buscan el eje simetrico el truco no parece que funcionara
+        self.cols = self.cols if self.cols is not None else np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
+        mask=np.greater(self.cols.swapaxes(0,1), np.tan(angle)*(self.cols-center[0])+center[1]) #[h,w]
+        return np.sum(image[mask])-np.sum(image[np.logical_not(mask)])
 
-    def get_polarization_angle(self, angle, image):
+
+    def angle_to_pi_pi(self, angle): # convert any angle to range ()-pi,pi]
+        angle= angle%(2*np.pi) # take it to [-2pi, 2pi]
+        return angle-np.sign(angle)*2*np.pi if abs(angle)>np.pi else angle
+
+    def save_images(self, images, output_path, names):
+        if type(names) is not list:
+            images=[images,]
+            names = [names,]
+        for name, image in zip(names, images):
+            cv2.imwrite(f"{output_path}/{name}.png", image)
+
+
+    def get_polarization_angle(self, angle, image, center):
         """
         All the mirror methods have the problem that we only get the
         correct angle up to an angle pi. In order to know which is the
         angle to the maximum of the ring (and not the minimum) a final
         subtle check is required.
         """
-        if self.udlr==-1: # then what we have is the orthogonal plane to the symmetry axis
-            angle+=np.pi/2 # so we translate it into the symetry axis
-
+        #if angle==np.pi or 0: In this case the correct one is not defined by this alg!!!
+        diff=self.given_axis_angle_greater_minus_lower(angle if self.udlr==-1 else angle+np.pi/2, image, center)
+        if self.udlr==-1:
+            angle=self.angle_to_pi_pi(angle+np.pi/2)
+        if diff>0: # then Upper>Lower -> then good one is the one in (0,pi)
+            return angle+np.pi if angle<0 else angle
+        else:
+            return angle-np.pi if angle>0 else angle
 
 
     def brute_force_search(self, angle_steps, zoom_ratios):
@@ -279,15 +311,19 @@ class Mirror_Flip_Algorithm:
 
         """
         zoom_ratios.append(1) #to avoid out of index in the last iteration
-        for im, image_name in enumerate(self.original_images.raw_images_names):
-            (self.times[f"Brute_Force_{image_name}"],
-            self.computed_points[f"Brute_Force_{image_name}"],
-            self.optimals[f"Brute_Force_{image_name}"],
-            self.optimums[f"Brute_Force_{image_name}"],
-            self.precisions[f"Brute_Force_{image_name}"]) = self.optimizer.brute_force_search(
+        for im, image_name in enumerate(self.raw_images_names):
+            name=f"Brute_Force_{image_name}"
+            (self.times[name],
+            self.computed_points[name],
+            self.optimals[name],
+            self.optimums[name],
+            self.precisions[name]) = self.optimizer.brute_force_search(
                     angle_steps, zoom_ratios,
-                    self.original_images.centered_ring_images[im], self.prepare_arguments(im))
-
+                    self.images_float[im], self.prepare_arguments(im))
+            self.optimals[name][f"Stage_{len(angle_steps)-1}"] =self.angle_to_pi_pi(self.optimals[name][f"Stage_{len(angle_steps)-1}"])
+            self.angles[name]=self.get_polarization_angle(self.optimals[name][f"Stage_{len(angle_steps)-1}"], self.images_float[im],
+                self.grav[im] if self.use_exact_gravicenter else self.grav
+            )
 
     def fibonacci_ratio_search(self, precision, maximum_points, cost_tol):
         """
@@ -308,15 +344,18 @@ class Mirror_Flip_Algorithm:
             tolerated before convergence assumption.
         """
 
-        for im, image_name in enumerate(self.original_images.raw_images_names):
-            (self.times[f"Fibonacci_Search_{image_name}"],
-            self.computed_points[f"Fibonacci_Search_{image_name}"],
-            self.optimals[f"Fibonacci_Search_{image_name}"],
-            self.optimums[f"Fibonacci_Search_{image_name}"],
-            self.precisions[f"Fibonacci_Search_{image_name}"])=                self.optimizer.fibonacci_ratio_search(
+        for im, image_name in enumerate(self.raw_images_names):
+            name=f"Fibonacci_Search_{image_name}"
+            (self.times[name],
+            self.computed_points[name],
+            optimal,
+            self.optimums[name],
+            self.precisions[name])=self.optimizer.fibonacci_ratio_search(
                     precision, maximum_points, cost_tol,
-                    self.original_images.centered_ring_images[im], self.prepare_arguments(im))
-
+                    self.images_float[im], self.prepare_arguments(im))
+            self.optimals[name]=self.angle_to_pi_pi(optimal)
+            self.angles[name]=self.get_polarization_angle(self.optimals[name], self.images_float[im],
+                self.grav[im] if self.use_exact_gravicenter else self.grav)
 
 
     def quadratic_fit_search(self, precision, max_iterations, cost_tol):
@@ -340,14 +379,54 @@ class Mirror_Flip_Algorithm:
             tolerated before convergence assumption.
 
         """
-        for im, image_name in enumerate(self.original_images.raw_images_names):
-            (self.times[f"Quadratic_Search_{image_name}"],
-            self.computed_points[f"Quadratic_Search_{image_name}"],
-            self.optimals[f"Quadratic_Search_{image_name}"],
-            self.optimums[f"Quadratic_Search_{image_name}"],
-            self.precisions[f"Quadratic_Search_{image_name}"])=self.optimizer.quadratic_fit_search(
+        for im, image_name in enumerate(self.raw_images_names):
+            name=f"Quadratic_Search_{image_name}"
+            (self.times[name],
+            self.computed_points[name],
+            optimal,
+            self.optimums[name],
+            self.precisions[name])=self.optimizer.quadratic_fit_search(
                 precision, max_iterations, cost_tol,
-                self.original_images.centered_ring_images[im], self.prepare_arguments(im))
+                self.images_float[im], self.prepare_arguments(im))
+            self.optimals[name]=self.angle_to_pi_pi(optimal)
+            self.angles[name]=self.get_polarization_angle(self.optimals[name], self.images_float[im],
+                self.grav[im] if self.use_exact_gravicenter else self.grav)
+
+    def save_result_plots_fibonacci_or_quadratic(self, output_path):
+        """
+        Save the resulting explored points in cost function vs angle, together with the info
+        about the optimization.
+        """
+        os.makedirs(f"{output_path}/Mirror_Algorithm/", exist_ok=True)
+        fig = plt.figure(figsize=(10,5))
+        ax = fig.add_subplot(1, 1, 1)
+        for name, computed_points in self.computed_points.items():
+            ax.plot(computed_points[:,0], computed_points[:,1], 'o', label=name)
+            ax.set_title(f"Polarization Angle={self.angles[name]}+-{self.precisions[name]} rad\nOptimal={self.optimals[name]}+-{self.precisions[name]} rad\nComputed Points={len(computed_points)} . Time Required={self.times[name]}s")
+            ax.set_xlabel("Angle (rad)")
+            ax.set_ylabel("|Mirrorred vs Original|")
+            #ax.set_yscale('log')
+            ax.grid(True)
+            plt.savefig(f"{output_path}/Mirror_Algorithm/{name}.png")
+            ax.clear()
+
+    def save_result_plots_brute_force(self, output_path):
+        os.makedirs(f"{output_path}/Mirror_Algorithm/", exist_ok=True)
+        fig, axes = plt.subplots(len(next(iter(self.times.values())).values()), 1, figsize=(10,15))
+        fig.tight_layout(pad=5.0)
+        for name, computed_points in self.computed_points.items():
+            for stage, ax in enumerate(axes):
+                ax.clear()
+                ax.plot(computed_points[f"Stage_{stage}"][:,0],
+                    computed_points[f"Stage_{stage}"][:,1], 'o', markersize=2,
+                    label=f"{name}_Stage_{stage}")
+                ax.set_title(f"STAGE {stage}: Optimal angle={self.optimals[name][f'Stage_{stage}']}+-{self.precisions[name][f'Stage_{stage}']} rad\nComputed Points={len(computed_points[f'Stage_{stage}'])}. Time Required={self.times[name][f'Stage_{stage}']}s")
+                ax.set_xlabel("Angle (rad)")
+                ax.set_ylabel("|Mirrored vs Original|")
+                #ax.set_yscale('log')
+                ax.grid(True)
+            fig.suptitle(f"Polarization angle=Polarization Angle={self.angles[name]}+-{self.precisions[name][f'Stage_{len(axes)-1}']} rad")
+            plt.savefig(f"{output_path}/Mirror_Algorithm/{name}.png")
 
 
 class Gradient_Algorithm:
@@ -634,6 +713,7 @@ class Rotation_Algorithm:
         self.optimals={}
         self.precisions={}
         self.times={}
+        self.angles={}
         self.optimizer = Ad_Hoc_Optimizer(min_angle, max_angle, initial_guess_delta, self.evaluate_image_rotation)
         self.use_exact_gravicenter=use_exact_gravicenter
         if use_exact_gravicenter:
@@ -700,14 +780,16 @@ class Rotation_Algorithm:
         """
         zoom_ratios.append(1) #to avoid out of index in the last iteration
         for im, image_name in enumerate(self.original_images.raw_images_names):
-            (self.times[f"Brute_Force_{image_name}"],
-            self.computed_points[f"Brute_Force_{image_name}"],
-            self.optimals[f"Brute_Force_{image_name}"],
-            self.optimums[f"Brute_Force_{image_name}"],
-            self.precisions[f"Brute_Force_{image_name}"]) = self.optimizer.brute_force_search(
+            name=f"Brute_Force_{image_name}"
+            (self.times[name],
+            self.computed_points[name],
+            self.optimals[name],
+            self.optimums[name],
+            self.precisions[name]) = self.optimizer.brute_force_search(
                     angle_steps, zoom_ratios,
                     self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
                     self.grav[im] if self.use_exact_gravicenter else self.grav))
+            self.angles[name]=self.optimals[name][f"Stage_{len(angle_steps)-1}"]/2
 
 
     def fibonacci_ratio_search(self, precision, maximum_points, cost_tol):
@@ -730,14 +812,16 @@ class Rotation_Algorithm:
         """
 
         for im, image_name in enumerate(self.original_images.raw_images_names):
-            (self.times[f"Fibonacci_Search_{image_name}"],
-            self.computed_points[f"Fibonacci_Search_{image_name}"],
-            self.optimals[f"Fibonacci_Search_{image_name}"],
-            self.optimums[f"Fibonacci_Search_{image_name}"],
-            self.precisions[f"Fibonacci_Search_{image_name}"])=                self.optimizer.fibonacci_ratio_search(
+            name=f"Fibonacci_Search_{image_name}"
+            (self.times[name],
+            self.computed_points[name],
+            self.optimals[name],
+            self.optimums[name],
+            self.precisions[name])=                self.optimizer.fibonacci_ratio_search(
                     precision, maximum_points, cost_tol,
                     self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
                     self.grav[im] if self.use_exact_gravicenter else self.grav))
+            self.angles[name]=self.optimals[name]/2
 
 
 
@@ -763,14 +847,16 @@ class Rotation_Algorithm:
 
         """
         for im, image_name in enumerate(self.original_images.raw_images_names):
-            (self.times[f"Quadratic_Search_{image_name}"],
-            self.computed_points[f"Quadratic_Search_{image_name}"],
-            self.optimals[f"Quadratic_Search_{image_name}"],
-            self.optimums[f"Quadratic_Search_{image_name}"],
-            self.precisions[f"Quadratic_Search_{image_name}"])=self.optimizer.quadratic_fit_search(
+            name=f"Quadratic_Search_{image_name}"
+            (self.times[name],
+            self.computed_points[name],
+            self.optimals[name],
+            self.optimums[name],
+            self.precisions[name])=self.optimizer.quadratic_fit_search(
                 precision, max_iterations, cost_tol,
                 self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
                     self.grav[im] if self.use_exact_gravicenter else self.grav))
+            self.angles[name]=self.optimals[name]/2
 
 
     def save_result_plots_fibonacci_or_quadratic(self, output_path):
@@ -783,7 +869,7 @@ class Rotation_Algorithm:
         ax = fig.add_subplot(1, 1, 1)
         for name, computed_points in self.computed_points.items():
             ax.plot(computed_points[:,0], computed_points[:,1], 'o', label=name)
-            ax.set_title(f"Optimal angle={self.optimals[name]}+-{self.precisions[name]} rad\nComputed Points={len(computed_points)} . Time Required={self.times[name]}s")
+            ax.set_title(f"Polarization Angle = {self.angles[name]}+-{self.precisions[name]/2} rad\nOptimal={self.optimals[name]}+-{self.precisions[name]} rad\nComputed Points={len(computed_points)} . Time Required={self.times[name]}s")
             ax.set_xlabel("Angle (rad)")
             ax.set_ylabel("|Rotated-Original|")
             #ax.set_yscale('log')
@@ -806,4 +892,5 @@ class Rotation_Algorithm:
                 ax.set_ylabel("|Rotated-Original|")
                 #ax.set_yscale('log')
                 ax.grid(True)
+            fig.suptitle(f"Polarization angle=Polarization Angle={self.angles[name]}+-{self.precisions[name][f'Stage_{len(axes)-1}']/2} rad")
             plt.savefig(f"{output_path}/Rotation_Algorithm/{name}.png")

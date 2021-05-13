@@ -196,7 +196,7 @@ class Ad_Hoc_Optimizer:
 
         computed_points = active_points.transpose().tolist() # list of all the pairs of (xj,f(xj))
 
-        while( np.abs(active_points[0,-1]-active_points[0,0]) >= 2*precision and not np.allclose(active_points[1,:-1], active_points[1,1], rtol=cost_tol) and it<=max_iterations):
+        while( np.abs(active_points[0,-1]-active_points[0,0]) >= 2*precision and not (np.allclose(active_points[1,0], active_points[1,1], rtol=cost_tol) or np.allclose(active_points[1,2], active_points[1,1], rtol=cost_tol)) and it<=max_iterations):
             # Choose new triad of angles
             min_point = np.argmin(active_points[1]) # index of minimum f(xj) from the four active points
             # using the fact that the minimum of the four points will never be in the boundary
