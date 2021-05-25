@@ -1,6 +1,7 @@
 from GUI.Design_ui import *
 from SOURCE.Image_Manager import *
 from SOURCE.Polarization_Obtention_Algorithms import *
+from SOURCE.Camera_Controler import *
 from glob import glob
 import logging
 import sys
@@ -55,6 +56,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
     plotter_cv2 = QtCore.Signal(np.ndarray, int, str)
     # expecting array to plot, int with the time to waitKey and a string with the label to show
 
+    # Create a progress bar updater signal
+    barUpdate_Live = QtCore.Signal(int)
 
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
@@ -62,7 +65,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # connect plot signal to the plotting function. This way gui handles it when signal emision
         self.plotter_cv2.connect(self.show_cv2_image) #type=QtCore.Qt.BlockingQueuedConnection
-
+        # and connect signal to progress bar update: now run "self.barUpdate_Live.emit(10)"
+        self.barUpdate_Live.connect(self.progressBar_Life.setValue)
 
         # set the working directories
         self.master_directory = os.getcwd()
@@ -114,6 +118,13 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             self.execute_histogram_algorithm)
         self.run_gradient_algorithm.clicked.connect(
             self.execute_gradient_algorithm)
+
+        # When live test buttons are pressed execute stuff
+        self.camera_initialized=False
+        self.testCamera.clicked.connect(self.run_test_camera)
+        self.grabReference.clicked.connect(self.run_grab_reference)
+        self.stopCamera.clicked.connect(self.stop_camera)
+        self.runCamera.clicked.connect(self.run_camera)
 
         # Initialize a worker for the hard tasks
         self.strong_worker = Worker( None, None)
@@ -189,6 +200,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.run_gradient_algorithm.setEnabled(state)
         self.run_mirror_algorithm.setEnabled(state)
         self.run_histogram_algorithm.setEnabled(state)
+        self.testCamera.setEnabled(state)
+        self.grabReference.setEnabled(state)
 
     def initialize_Angle_Calculator_instance_convert_images(self):
         """
@@ -474,7 +487,162 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         return flags[combo_widget.currentText()]
 
 
+    def run_test_camera(self):
+        # Block everything to user
+        self.block_hard_user_interaction(False)
+        # Run worker for non-blocking computations
+        self.strong_worker.set_new_task_and_arguments(
+            self._run_test_camera, []
+        )
+        self.strong_worker.start()
 
+    def _run_test_camera(self):
+        self.stopCamera.setEnabled(True)
+        self.initialize_camera()
+        self.camera.test_Camera()
+        self.block_hard_user_interaction(True)
+        self.stopCamera.setEnabled(False)
+
+    def run_grab_reference(self):
+        # Block everything to user
+        self.block_hard_user_interaction(False)
+        # Run worker for non-blocking computations
+        self.strong_worker.set_new_task_and_arguments(
+            self._run_grab_reference, []
+        )
+        self.strong_worker.start()
+
+    def _run_grab_reference(self):
+        self.stopCamera.setEnabled(True)
+        self.initialize_camera()
+        self.camera.grab_and_fix_reference()
+        self.block_hard_user_interaction(True)
+        self.stopCamera.setEnabled(False)
+        self.runCamera.setEnabled(True)
+
+    def run_camera(self):
+        # Block everything to user
+        self.block_hard_user_interaction(False)
+        # Run worker for non-blocking computations
+        self.strong_worker.set_new_task_and_arguments(
+            self._run_camera, []
+        )
+        self.strong_worker.start()
+
+    def _run_camera(self):
+        self.stopCamera.setEnabled(True)
+        self.initialize_camera()
+        self.camera.take_and_process_frames()
+        self.block_hard_user_interaction(True)
+        self.stopCamera.setEnabled(False)
+
+    def stop_camera(self):
+        self.camera.stop_camera=True
+
+    def initialize_camera(self):
+        image_manager = Image_Manager(607 if self.use_i607.isChecked() else 203,
+             self.choose_interpolation_falg(self.interpolation_alg_centering))
+        if self.liveG.isChecked(): # gradient algorithm########################################
+            angle_algorithm = Gradient_Algorithm(image_manager,
+                eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
+                float(self.initial_guess_delta_pix.text()),
+                self.use_exact_grav_G.isChecked())
+            if self.brute.isChecked():
+                angle_function=lambda:angle_algorithm.brute_force_search(
+                    [float(self.angle_step_1_pix.text()), float(self.angle_step_2_pix.text()),
+                     float(self.angle_step_3_pix.text())], [float(self.zoom1_ratio.text()),
+                     float(self.zoom2_ratio.text())]
+                )
+            elif self.fibonacci.isChecked():
+                angle_function=lambda:angle_algorithm.fibonacci_ratio_search(
+                    float(self.precision_fib_pix.text()), int(self.max_points_fib.text()),
+                    float(self.cost_tolerance_fib.text())
+                )
+            else:
+                angle_function=lambda:angle_algorithm.quadratic_fit_search(
+                    float(self.precision_quad_pix.text()),
+                    int(self.max_it_quad.text()),
+                    float(self.cost_tolerance_quad.text())
+                )
+
+        elif self.liveR.isChecked(): # rotation algorithm##########################################
+            angle_algorithm = Rotation_Algorithm(image_manager,
+                eval(self.theta_min_R.text()), eval(self.theta_max_R.text()),
+                self.choose_interpolation_falg(self.interpolation_alg_opt),
+                float(self.initial_guess_delta_rad.text()), self.use_exact_grav_R.isChecked())
+
+            if self.brute.isChecked():
+                angle_function=lambda:angle_algorithm.brute_force_search(
+                    [float(self.angle_step_1_rad.text()), float(self.angle_step_2_rad.text()),
+                     float(self.angle_step_3_rad.text())], [float(self.zoom1_ratio.text()),
+                     float(self.zoom2_ratio.text())]
+                )
+            elif self.fibonacci.isChecked():
+                angle_function=lambda:angle_algorithm.fibonacci_ratio_search(
+                    float(self.precision_fib_rad.text()), int(self.max_points_fib.text()),
+                    float(self.cost_tolerance_fib.text())
+                )
+            else:
+                angle_function=lambda:angle_algorithm.quadratic_fit_search(
+                    float(self.precision_quad_rad.text()),
+                    int(self.max_it_quad.text()),
+                    float(self.cost_tolerance_quad.text())
+                )
+
+        elif self.liveH.isChecked(): # histogram algorithm####################################
+            angle_algorithm = Radial_Histogram_Algorithm(image_manager,
+                self.use_exact_grav_H.isChecked())
+            if self.use_raw_idx_mask_H.isChecked():
+                angle_function=lambda:angle_algorithm.compute_histogram_masking(
+                    float(self.angle_bin_size_H.text())
+                    )
+            elif self.use_raw_idx_bin_H.isChecked():
+                angle_function=lambda:angle_algorithm.compute_histogram_binning(
+                    float(self.angle_bin_size_H.text())
+                    )
+            else:
+                angle_function=lambda:angle_algorithm.compute_histogram_interpolate(
+                    float(self.angle_bin_size_H.text())
+                )
+            #if self.fit_cos_H.isChecked():
+                #histogram_algorithm.refine_by_cosine_fit() append this to the lambda function
+
+        else: # mirror algoriothm #######################################################
+            method="bin" if self.use_binning_M.isChecked() else "mask" if self.use_masking_M.isChecked() else "aff"
+            angle_algorithm = Mirror_Flip_Algorithm(image_manager,
+                eval(self.theta_min_M.text()), eval(self.theta_max_M.text()),
+                self.choose_interpolation_falg(self.interpolation_alg_opt),
+                float(self.initial_guess_delta_rad.text()), method, self.left_vs_right_M.isChecked(), self.use_exact_grav_M.isChecked())
+            # Get arguments and run algorithm depending on the chosen stuff
+            if self.brute.isChecked():
+                angle_function=lambda:angle_algorithm.brute_force_search(
+                    [float(self.angle_step_1_rad.text()), float(self.angle_step_2_rad.text()),
+                     float(self.angle_step_3_rad.text())], [float(self.zoom1_ratio.text()),
+                     float(self.zoom2_ratio.text())]
+                )
+            elif self.fibonacci.isChecked():
+                angle_function=lambda:angle_algorithm.fibonacci_ratio_search(
+                    float(self.precision_fib_rad.text()), int(self.max_points_fib.text()),
+                    float(self.cost_tolerance_fib.text())
+                )
+            else:
+                angle_function=lambda:angle_algorithm.quadratic_fit_search(
+                    float(self.precision_quad_rad.text()),
+                    int(self.max_it_quad.text()),
+                    float(self.cost_tolerance_quad.text())
+                )
+
+        if self.use_PiCamera.isChecked():
+
+            self.camera=Pi_Camera(angle_algorithm, angle_function,
+                 float(self.referenceAngle.text()), int(self.imagesInChunks.text()),
+                 image_manager,
+                 self.saveLifeOutput.isChecked(),
+                 self.output_directory.text(), self.barUpdate_Live,
+                 int(pi_w.text()), int(pi_h.text()))
+
+        else:
+            self.camera=Basler_Camera()
 
 
 

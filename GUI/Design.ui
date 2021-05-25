@@ -1189,17 +1189,18 @@ centered image</string>
          <widget class="QLabel" name="label_26">
           <property name="geometry">
            <rect>
-            <x>40</x>
+            <x>30</x>
             <y>20</y>
-            <width>111</width>
-            <height>26</height>
+            <width>121</width>
+            <height>31</height>
            </rect>
           </property>
           <property name="text">
-           <string>Resolution:</string>
+           <string>Resolution (wxh):
+Max (4056 x 3040)</string>
           </property>
          </widget>
-         <widget class="QLineEdit" name="lineEdit_3">
+         <widget class="QLineEdit" name="pi_w">
           <property name="geometry">
            <rect>
             <x>160</x>
@@ -1208,8 +1209,11 @@ centered image</string>
             <height>34</height>
            </rect>
           </property>
+          <property name="text">
+           <string>2592</string>
+          </property>
          </widget>
-         <widget class="QLineEdit" name="lineEdit_4">
+         <widget class="QLineEdit" name="pi_h">
           <property name="geometry">
            <rect>
             <x>330</x>
@@ -1217,6 +1221,9 @@ centered image</string>
             <width>113</width>
             <height>34</height>
            </rect>
+          </property>
+          <property name="text">
+           <string>1944</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_27">
@@ -1231,6 +1238,73 @@ centered image</string>
           <property name="text">
            <string>x</string>
           </property>
+         </widget>
+         <widget class="QLabel" name="label_31">
+          <property name="geometry">
+           <rect>
+            <x>40</x>
+            <y>90</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>FrameRate (fps):</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="lineEdit_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>160</x>
+            <y>80</y>
+            <width>113</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>15</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="radioButton">
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>140</y>
+            <width>161</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Use RAW YUV format</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_13</string>
+          </attribute>
+         </widget>
+         <widget class="QRadioButton" name="radioButton_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>180</y>
+            <width>161</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Use RAW RGB format</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_13</string>
+          </attribute>
          </widget>
         </widget>
         <widget class="QWidget" name="tab_9">
@@ -1307,10 +1381,13 @@ centered image</string>
         </property>
        </widget>
        <widget class="QPushButton" name="runCamera">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>1050</x>
-          <y>110</y>
+          <y>190</y>
           <width>241</width>
           <height>61</height>
          </rect>
@@ -1320,10 +1397,13 @@ centered image</string>
         </property>
        </widget>
        <widget class="QPushButton" name="stopCamera">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>1050</x>
-          <y>200</y>
+          <y>30</y>
           <width>241</width>
           <height>61</height>
          </rect>
@@ -1351,7 +1431,7 @@ centered image</string>
          <string>Choose Algorithm</string>
         </property>
        </widget>
-       <widget class="QCheckBox" name="lifeG">
+       <widget class="QCheckBox" name="liveG">
         <property name="geometry">
          <rect>
           <x>410</x>
@@ -1370,7 +1450,7 @@ centered image</string>
          <string notr="true">buttonGroup_7</string>
         </attribute>
        </widget>
-       <widget class="QCheckBox" name="lifeR">
+       <widget class="QCheckBox" name="liveR">
         <property name="geometry">
          <rect>
           <x>410</x>
@@ -1386,7 +1466,7 @@ centered image</string>
          <string notr="true">buttonGroup_7</string>
         </attribute>
        </widget>
-       <widget class="QCheckBox" name="lifeH">
+       <widget class="QCheckBox" name="liveH">
         <property name="geometry">
          <rect>
           <x>410</x>
@@ -1402,7 +1482,7 @@ centered image</string>
          <string notr="true">buttonGroup_7</string>
         </attribute>
        </widget>
-       <widget class="QCheckBox" name="lifeM">
+       <widget class="QCheckBox" name="liveM">
         <property name="geometry">
          <rect>
           <x>410</x>
@@ -1480,7 +1560,7 @@ centered image</string>
          </rect>
         </property>
         <property name="text">
-         <string>Save Outputs Every (frames):</string>
+         <string>Save Outputs Every (chunks):</string>
         </property>
        </widget>
        <widget class="QLineEdit" name="totalFrames">
@@ -1570,7 +1650,7 @@ centered image</string>
          </rect>
         </property>
         <property name="text">
-         <string>Show Images and angle</string>
+         <string>Plot only Images and angle</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -1624,7 +1704,7 @@ centered image</string>
          </rect>
         </property>
         <property name="text">
-         <string>Show all results</string>
+         <string>Plot all results</string>
         </property>
         <attribute name="buttonGroup">
          <string notr="true">buttonGroup_11</string>
@@ -1661,7 +1741,7 @@ In chunks of:</string>
         <property name="geometry">
          <rect>
           <x>1050</x>
-          <y>20</y>
+          <y>110</y>
           <width>241</width>
           <height>61</height>
          </rect>
@@ -1759,7 +1839,7 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
      <x>0</x>
      <y>0</y>
      <width>1515</width>
-     <height>31</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>
@@ -1769,16 +1849,17 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_12"/>
+  <buttongroup name="buttonGroup_11"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_9"/>
   <buttongroup name="buttonGroup_2"/>
   <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_3"/>
   <buttongroup name="buttonGroup_4"/>
   <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_3"/>
   <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_11"/>
-  <buttongroup name="buttonGroup_5"/>
-  <buttongroup name="buttonGroup_12"/>
+  <buttongroup name="buttonGroup_13"/>
  </buttongroups>
 </ui>

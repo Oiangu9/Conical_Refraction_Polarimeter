@@ -16,6 +16,9 @@ class Image_Manager:
         self.interpolation_flag = interpolation_flag
         self.previs_ms=previs_ms
         self.mainThreadPlotter=mainThreadPlotter
+        self.raw_images_names=None
+        self.centered_ring_images=None
+        self.g_centered=np.array([0,1])
 
     def get_raw_images_to_compute(self, path_list):
         """
@@ -248,7 +251,7 @@ class Image_Manager:
                 (10,500), # spot in the image
                 cv2.FONT_HERSHEY_SIMPLEX, # font
                 1, # font scale
-                (255,255,255) # font color,
+                (255,255,255), # font color,
                 2) # line type
             self.mainThreadPlotter.emit(self.centered_ring_images[im],
                 self.previs_ms, name )
