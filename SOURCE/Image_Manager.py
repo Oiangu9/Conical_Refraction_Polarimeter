@@ -5,14 +5,17 @@ from skimage.measure import block_reduce # useful function for average pooling
 from time import time
 
 
-class Image_Loader:
-    def __init__(self, mode, interpolation_flag):
+class Image_Manager:
+    def __init__(self, mode, interpolation_flag, mainThreadPlotter=None,
+                    previs_ms=1000):
         """
             Mode is expected to be 607 or 203, depending of whether i607 or i203 is desired to be
             used for all the algorithms.
         """
         self.mode = mode
         self.interpolation_flag = interpolation_flag
+        self.previs_ms=previs_ms
+        self.mainThreadPlotter=mainThreadPlotter
 
     def get_raw_images_to_compute(self, path_list):
         """
@@ -77,6 +80,27 @@ class Image_Loader:
             cv2.destroyAllWindows()
         '''
 
+    def input_raw_images(self, images, name):
+        """
+        This is a function used to intialize the image loader (get images) in the life
+        camera image take.
+
+        Arguments
+        ---------
+        - images (np.ndarray) [N_images, h, w]: The raw images taken by the camera stacked
+            along axis 0.
+        - names (list): A list of string names for each of the images, possibly the datetimes
+            of capture
+        """
+        self.raw_images = images
+        self.raw_images_names = names
+        if(self.mode==203): # the mode is set to 203, we will need to downscale the raw image by 3,
+                            # in order for the i203 to be able to contain the whole ring
+            self.raw_images = block_reduce(self.raw_images,
+                block_size=(1,3, 3), func=np.mean).astype(self.raw_images.dtype)
+
+        self.raw_image_shape = self.raw_images.shape[1:]
+
 
     def compute_intensity_gravity_center(self, images):
         """
@@ -99,7 +123,7 @@ class Image_Loader:
             ).transpose()
 
 
-    def compute_raw_to_i607_or_i203(self, output_path):
+    def compute_raw_to_i607_or_i203(self, output_path=None):
         """
             Computes the converison to i607 or i203 and saves the resulting images as
             png in the output directory provided as argument.
@@ -160,7 +184,8 @@ class Image_Loader:
             self.centered_ring_images[im] = cv2.warpAffine(
                         self.centered_ring_images[im], T, (self.mode*2+1, self.mode*2+1),
                         flags=self.interpolation_flag) # interpolation method
-            cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_ring_images[im])
+            if output_path:
+                cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_ring_images[im])
 
         # We recompute the gravity centers:
         self.g_centered = self.compute_intensity_gravity_center(self.centered_ring_images)
@@ -208,3 +233,24 @@ class Image_Loader:
             return 1
         # We recompute the gravity centers [N_images, 2 (h,w)]
         self.g_centered = self.compute_intensity_gravity_center(self.centered_ring_images)
+
+    def plot_rings_and_angles(self, pol_angles, precisions, output_path=None):
+        """
+         Angles is expected to be a dictionary with keys being the image names
+        and the values being the measured polarization angles.
+
+        We could introduce an option to print angles in degrees here.
+        """
+        for im, (name, angle) in enumerate(pol_angles.items()):
+            # Note that the image will be permanently modified!
+            cv2.putText(self.centered_ring_images[im],
+                f"{angle} +-{precisions[name]} rad", # text to insert
+                (10,500), # spot in the image
+                cv2.FONT_HERSHEY_SIMPLEX, # font
+                1, # font scale
+                (255,255,255) # font color,
+                2) # line type
+            self.mainThreadPlotter.emit(self.centered_ring_images[im],
+                self.previs_ms, name )
+            if output_path:
+                cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_ring_images[im])

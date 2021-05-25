@@ -5,13 +5,86 @@ from time import time
 import os
 from SOURCE.Ad_Hoc_Optimizer import Ad_Hoc_Optimizer
 
+"""
+TOOD:
 
-class Radial_Histogram_Algorithm:
+- Hacer que una instancia de algorithm inicializada pueda recibir la misma mas imagenes
+osea un init adicional quizas para reiniciar las cosas cada vez que image loader tiene nuevas
+imagenes (los dictionary especialmente). Also hacer que las imagenes nuevas sean a las que apunten.
+
+- La clase del camera debe tener el metodo para tomar las reference que es tomar las fotos y
+ejecutar el algorithm de busqueda y darle a fix reference.
+
+- La clase camera debe tener el metodo de continous para x frames a tomar de n en n. Se grabean
+todas las fotos en un np array y se pasan a image loader que los procesará y llamas al algoritmo
+de optimizacion que le puede entrar de argumento admeas de la clase del algoritmo como un lambda
+function. asi no hay que hacer ifs dentro del camera si no en el main thread. Cada n fotos tomadas
+comprueba que stop no sea true, y sigue hasta hacer todas las fotos o que stop sea true (que lo
+tendras que hace run metodo que lo haga true si el usuario clica en stop).
+
+- Also la clase de la camara debera gestionar si se quieren guardar los resultados de generar la dir
+adient y de pasarle los argumentos que toquen al generador y ploteador cada saveEvery.
+Also los graficos de optimizacion se podrian outputear si el usuario kiere que se outputee todo todo
+"""
+
+class Polarization_Obtention_Algorithm:
     def __init__(self, image_loader, use_exact_gravicenter):
-        self.images = image_loader.centered_ring_images
         self.image_names = image_loader.raw_images_names
         self.mode = image_loader.mode
         self.use_exact_gravicenter=use_exact_gravicenter
+        self.angles={}
+        self.precisions={}
+
+    def _round_to_sig(self, x_to_round, reference=None, sig=2):
+            reference = x_to_round if reference is None else reference
+            return round(x_to_round, sig-int(np.floor(np.log10(abs(reference))))-1)
+
+    def save_images(self, images, output_path, names):
+        if type(names) is not list:
+            images=[images,]
+            names = [names,]
+        for name, image in zip(names, images):
+            cv2.imwrite(f"{output_path}/{name}.png", image)
+
+    def angle_to_pi_pi(self, angle): # convert any angle to range ()-pi,pi]
+        angle= angle%(2*np.pi) # take it to [-2pi, 2pi]
+        return angle-np.sign(angle)*2*np.pi if abs(angle)>np.pi else angle
+
+    def set_reference_angle(self, base_reference_angle):
+        """
+        Use the average of the last computed angle set as a reference.
+        base_reference_angle is the angle that the user wants the reference sample to be considered.
+        """
+        prec=np.mean(list(self.precisions.values())
+        self.reference_precision = self._round_to_sig(prec)
+        self.reference_angle = self._round_to_sig(
+                            np.mean(list(self.angles.values()))-base_reference_angle,
+                                self.reference_precision)
+
+
+    def process_obtained_angles(self):
+        """
+        This is a method to take the obtained angles in the conical refraction image relative to the
+        width axis and to process them as:
+            - Make them relative to the reference image
+            - Undo the doubling of the angle for the projection of the refraction ring
+        This method assumes that set_reference_angle() has already been executed before.
+        """
+        self.polarization={}
+        self.polarization_precision={}
+
+        for name, angle in self.angles.items():
+            self.polarization_precision[name] = self._round_to_sig(max(self.precisions[name]), self.reference_precision)/2.0
+            self.polarization[name]= self._round_to_sig(self.angle_to_pi_pi(angle-self.reference_angle)/2.0, self.polarization_precision[name])
+
+        # TODO: It should be rounded to the significance of the maximum between the reference precision and the precision obtained for the angle
+
+
+
+class Radial_Histogram_Algorithm(Polarization_Obtention_Algorithm):
+    def __init__(self, image_loader, use_exact_gravicenter):
+        Polarization_Obtention_Algorithm.__init__(image_loader, use_exact_gravicenter)
+        self.images = image_loader.centered_ring_images
         if use_exact_gravicenter:
             self.grav = image_loader.g_centered.squeeze() # squeeze for the case ther is only one im
         else: # then use the image center as radial histogram origin
@@ -61,11 +134,12 @@ class Radial_Histogram_Algorithm:
             histograms=np.array(histograms)
 
         self.histograms=histograms
-        self.precisions = self._round_to_sig(angle_bin_size/2.0)
-        self.angles=np.arange(start=self.min_angle, stop=self.max_angle, step=angle_bin_size, dtype=np.float64)[:histograms.shape[1]]+angle_bin_size/2
+        self.precision = self._round_to_sig(angle_bin_size/2.0)
+        self.bin_angles=np.arange(start=self.min_angle, stop=self.max_angle, step=angle_bin_size, dtype=np.float64)[:histograms.shape[1]]+angle_bin_size/2
         for image_name, histogram in zip(self.image_names, histograms):
             # until no stauration images re obtained this is the way (look for the minimum instead of maximum!)
-            self.optimals[image_name] = self._round_to_sig(self.angles[np.argmin(histogram)]-np.pi, self.precisions)
+            self.angles[image_name] = self._round_to_sig(self.angles[np.argmin(histogram)]-np.pi, self.precision)
+            self.precisions[image_name]=self.precision # redundant!!
 
     def compute_histogram_masking(self, angle_bin_size):
         # if use img center or only one image
@@ -119,10 +193,11 @@ class Radial_Histogram_Algorithm:
             histograms=np.array(histograms)
 
         self.histograms=histograms
-        self.precisions = self._round_to_sig(angle_bin_size/2)
-        self.angles=-(angles+self.precisions)[:-1] # centers
+        self.precision = self._round_to_sig(angle_bin_size/2)
+        self.bin_angles=-(angles+self.precisions)[:-1] # centers
         for image_name, histogram in zip(self.image_names, histograms):
-            self.optimals[image_name] = self._round_to_sig(-(angles[np.argmin(histogram)]+angle_bin_size/2)-np.pi, self.precisions)
+            self.angles[image_name] = self._round_to_sig(-(angles[np.argmin(histogram)]+angle_bin_size/2)-np.pi, self.precision)
+            self.precisions[image_name]=self.precision # redundant!
 
 
     def compute_histogram_interpolate(self, angle_bin_size):
@@ -138,8 +213,8 @@ class Radial_Histogram_Algorithm:
         ax = fig.add_subplot(1, 1, 1)
         tag="Exact_Grav" if self.use_exact_gravicenter else "Image_Center"
         for name, bin_sums in zip(self.image_names, self.histograms):
-            ax.bar(self.angles, bin_sums, align='center', width=2*self.precisions, label=name)
-            ax.set_title(f"Optimal angle={self.optimals[name]}+-{self.precisions} rad\nComputed Bins={bin_sums.shape[0]} . Eff.Time Required={self.times[name]}s")
+            ax.bar(self.bin_angles, bin_sums, align='center', width=2*self.precision, label=name)
+            ax.set_title(f"Optimal angle={self.angles[name]}+-{self.precision} rad\nComputed Bins={bin_sums.shape[0]} . Eff.Time Required={self.times[name]}s")
             ax.set_xlabel("Angle (rad)")
             ax.set_ylabel("Total Intensity")
             #ax.set_yscale('log')
@@ -147,11 +222,8 @@ class Radial_Histogram_Algorithm:
             plt.savefig(f"{output_path}/Histogram_Algorithm/{title}_{tag}_{name}.png")
             ax.clear()
 
-    def _round_to_sig(self, x_to_round, reference=None, sig=2):
-        reference = x_to_round if reference is None else reference
-        return round(x_to_round, sig-int(np.floor(np.log10(abs(reference))))-1)
 
-class Mirror_Flip_Algorithm:
+class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
     def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta, method, left_vs_right, use_exact_gravicenter):
         """
             Argument image_loader is expected to be an instance of class Image_Loader,
@@ -167,6 +239,7 @@ class Mirror_Flip_Algorithm:
             will measure their distance.
 
         """
+        Polarization_Obtention_Algorithm.__init__(image_loader, use_exact_gravicenter)
         self.images_float = image_loader.centered_ring_images.astype(np.float32)
         self.raw_images_names = image_loader.raw_images_names
         self.interpolation_flag = interpolation_flag
@@ -179,10 +252,8 @@ class Mirror_Flip_Algorithm:
         self.computed_points={}
         self.optimums={}
         self.optimals={}
-        self.precisions={}
         self.times={}
         self.method=method
-        self.angles={}
         if method=="bin":
             self.optimizer = Ad_Hoc_Optimizer(min_angle, max_angle, initial_guess_delta, self.evaluate_mirror_bin)
         elif method=="mask":
@@ -195,7 +266,6 @@ class Mirror_Flip_Algorithm:
         else: #up vs down
             self.udlr=-1 # maximize cost
 
-        self.use_exact_gravicenter=use_exact_gravicenter
         if use_exact_gravicenter:
             self.grav=image_loader.g_centered #[N_images, 2(h,w)]
         else:
@@ -262,19 +332,6 @@ class Mirror_Flip_Algorithm:
         self.cols = self.cols if self.cols is not None else np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
         mask=np.greater(self.cols.swapaxes(0,1), np.tan(angle)*(self.cols-center[0])+center[1]) #[h,w]
         return np.sum(image[mask])-np.sum(image[np.logical_not(mask)])
-
-
-    def angle_to_pi_pi(self, angle): # convert any angle to range ()-pi,pi]
-        angle= angle%(2*np.pi) # take it to [-2pi, 2pi]
-        return angle-np.sign(angle)*2*np.pi if abs(angle)>np.pi else angle
-
-    def save_images(self, images, output_path, names):
-        if type(names) is not list:
-            images=[images,]
-            names = [names,]
-        for name, image in zip(names, images):
-            cv2.imwrite(f"{output_path}/{name}.png", image)
-
 
     def get_polarization_angle(self, angle, image, center):
         """
@@ -429,11 +486,11 @@ class Mirror_Flip_Algorithm:
             plt.savefig(f"{output_path}/Mirror_Algorithm/{name}.png")
 
 
-class Gradient_Algorithm:
+class Gradient_Algorithm(Polarization_Obtention_Algorithm):
     def __init__(self, image_loader, min_radious, max_radious, initial_guess_delta, use_exact_gravicenter):
+        Polarization_Obtention_Algorithm.__init__(image_loader, use_exact_gravicenter)
         self.optimizer = Ad_Hoc_Optimizer(min_radious, max_radious, initial_guess_delta, self.evaluate_mask_radious)
         self.original_images = image_loader
-        self.use_exact_gravicenter=use_exact_gravicenter
         #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
         self.min_radious = min_radious
         self.max_radious = max_radious
@@ -442,9 +499,7 @@ class Gradient_Algorithm:
         self.computed_points={}
         self.optimums={}
         self.optimals={}
-        self.precisions={}
         self.times={}
-        self.angles={}
         self.masked_gravs={}
 
         if use_exact_gravicenter: #[N_images, 2 (h,w)]
@@ -470,13 +525,6 @@ class Gradient_Algorithm:
         total_intensity = intensity_in_h.sum()
         return [np.dot(intensity_in_h, np.arange(circle.shape[0]))/total_intensity,
          np.dot(intensity_in_w, np.arange(circle.shape[1]))/total_intensity]
-
-    def save_images(self, images, output_path, names):
-        if type(names) is not list:
-            images=[images,]
-            names = [names,]
-        for name, image in zip(names, images):
-            cv2.imwrite(f"{output_path}/{name}.png", image)
 
     def evaluate_mask_radious(self, image, radious, distances_to_grav, grav):
         # mask the image in the circumference
@@ -554,7 +602,6 @@ class Gradient_Algorithm:
                 self.distances_to_grav[im] if mul else self.distances_to_grav)
             self.angles[name]=-np.arctan2(masked_grav[0]-grav[0], masked_grav[1]-grav[1])
             self.masked_gravs[name]=masked_grav
-
 
 
     def quadratic_fit_search(self, precision, max_iterations, cost_tol):
@@ -657,7 +704,7 @@ class Gradient_Algorithm:
 
 
 
-class Rotation_Algorithm:
+class Rotation_Algorithm(Polarization_Obtention_Algorithm):
     """
     The distance between the images, i607 and rotated i607R as a function of the rotation angle,
     once both images are centered in the gravicenter, is a strictly unimodal and convex function,
@@ -702,6 +749,7 @@ class Rotation_Algorithm:
             will measure their distance.
 
         """
+        Polarization_Obtention_Algorithm.__init__(image_loader, use_exact_gravicenter)
         self.original_images = image_loader
         self.interpolation_flag = interpolation_flag
         self.min_angle = min_angle
@@ -711,11 +759,8 @@ class Rotation_Algorithm:
         self.computed_points={}
         self.optimums={}
         self.optimals={}
-        self.precisions={}
         self.times={}
-        self.angles={}
         self.optimizer = Ad_Hoc_Optimizer(min_angle, max_angle, initial_guess_delta, self.evaluate_image_rotation)
-        self.use_exact_gravicenter=use_exact_gravicenter
         if use_exact_gravicenter:
             self.grav=self.original_images.g_centered #[N_images, 2(h,w)]
             # custom mirror flip the images about the line through gravicenter
@@ -730,13 +775,6 @@ class Rotation_Algorithm:
             self.mirror_images_wrt_width_axis = np.flip(image_loader.centered_ring_images, 1)
             #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
 
-
-    def save_images(self, images, output_path, names):
-        if type(names) is not list:
-            images=[images,]
-            names = [names,]
-        for name, image in zip(names, images):
-            cv2.imwrite(f"{output_path}/{name}.png", image)
 
     def horizontal_mirror_flip_crossing(self, image_array, h_point):
         # h_point is expected to be point in height such that the flip is made on w

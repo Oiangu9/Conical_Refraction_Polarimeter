@@ -1,5 +1,5 @@
 from GUI.Design_ui import *
-from SOURCE.Image_Loader import *
+from SOURCE.Image_Manager import *
 from SOURCE.Polarization_Obtention_Algorithms import *
 from glob import glob
 import logging
@@ -192,7 +192,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def initialize_Angle_Calculator_instance_convert_images(self):
         """
-            Initializes an instance of the Image_Loader class and executes the
+            Initializes an instance of the Image_Manager class and executes the
             conversion of the raw images to the selected mode i607 or i203. The output images
             will be saved in the output directory.
 
@@ -203,7 +203,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # save the mode chosen by the user
         self.mode = 607 if self.use_i607.isChecked() else 203
         # initialize instance
-        self.image_loader = Image_Loader(self.mode,
+        self.image_loader = Image_Manager(self.mode,
             self.choose_interpolation_falg(self.interpolation_alg_centering))
 
         # Run worker for non-blocking computations
@@ -427,7 +427,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.fit_cos_H.isChecked():
             histogram_algorithm.refine_by_cosine_fit()
 
-        logging.info(f"Found optimal angles in rad = {histogram_algorithm.optimals}\n\nPrecisions (rad) = {histogram_algorithm.precisions}\n\nTimes (s) = {histogram_algorithm.times}")
+        logging.info(f"Found optimal angles in rad = {histogram_algorithm.angles}\n\nPrecisions (rad) = {histogram_algorithm.precision}\n\nTimes (s) = {histogram_algorithm.times}")
 
         if (self.output_plots.isChecked()):
             histogram_algorithm.save_result_plots(self.output_directory.text(),
@@ -447,14 +447,14 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             if not self.image_loader_initialized:
                 self.mode = 607 if self.use_i607.isChecked() else 203
                 # initialize instance
-                self.image_loader = Image_Loader(self.mode,
+                self.image_loader = Image_Manager(self.mode,
                     self.choose_interpolation_falg(self.interpolation_alg_centering))
                 ret = self._initialize_Angle_Calculator_instance_convert_images()
                 if ret==1:
                     return 1
         else: # use all the images in the output directory
             self.mode = 607 if self.use_converted_i607.isChecked() else 203
-            self.image_loader = Image_Loader(self.mode,
+            self.image_loader = Image_Manager(self.mode,
                 self.choose_interpolation_falg(self.interpolation_alg_centering))
             ret = self.image_loader.import_converted_images(
                 sorted(glob(f"{self.output_directory.text()}/i{self.mode}_converted_images/*")))
