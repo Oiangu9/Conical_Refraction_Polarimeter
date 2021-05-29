@@ -639,7 +639,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                  image_manager,
                  self.saveLifeOutput.isChecked(),
                  self.output_directory.text(), self.barUpdate_Live,
-                 int(pi_w.text()), int(pi_h.text()))
+                 int(self.pi_w.text()), int(self.pi_h.text()))
 
         else:
             self.camera=Basler_Camera()
