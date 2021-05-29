@@ -17,7 +17,7 @@ class QPlainTextEditLogger_NonBlocking(logging.Handler, QtCore.QObject):
         non-blocking way: using signals and slots instead of directly changing
         the log text box
     """
-    sigLog = QtCore.Signal(str)  # define the signal that will send the log messages
+    sigLog = QtCore.pyqtSignal(str)  # define the signal that will send the log messages
 
     def __init__(self, widget):
         logging.Handler.__init__(self)
@@ -53,11 +53,11 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
     # Create the cv2 plotter signal. This is necessary to do because gui stuff (like the
     # cv2 calls to qt) cannot be handled from secondary threads. In a blocking non-threaded
     # version of the code this was not at all a problem.
-    plotter_cv2 = QtCore.Signal(np.ndarray, int, str)
+    plotter_cv2 = QtCore.pyqtSignal(np.ndarray, int, str)
     # expecting array to plot, int with the time to waitKey and a string with the label to show
 
     # Create a progress bar updater signal
-    barUpdate_Live = QtCore.Signal(int)
+    barUpdate_Live = QtCore.pyqtSignal(int)
 
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
