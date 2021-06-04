@@ -73,9 +73,9 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # Adapt the font size to screen size
         sizeObject = QtWidgets.QDesktopWidget().screenGeometry(-1)
         #print(" Screen size : "  + str(sizeObject.height()) + "x"  + str(sizeObject.width()))
-        if(sizeObject.height()<500):
+        if(sizeObject.height()>1000):
             font = QtGui.QFont()
-            font.setPointSize(5)
+            font.setPointSize(13)
             self.setFont(font)
 
 

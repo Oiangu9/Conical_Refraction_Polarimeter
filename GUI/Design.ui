@@ -6,12 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1321</width>
-    <height>1105</height>
+    <width>1022</width>
+    <height>825</height>
    </rect>
   </property>
   <property name="font">
    <font>
+    <pointsize>9</pointsize>
     <weight>50</weight>
     <italic>false</italic>
     <bold>false</bold>
@@ -25,6 +26,12 @@
    <layout class="QGridLayout" name="gridLayout_11">
     <item row="2" column="0">
      <widget class="QPlainTextEdit" name="log_text">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -34,7 +41,7 @@
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>300</height>
+        <height>120</height>
        </size>
       </property>
       <property name="plainText">
@@ -49,8 +56,14 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
     </item>
     <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -207,10 +220,22 @@ Interpolation Algorithm:</string>
        <layout class="QGridLayout" name="gridLayout_12">
         <item row="1" column="0">
          <widget class="QGroupBox" name="groupBox_8">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>50</verstretch>
+           </sizepolicy>
+          </property>
           <property name="minimumSize">
            <size>
             <width>0</width>
             <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
            </size>
           </property>
           <property name="title">
@@ -298,6 +323,12 @@ Interpolation Algorithm:</string>
         </item>
         <item row="2" column="0">
          <widget class="QGroupBox" name="groupBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="title">
            <string>Search Algorithm for G (Max |Z| radius), R (Min difference angle), M (Min difference angle)</string>
           </property>
@@ -325,13 +356,18 @@ Interpolation Algorithm:</string>
            <item row="4" column="0" colspan="2">
             <widget class="QLabel" name="label_18">
              <property name="text">
-              <string>Affine Transformation Interpolation Algorithm 
-(for algorithms R, M):</string>
+              <string>Affine Transformation Interpolation Algorithm (for algorithms R, M):</string>
              </property>
             </widget>
            </item>
            <item row="0" column="4" rowspan="11">
             <widget class="QGroupBox" name="groupBox_3">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="title">
               <string>Parameters for Brute Force Search</string>
              </property>
@@ -564,6 +600,12 @@ Precision:</string>
            </item>
            <item row="0" column="5" rowspan="6">
             <widget class="QGroupBox" name="groupBox_7">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="title">
               <string>Parameters for Quadratic Search</string>
              </property>
@@ -643,6 +685,12 @@ Precision:</string>
            </item>
            <item row="6" column="5" rowspan="6">
             <widget class="QGroupBox" name="groupBox_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="title">
               <string>Parameters for Fibonacci Search</string>
              </property>
@@ -735,14 +783,20 @@ Precision:</string>
         </item>
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>170</height>
+            <height>135</height>
            </size>
           </property>
           <property name="currentIndex">
-           <number>3</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
@@ -1610,8 +1664,8 @@ In chunks of:</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1321</width>
-     <height>31</height>
+     <width>1022</width>
+     <height>23</height>
     </rect>
    </property>
   </widget>
