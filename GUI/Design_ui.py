@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(9)
+        font.setPointSize(8)
         font.setBold(False)
         font.setItalic(False)
         font.setUnderline(False)
