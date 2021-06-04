@@ -75,7 +75,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         #print(" Screen size : "  + str(sizeObject.height()) + "x"  + str(sizeObject.width()))
         if(sizeObject.height()<500):
             font = QtGui.QFont()
-            font.setPointSize(8)
+            font.setPointSize(5)
             self.setFont(font)
 
 
