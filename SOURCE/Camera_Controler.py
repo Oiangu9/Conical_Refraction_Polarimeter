@@ -5,6 +5,9 @@ from pypylon import pylon
 from pypylon import genicam
 import cv2
 import sys
+import os
+import numpy as np
+import datetime
 
 class Camera_Controler:
     def __init__(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar):
@@ -40,7 +43,7 @@ class Pi_Camera(Camera_Controler):
             self.outputStream = picamera.array.PiYUVArray(self.camera)
             self.raw_w=(width + 31) // 32 * 32
             self.raw_h=(height + 15) // 16 * 16
-            self.images=np.zeros((images_chunk,self.raw_h, self.raw_h))
+            self.images=np.zeros((images_chunk,height, width))
             self.names=['i' for i in range(images_chunk)]
 
         def test_Camera(self):
@@ -52,12 +55,12 @@ class Pi_Camera(Camera_Controler):
 
         def grab_and_fix_reference(self):
             self.outputStream.truncate(0)
-            camera.start_preview()
+            self.camera.start_preview()
             # Camera warm-up time
             sleep(2)
             for im in range(self.images_chunk):
                 # capture raw image
-                camera.capture(self.outputStream, 'yuv')
+                self.camera.capture(self.outputStream, 'yuv')
                 # put it in the array for the captured images of this chunk
                 self.images[im,:,:] = self.outputStream.array[:,:,0] #[h, w, yuv3]->[h,w,y]
                 # reset stream

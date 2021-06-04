@@ -79,7 +79,7 @@ class Polarization_Obtention_Algorithm:
         self.polarization_precision={}
 
         for name, angle in self.angles.items():
-            self.polarization_precision[name] = self._round_to_sig(max(self.precisions[name]), self.reference_precision)/2.0
+            self.polarization_precision[name] = self._round_to_sig(np.max(self.precisions[name]), self.reference_precision)/2.0
             self.polarization[name]= self._round_to_sig(self.angle_to_pi_pi(angle-self.reference_angle)/2.0, self.polarization_precision[name])
 
         # TODO: It should be rounded to the significance of the maximum between the reference precision and the precision obtained for the angle
@@ -100,7 +100,7 @@ class Radial_Histogram_Algorithm(Polarization_Obtention_Algorithm):
         self.times={}
 
     def reInitialize(self, image_loader):
-        Polarization_Obtention_Algorithm.reInitialize(image_loader)
+        Polarization_Obtention_Algorithm.reInitialize(self, image_loader)
         self.images=image_loader.centered_ring_images
         self.optimals={}
         self.times={}
@@ -287,7 +287,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
             self.grav=np.array(2*[self.mode])+0.5
 
     def reInitialize(self, image_loader):
-        Polarization_Obtention_Algorithm.reInitialize(image_loader)
+        Polarization_Obtention_Algorithm.reInitialize(self, image_loader)
         self.images_float = image_loader.centered_ring_images.astype(np.float32)
         self.computed_points={}
         self.optimums={}
@@ -545,7 +545,7 @@ class Gradient_Algorithm(Polarization_Obtention_Algorithm):
                 for grav in self.grav])
 
     def reInitialize(self, image_loader):
-        Polarization_Obtention_Algorithm.reInitialize(image_loader)
+        Polarization_Obtention_Algorithm.reInitialize(self, image_loader)
         self.original_images = image_loader
         self.computed_points={}
         self.optimums={}
@@ -823,7 +823,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
             #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
 
     def reInitialize(self, image_loader):
-        Polarization_Obtention_Algorithm.reInitialize(image_loader)
+        Polarization_Obtention_Algorithm.reInitialize(self, image_loader)
         self.original_images = image_loader
         self.computed_points={}
         self.optimums={}

@@ -83,7 +83,7 @@ class Image_Manager:
             cv2.destroyAllWindows()
         '''
 
-    def input_raw_images(self, images, name):
+    def input_raw_images(self, images, names):
         """
         This is a function used to intialize the image loader (get images) in the life
         camera image take.
