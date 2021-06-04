@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from GUI.Design_ui import *
 from SOURCE.Image_Manager import *
 from SOURCE.Polarization_Obtention_Algorithms import *
