@@ -10,12 +10,44 @@
     <height>1105</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <weight>50</weight>
+    <italic>false</italic>
+    <bold>false</bold>
+    <underline>false</underline>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Polarization by Conical Refraction - UAB Quantum and Atom Optics Group</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_11">
-    <item row="0" column="0">
+    <item row="2" column="0">
+     <widget class="QPlainTextEdit" name="log_text">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>300</height>
+       </size>
+      </property>
+      <property name="plainText">
+       <string>&gt; Choose images to work with
+&gt; Press Convert Selected Images to output them and leave them ready.
+&gt; Choose angle compuation algorithm and run it.
+
+Note that if &quot;Convert Selected Images&quot; is not clicked before running the algorithms, this will be done internally anyway.
+</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
        <number>2</number>
@@ -1170,665 +1202,405 @@ centered image</string>
        <attribute name="title">
         <string>Compute Angle Life</string>
        </attribute>
-       <widget class="QTabWidget" name="tabWidget_3">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>290</y>
-          <width>531</width>
-          <height>481</height>
-         </rect>
-        </property>
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="tab_8">
-         <attribute name="title">
-          <string>HQ PiCamera Settings</string>
-         </attribute>
-         <widget class="QLabel" name="label_26">
-          <property name="geometry">
-           <rect>
-            <x>30</x>
-            <y>20</y>
-            <width>121</width>
-            <height>31</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Resolution (wxh):
-Max (4056 x 3040)</string>
-          </property>
-         </widget>
-         <widget class="QLineEdit" name="pi_w">
-          <property name="geometry">
-           <rect>
-            <x>160</x>
-            <y>10</y>
-            <width>113</width>
-            <height>34</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>2592</string>
-          </property>
-         </widget>
-         <widget class="QLineEdit" name="pi_h">
-          <property name="geometry">
-           <rect>
-            <x>330</x>
-            <y>10</y>
-            <width>113</width>
-            <height>34</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>1944</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_27">
-          <property name="geometry">
-           <rect>
-            <x>280</x>
-            <y>20</y>
-            <width>21</width>
-            <height>26</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>x</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_31">
-          <property name="geometry">
-           <rect>
-            <x>40</x>
-            <y>90</y>
-            <width>101</width>
-            <height>16</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>FrameRate (fps):</string>
-          </property>
-         </widget>
-         <widget class="QLineEdit" name="lineEdit_2">
+       <layout class="QGridLayout" name="gridLayout_14">
+        <item row="15" column="7">
+         <widget class="QRadioButton" name="showAll">
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="geometry">
-           <rect>
-            <x>160</x>
-            <y>80</y>
-            <width>113</width>
-            <height>23</height>
-           </rect>
-          </property>
           <property name="text">
-           <string>15</string>
+           <string>Plot all results</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_11</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QRadioButton" name="use_BaslerCamera">
+          <property name="text">
+           <string>Basler Camera</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_2</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="17" column="7">
+         <widget class="QLineEdit" name="lineEdit">
+          <property name="text">
+           <string>100</string>
           </property>
          </widget>
-         <widget class="QRadioButton" name="radioButton">
-          <property name="geometry">
-           <rect>
-            <x>30</x>
-            <y>140</y>
-            <width>161</width>
-            <height>21</height>
-           </rect>
+        </item>
+        <item row="4" column="7">
+         <widget class="QPushButton" name="runCamera">
+          <property name="enabled">
+           <bool>false</bool>
           </property>
           <property name="text">
-           <string>Use RAW YUV format</string>
+           <string>RUN Camera</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="liveH">
+          <property name="text">
+           <string>H - Radial Histogram</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_7</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="13" column="2" colspan="5">
+         <widget class="QLabel" name="label_25">
+          <property name="text">
+           <string>Save Outputs Every (chunks):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QCheckBox" name="liveM">
+          <property name="text">
+           <string>M - Mirror</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_7</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="9" column="2">
+         <widget class="QLabel" name="label_29">
+          <property name="text">
+           <string>Set Angle to Consider
+for the Reference (rad):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0" rowspan="11" colspan="2">
+         <widget class="QTabWidget" name="tabWidget_3">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="tab_8">
+           <attribute name="title">
+            <string>HQ PiCamera Settings</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_13">
+            <item row="0" column="3">
+             <widget class="QLabel" name="label_27">
+              <property name="text">
+               <string>x</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLineEdit" name="pi_w">
+              <property name="text">
+               <string>2592</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="2">
+             <widget class="QLabel" name="label_26">
+              <property name="text">
+               <string>Resolution (wxh):
+Max (4056 x 3040)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="QRadioButton" name="radioButton_2">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Use RAW RGB format</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_13</string>
+              </attribute>
+             </widget>
+            </item>
+            <item row="2" column="0" colspan="2">
+             <widget class="QRadioButton" name="radioButton">
+              <property name="text">
+               <string>Use RAW YUV format</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_13</string>
+              </attribute>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_31">
+              <property name="text">
+               <string>FrameRate (fps):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1" colspan="2">
+             <widget class="QLineEdit" name="lineEdit_2">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>15</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QLineEdit" name="pi_h">
+              <property name="text">
+               <string>1944</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_9">
+           <attribute name="title">
+            <string>Basler Camera</string>
+           </attribute>
+          </widget>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="use_PiCamera">
+          <property name="text">
+           <string>HQ PiCamera</string>
           </property>
           <property name="checked">
            <bool>true</bool>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_13</string>
+           <string notr="true">buttonGroup_2</string>
           </attribute>
          </widget>
-         <widget class="QRadioButton" name="radioButton_2">
+        </item>
+        <item row="15" column="2" colspan="5">
+         <widget class="QRadioButton" name="showOnlyOutputted">
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="geometry">
-           <rect>
-            <x>30</x>
-            <y>180</y>
-            <width>161</width>
-            <height>21</height>
-           </rect>
-          </property>
           <property name="text">
-           <string>Use RAW RGB format</string>
+           <string>Show Only Outputted</string>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_13</string>
+           <string notr="true">buttonGroup_10</string>
           </attribute>
          </widget>
-        </widget>
-        <widget class="QWidget" name="tab_9">
-         <attribute name="title">
-          <string>Basler Camera</string>
-         </attribute>
-        </widget>
-       </widget>
-       <widget class="QLabel" name="label_13">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>20</y>
-          <width>211</width>
-          <height>26</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>Choose Camera to Use</string>
-        </property>
-       </widget>
-       <widget class="QRadioButton" name="use_PiCamera">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>70</y>
-          <width>141</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>HQ PiCamera</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_2</string>
-        </attribute>
-       </widget>
-       <widget class="QRadioButton" name="use_BaslerCamera">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>120</y>
-          <width>161</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Basler Camera</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_2</string>
-        </attribute>
-       </widget>
-       <widget class="QPushButton" name="testCamera">
-        <property name="geometry">
-         <rect>
-          <x>750</x>
-          <y>30</y>
-          <width>221</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>TEST Camera</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="runCamera">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="geometry">
-         <rect>
-          <x>1050</x>
-          <y>190</y>
-          <width>241</width>
-          <height>61</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>RUN Camera</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="stopCamera">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="geometry">
-         <rect>
-          <x>1050</x>
-          <y>30</y>
-          <width>241</width>
-          <height>61</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>STOP Camera</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_22">
-        <property name="geometry">
-         <rect>
-          <x>400</x>
-          <y>20</y>
-          <width>201</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>Choose Algorithm</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="liveG">
-        <property name="geometry">
-         <rect>
-          <x>410</x>
-          <y>70</y>
-          <width>191</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>G - Gradient</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_7</string>
-        </attribute>
-       </widget>
-       <widget class="QCheckBox" name="liveR">
-        <property name="geometry">
-         <rect>
-          <x>410</x>
-          <y>110</y>
-          <width>191</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>R - Rotation</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_7</string>
-        </attribute>
-       </widget>
-       <widget class="QCheckBox" name="liveH">
-        <property name="geometry">
-         <rect>
-          <x>410</x>
-          <y>150</y>
-          <width>191</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>H - Radial Histogram</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_7</string>
-        </attribute>
-       </widget>
-       <widget class="QCheckBox" name="liveM">
-        <property name="geometry">
-         <rect>
-          <x>410</x>
-          <y>190</y>
-          <width>191</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>M - Mirror</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_7</string>
-        </attribute>
-       </widget>
-       <widget class="QLabel" name="label_23">
-        <property name="geometry">
-         <rect>
-          <x>620</x>
-          <y>300</y>
-          <width>171</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="font">
-         <font>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>Life Take Settings</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_24">
-        <property name="geometry">
-         <rect>
-          <x>590</x>
-          <y>350</y>
-          <width>181</width>
-          <height>71</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Total Frames to Take
- (set 0 for non-stop):</string>
-        </property>
-       </widget>
-       <widget class="QRadioButton" name="saveLifeOutput">
-        <property name="geometry">
-         <rect>
-          <x>590</x>
-          <y>450</y>
-          <width>141</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Save Outputs</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_12</string>
-        </attribute>
-       </widget>
-       <widget class="QLabel" name="label_25">
-        <property name="geometry">
-         <rect>
-          <x>590</x>
-          <y>510</y>
-          <width>251</width>
-          <height>26</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Save Outputs Every (chunks):</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="totalFrames">
-        <property name="geometry">
-         <rect>
-          <x>790</x>
-          <y>360</y>
-          <width>151</width>
-          <height>34</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>1000</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="outputEvery">
-        <property name="geometry">
-         <rect>
-          <x>850</x>
-          <y>510</y>
-          <width>211</width>
-          <height>34</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>100</string>
-        </property>
-       </widget>
-       <widget class="QProgressBar" name="progressBar_Life">
-        <property name="geometry">
-         <rect>
-          <x>580</x>
-          <y>710</y>
-          <width>531</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-       </widget>
-       <widget class="QRadioButton" name="showContinously">
-        <property name="geometry">
-         <rect>
-          <x>590</x>
-          <y>560</y>
-          <width>191</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Show Continously</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_10</string>
-        </attribute>
-       </widget>
-       <widget class="QRadioButton" name="showOnlyOutputted">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="geometry">
-         <rect>
-          <x>590</x>
-          <y>610</y>
-          <width>211</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Show Only Outputted</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_10</string>
-        </attribute>
-       </widget>
-       <widget class="QRadioButton" name="showImagesAngles">
-        <property name="geometry">
-         <rect>
-          <x>850</x>
-          <y>560</y>
-          <width>241</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Plot only Images and angle</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_11</string>
-        </attribute>
-       </widget>
-       <widget class="QRadioButton" name="showNothing">
-        <property name="geometry">
-         <rect>
-          <x>740</x>
-          <y>660</y>
-          <width>191</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Show Nothing</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_10</string>
-        </attribute>
-       </widget>
-       <widget class="QRadioButton" name="dont_SaveLifeOutput">
-        <property name="geometry">
-         <rect>
-          <x>800</x>
-          <y>450</y>
-          <width>211</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Do not Save Outputs</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_12</string>
-        </attribute>
-       </widget>
-       <widget class="QRadioButton" name="showAll">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="geometry">
-         <rect>
-          <x>850</x>
-          <y>610</y>
-          <width>191</width>
-          <height>32</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Plot all results</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">buttonGroup_11</string>
-        </attribute>
-       </widget>
-       <widget class="QLabel" name="label_28">
-        <property name="geometry">
-         <rect>
-          <x>1100</x>
-          <y>370</y>
-          <width>141</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Process Images
+        </item>
+        <item row="18" column="2" colspan="9">
+         <widget class="QProgressBar" name="progressBar_Life">
+          <property name="value">
+           <number>0</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_13">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Choose Camera to Use</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" colspan="2">
+         <widget class="QLabel" name="label_22">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Choose Algorithm</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" colspan="2">
+         <widget class="QCheckBox" name="liveG">
+          <property name="text">
+           <string>G - Gradient</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_7</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="12" column="2" colspan="3">
+         <widget class="QRadioButton" name="saveLifeOutput">
+          <property name="text">
+           <string>Save Outputs</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_12</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="12" column="7" colspan="2">
+         <widget class="QRadioButton" name="dont_SaveLifeOutput">
+          <property name="text">
+           <string>Do not Save Outputs</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_12</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="14" column="2" colspan="4">
+         <widget class="QRadioButton" name="showContinously">
+          <property name="text">
+           <string>Show Continously</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_10</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="10" column="2">
+         <widget class="QLabel" name="label_28">
+          <property name="text">
+           <string>Process Images
 In chunks of:</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="imagesInChunks">
-        <property name="geometry">
-         <rect>
-          <x>1270</x>
-          <y>380</y>
-          <width>113</width>
-          <height>34</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>1</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="grabReference">
-        <property name="geometry">
-         <rect>
-          <x>1050</x>
-          <y>110</y>
-          <width>241</width>
-          <height>61</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>GRAB REFERENCE CHUNK</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_29">
-        <property name="geometry">
-         <rect>
-          <x>700</x>
-          <y>110</y>
-          <width>201</width>
-          <height>61</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Set Angle to Consider
-for the Reference (rad):</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="referenceAngle">
-        <property name="geometry">
-         <rect>
-          <x>700</x>
-          <y>180</y>
-          <width>241</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>0</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_30">
-        <property name="geometry">
-         <rect>
-          <x>1120</x>
-          <y>570</y>
-          <width>151</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Show each frame
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="2" colspan="4">
+         <widget class="QLabel" name="label_24">
+          <property name="text">
+           <string>Total Frames to Take
+ (set 0 for non-stop):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="6" colspan="3">
+         <widget class="QLineEdit" name="totalFrames">
+          <property name="text">
+           <string>1000</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="7">
+         <widget class="QPushButton" name="grabReference">
+          <property name="text">
+           <string>GRAB REFERENCE CHUNK</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="7">
+         <widget class="QLineEdit" name="outputEvery">
+          <property name="text">
+           <string>100</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="7">
+         <widget class="QPushButton" name="stopCamera">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>STOP Camera</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QPushButton" name="testCamera">
+          <property name="text">
+           <string>TEST Camera</string>
+          </property>
+         </widget>
+        </item>
+        <item row="16" column="2">
+         <widget class="QRadioButton" name="showNothing">
+          <property name="text">
+           <string>Show Nothing</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_10</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="14" column="7">
+         <widget class="QRadioButton" name="showImagesAngles">
+          <property name="text">
+           <string>Plot only Images and angle</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_11</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="17" column="2">
+         <widget class="QLabel" name="label_30">
+          <property name="text">
+           <string>Show each frame
  for (ms):</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="lineEdit">
-        <property name="geometry">
-         <rect>
-          <x>1290</x>
-          <y>580</y>
-          <width>113</width>
-          <height>34</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>100</string>
-        </property>
-       </widget>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="7">
+         <widget class="QLineEdit" name="imagesInChunks">
+          <property name="text">
+           <string>1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="liveR">
+          <property name="text">
+           <string>R - Rotation</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_7</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="9" column="7">
+         <widget class="QLineEdit" name="referenceAngle">
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="2">
+         <widget class="QLabel" name="label_23">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Life Take Settings</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPlainTextEdit" name="log_text">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>200</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>300</height>
-       </size>
-      </property>
-      <property name="plainText">
-       <string>&gt; Choose images to work with
-&gt; Press Convert Selected Images to output them and leave them ready.
-&gt; Choose angle compuation algorithm and run it.
-
-Note that if &quot;Convert Selected Images&quot; is not clicked before running the algorithms, this will be done internally anyway.
-</string>
-      </property>
      </widget>
     </item>
    </layout>
@@ -1839,7 +1611,7 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
      <x>0</x>
      <y>0</y>
      <width>1515</width>
-     <height>20</height>
+     <height>31</height>
     </rect>
    </property>
   </widget>
@@ -1848,18 +1620,18 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_10"/>
-  <buttongroup name="buttonGroup_12"/>
-  <buttongroup name="buttonGroup_11"/>
   <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_11"/>
   <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_13"/>
   <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_12"/>
+  <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_8"/>
+  <buttongroup name="buttonGroup_9"/>
   <buttongroup name="buttonGroup_7"/>
   <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_13"/>
  </buttongroups>
 </ui>

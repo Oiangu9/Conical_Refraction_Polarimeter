@@ -1,7 +1,13 @@
 from GUI.Design_ui import *
 from SOURCE.Image_Manager import *
 from SOURCE.Polarization_Obtention_Algorithms import *
-from SOURCE.Camera_Controler import *
+try:
+    from SOURCE.Camera_Controler import *
+    global disable_camera_functionality
+    disable_camera_functionality=False
+except:
+    global diable_camera_functionality
+    disable_camera_functionality=True
 from glob import glob
 import logging
 import sys
@@ -62,6 +68,14 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setupUi(self)
+        self.showMaximized()
+
+        # Fullscreen shortcut
+        self.FullScreenSc = QtWidgets.QShortcut(QtGui.QKeySequence('F11'), self)
+        self.FullScreenSc.activated.connect(self.toggleFullScreen)
+        # Quit shortcut
+        self.quitSc = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
+        self.quitSc.activated.connect(self.close)
 
         # connect plot signal to the plotting function. This way gui handles it when signal emision
         self.plotter_cv2.connect(self.show_cv2_image) #type=QtCore.Qt.BlockingQueuedConnection
@@ -130,6 +144,17 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.strong_worker = Worker( None, None)
         self.strong_worker.finished.connect(lambda:
             self.block_hard_user_interaction(True))
+
+        # disbale camera functionalities if not available their drivers
+        if disable_camera_functionality:
+            self.testCamera.setEnabled(False)
+            self.grabReference.setEnabled(False)
+
+    def toggleFullScreen(self):
+        if self.isFullScreen():
+            self.showNormal()
+        else:
+            self.showFullScreen()
 
     def show_cv2_image(self, image_array, t, label):
         """
