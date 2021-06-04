@@ -68,7 +68,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self, *args, **kwargs):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setupUi(self)
-        self.showMaximized()
+        #self.showMaximized()
 
         # Adapt the font size to screen size
         sizeObject = QtWidgets.QDesktopWidget().screenGeometry(-1)
