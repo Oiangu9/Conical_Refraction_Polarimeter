@@ -78,7 +78,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             font.setPointSize(13)
             self.setFont(font)
         else:
-            self.resize(800, 390)
+            self.resize(800, 400)
 
 
         # Fullscreen shortcut
