@@ -70,6 +70,15 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.showMaximized()
 
+        # Adapt the font size to screen size
+        sizeObject = QtWidgets.QDesktopWidget().screenGeometry(-1)
+        #print(" Screen size : "  + str(sizeObject.height()) + "x"  + str(sizeObject.width()))
+        if(sizeObject.height()<500):
+            font = QtGui.QFont()
+            font.setPointSize(8)
+            self.setFont(font)
+
+
         # Fullscreen shortcut
         self.FullScreenSc = QtWidgets.QShortcut(QtGui.QKeySequence('F11'), self)
         self.FullScreenSc.activated.connect(self.toggleFullScreen)
@@ -566,7 +575,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def initialize_camera(self):
         image_manager = Image_Manager(607 if self.use_i607.isChecked() else 203,
-             self.choose_interpolation_falg(self.interpolation_alg_centering), 
+             self.choose_interpolation_falg(self.interpolation_alg_centering),
 		mainThreadPlotter=self.plotter_cv2)
         if self.liveG.isChecked(): # gradient algorithm########################################
             angle_algorithm = Gradient_Algorithm(image_manager,
