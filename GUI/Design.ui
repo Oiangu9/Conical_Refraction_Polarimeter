@@ -18,7 +18,7 @@
   </property>
   <property name="font">
    <font>
-    <pointsize>7</pointsize>
+    <pointsize>8</pointsize>
     <weight>50</weight>
     <italic>false</italic>
     <bold>false</bold>
@@ -72,7 +72,7 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -1622,7 +1622,7 @@ In chunks of:</string>
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
