@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>813</width>
-    <height>547</height>
+    <height>511</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -72,7 +72,7 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -762,13 +762,6 @@ centered image</string>
             <string>Search Algorithm for G, R and M</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_7">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_14">
-              <property name="text">
-               <string>Initial guess angle delta (Fibo. and Quad.):</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="2" rowspan="9">
              <widget class="QTabWidget" name="tabWidget_4">
               <property name="currentIndex">
@@ -789,16 +782,14 @@ centered image</string>
                 <item row="0" column="1" colspan="3">
                  <widget class="QLabel" name="label_46">
                   <property name="text">
-                   <string>G Radius
-(pixels)</string>
+                   <string>G Radius (pixels)</string>
                   </property>
                  </widget>
                 </item>
                 <item row="0" column="4">
                  <widget class="QLabel" name="label_42">
                   <property name="text">
-                   <string>R, M Angle
-(rad)</string>
+                   <string>R, M Angle (rad)</string>
                   </property>
                  </widget>
                 </item>
@@ -1052,26 +1043,6 @@ Precision:</string>
               </widget>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_60">
-              <property name="maximumSize">
-               <size>
-                <width>200</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>G Radius (pixels)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="label_59">
-              <property name="text">
-               <string>R, M Angle (rad)</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="0">
              <widget class="QLineEdit" name="initial_guess_delta_pix">
               <property name="maximumSize">
@@ -1187,6 +1158,28 @@ Precision:</string>
               </property>
               <property name="checked">
                <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" rowspan="2">
+             <widget class="QLabel" name="label_60">
+              <property name="maximumSize">
+               <size>
+                <width>200</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Initial guess delta (Fib. and Quad.):
+ G Radius (pixels):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1" rowspan="2">
+             <widget class="QLabel" name="label_59">
+              <property name="text">
+               <string>Guess delta
+R, M Angle (rad):</string>
               </property>
              </widget>
             </item>
@@ -1592,16 +1585,6 @@ In chunks of:</string>
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>813</width>
-     <height>21</height>
-    </rect>
-   </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
