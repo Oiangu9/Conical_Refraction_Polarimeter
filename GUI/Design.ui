@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>813</width>
-    <height>511</height>
+    <width>866</width>
+    <height>484</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -72,7 +72,7 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -1592,17 +1592,13 @@ In chunks of:</string>
  <connections/>
  <buttongroups>
   <buttongroup name="buttonGroup_2"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_13"/>
-  <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup_9"/>
-  <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup_12"/>
-  <buttongroup name="buttonGroup_10"/>
-  <buttongroup name="buttonGroup_5"/>
-  <buttongroup name="buttonGroup_11"/>
-  <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_3"/>
  </buttongroups>
 </ui>
