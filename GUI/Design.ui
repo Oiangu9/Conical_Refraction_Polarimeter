@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>866</width>
-    <height>484</height>
+    <height>511</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -72,7 +72,7 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -139,6 +139,9 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
           <property name="checked">
            <bool>true</bool>
           </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup</string>
+          </attribute>
          </widget>
         </item>
         <item row="5" column="3">
@@ -153,6 +156,9 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
           <property name="text">
            <string>Use i203 images</string>
           </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup</string>
+          </attribute>
          </widget>
         </item>
         <item row="7" column="3">
@@ -268,6 +274,9 @@ Interpolation Algorithm:</string>
           <property name="checked">
            <bool>false</bool>
           </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_10</string>
+          </attribute>
          </widget>
         </item>
         <item row="4" column="3">
@@ -275,6 +284,9 @@ Interpolation Algorithm:</string>
           <property name="text">
            <string> ./i203_converted_images</string>
           </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_10</string>
+          </attribute>
          </widget>
         </item>
         <item row="3" column="0">
@@ -372,6 +384,9 @@ Interpolation Algorithm:</string>
               <property name="checked">
                <bool>true</bool>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_3</string>
+              </attribute>
              </widget>
             </item>
             <item row="1" column="0">
@@ -379,6 +394,9 @@ Interpolation Algorithm:</string>
               <property name="text">
                <string>Center in middle pixel of centered image</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_3</string>
+              </attribute>
              </widget>
             </item>
             <item row="1" column="2" colspan="3">
@@ -500,7 +518,7 @@ Interpolation Algorithm:</string>
                <bool>false</bool>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_3</string>
+               <string notr="true">buttonGroup_5</string>
               </attribute>
              </widget>
             </item>
@@ -520,7 +538,7 @@ Interpolation Algorithm:</string>
                <bool>true</bool>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_9</string>
+               <string notr="true">buttonGroup_6</string>
               </attribute>
              </widget>
             </item>
@@ -533,7 +551,7 @@ Interpolation Algorithm:</string>
                <bool>false</bool>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_9</string>
+               <string notr="true">buttonGroup_6</string>
               </attribute>
              </widget>
             </item>
@@ -547,7 +565,7 @@ centered image</string>
                <bool>true</bool>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_3</string>
+               <string notr="true">buttonGroup_5</string>
               </attribute>
              </widget>
             </item>
@@ -566,9 +584,6 @@ centered image</string>
               <property name="text">
                <string>Integrate Interpolation</string>
               </property>
-              <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_9</string>
-              </attribute>
              </widget>
             </item>
             <item row="1" column="4" rowspan="2">
@@ -669,7 +684,7 @@ centered image</string>
                <bool>true</bool>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup</string>
+               <string notr="true">buttonGroup_7</string>
               </attribute>
              </widget>
             </item>
@@ -682,7 +697,7 @@ centered image</string>
                <bool>true</bool>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_5</string>
+               <string notr="true">buttonGroup_8</string>
               </attribute>
              </widget>
             </item>
@@ -695,7 +710,7 @@ centered image</string>
                <bool>true</bool>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_6</string>
+               <string notr="true">buttonGroup_9</string>
               </attribute>
              </widget>
             </item>
@@ -705,7 +720,7 @@ centered image</string>
                <string>Use binning</string>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup</string>
+               <string notr="true">buttonGroup_7</string>
               </attribute>
              </widget>
             </item>
@@ -715,7 +730,7 @@ centered image</string>
                <string>Use centered image center</string>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_5</string>
+               <string notr="true">buttonGroup_8</string>
               </attribute>
              </widget>
             </item>
@@ -725,7 +740,7 @@ centered image</string>
                <string>Mirror Up vs Down Mode (max dif)</string>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_6</string>
+               <string notr="true">buttonGroup_9</string>
               </attribute>
              </widget>
             </item>
@@ -735,7 +750,7 @@ centered image</string>
                <string>Use Affine Mirrorring with interpolation</string>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup</string>
+               <string notr="true">buttonGroup_7</string>
               </attribute>
              </widget>
             </item>
@@ -1139,6 +1154,9 @@ Precision:</string>
               <property name="text">
                <string>Brute Force Grid Search</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_2</string>
+              </attribute>
              </widget>
             </item>
             <item row="7" column="0">
@@ -1149,6 +1167,9 @@ Precision:</string>
               <property name="checked">
                <bool>false</bool>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_2</string>
+              </attribute>
              </widget>
             </item>
             <item row="8" column="0">
@@ -1159,6 +1180,9 @@ Precision:</string>
               <property name="checked">
                <bool>true</bool>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_2</string>
+              </attribute>
              </widget>
             </item>
             <item row="0" column="0" rowspan="2">
@@ -1195,6 +1219,9 @@ R, M Angle (rad):</string>
           <property name="checked">
            <bool>true</bool>
           </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_10</string>
+          </attribute>
          </widget>
         </item>
         <item row="4" column="2">
@@ -1217,7 +1244,7 @@ R, M Angle (rad):</string>
            <string>R - Rotation</string>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_7</string>
+           <string notr="true">buttonGroup_12</string>
           </attribute>
          </widget>
         </item>
@@ -1263,7 +1290,7 @@ R, M Angle (rad):</string>
            <bool>true</bool>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_7</string>
+           <string notr="true">buttonGroup_12</string>
           </attribute>
          </widget>
         </item>
@@ -1280,7 +1307,7 @@ R, M Angle (rad):</string>
            <string>Basler Camera</string>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_2</string>
+           <string notr="true">buttonGroup_11</string>
           </attribute>
          </widget>
         </item>
@@ -1290,7 +1317,7 @@ R, M Angle (rad):</string>
            <string>M - Mirror</string>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_7</string>
+           <string notr="true">buttonGroup_12</string>
           </attribute>
          </widget>
         </item>
@@ -1303,7 +1330,7 @@ R, M Angle (rad):</string>
            <bool>true</bool>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_2</string>
+           <string notr="true">buttonGroup_11</string>
           </attribute>
          </widget>
         </item>
@@ -1323,7 +1350,7 @@ R, M Angle (rad):</string>
            <string>H - Radial Histogram</string>
           </property>
           <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_7</string>
+           <string notr="true">buttonGroup_12</string>
           </attribute>
          </widget>
         </item>
@@ -1402,7 +1429,7 @@ Max (4056 x 3040)</string>
                <bool>true</bool>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_13</string>
+               <string notr="true">buttonGroup_16</string>
               </attribute>
              </widget>
             </item>
@@ -1415,7 +1442,7 @@ Max (4056 x 3040)</string>
                <string>Use RAW RGB format</string>
               </property>
               <attribute name="buttonGroup">
-               <string notr="true">buttonGroup_13</string>
+               <string notr="true">buttonGroup_16</string>
               </attribute>
              </widget>
             </item>
@@ -1437,8 +1464,11 @@ Max (4056 x 3040)</string>
                <string>Show Continously</string>
               </property>
               <property name="checked">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_14</string>
+              </attribute>
              </widget>
             </item>
             <item row="8" column="2" colspan="3">
@@ -1477,6 +1507,9 @@ Max (4056 x 3040)</string>
               <property name="checked">
                <bool>false</bool>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_13</string>
+              </attribute>
              </widget>
             </item>
             <item row="4" column="1">
@@ -1484,6 +1517,12 @@ Max (4056 x 3040)</string>
               <property name="text">
                <string>Do not Save Outputs</string>
               </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_13</string>
+              </attribute>
              </widget>
             </item>
             <item row="4" column="2">
@@ -1517,6 +1556,9 @@ for the Reference (rad):</string>
               <property name="text">
                <string>Show Only Outputted</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_14</string>
+              </attribute>
              </widget>
             </item>
             <item row="2" column="2">
@@ -1524,6 +1566,9 @@ for the Reference (rad):</string>
               <property name="text">
                <string>Show Nothing</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_14</string>
+              </attribute>
              </widget>
             </item>
             <item row="1" column="3">
@@ -1534,6 +1579,9 @@ for the Reference (rad):</string>
               <property name="checked">
                <bool>true</bool>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_15</string>
+              </attribute>
              </widget>
             </item>
             <item row="2" column="3">
@@ -1544,6 +1592,9 @@ for the Reference (rad):</string>
               <property name="text">
                <string>Plot all results</string>
               </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_15</string>
+              </attribute>
              </widget>
             </item>
             <item row="1" column="1">
@@ -1591,14 +1642,21 @@ In chunks of:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_2"/>
-  <buttongroup name="buttonGroup_7"/>
-  <buttongroup name="buttonGroup_5"/>
-  <buttongroup name="buttonGroup_9"/>
   <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_13"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_2"/>
   <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_8"/>
+  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_11"/>
+  <buttongroup name="buttonGroup_12"/>
+  <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup_14"/>
+  <buttongroup name="buttonGroup_15"/>
+  <buttongroup name="buttonGroup_16"/>
  </buttongroups>
 </ui>
