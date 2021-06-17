@@ -72,20 +72,13 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
         <string>Choose Output Directory and Input Test Images</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="2">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Image Directory:</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="2">
          <widget class="QPushButton" name="change_image_directory">
           <property name="text">
@@ -226,6 +219,13 @@ Interpolation Algorithm:</string>
           </column>
          </widget>
         </item>
+        <item row="0" column="2" colspan="2">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Input Image Directory:</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_2">
@@ -317,7 +317,7 @@ Interpolation Algorithm:</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
@@ -780,7 +780,7 @@ centered image</string>
             <item row="0" column="2" rowspan="9">
              <widget class="QTabWidget" name="tabWidget_4">
               <property name="currentIndex">
-               <number>0</number>
+               <number>1</number>
               </property>
               <widget class="QWidget" name="tab_12">
                <attribute name="title">
@@ -1633,6 +1633,289 @@ In chunks of:</string>
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab_15">
+       <attribute name="title">
+        <string>Simulate Theoretical Ring</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_12">
+        <item row="6" column="8">
+         <widget class="QLabel" name="label_44">
+          <property name="text">
+           <string>z_max:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="6">
+         <widget class="QLineEdit" name="ymax">
+          <property name="text">
+           <string>15</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="9">
+         <widget class="QLineEdit" name="zmin">
+          <property name="text">
+           <string>-2</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="5">
+         <widget class="QLabel" name="label_51">
+          <property name="text">
+           <string>Input Beam:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_32">
+          <property name="text">
+           <string>Laser Waist Radius (w0):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="6">
+         <widget class="QComboBox" name="beam">
+          <item>
+           <property name="text">
+            <string>Gaussian</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="7" column="6">
+         <widget class="QLineEdit" name="ny">
+          <property name="text">
+           <string>400</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="5">
+         <widget class="QLabel" name="label_36">
+          <property name="text">
+           <string>y_min:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="0" colspan="3">
+         <widget class="QLabel" name="label_52">
+          <property name="text">
+           <string>Input Beam Polarization Jones Vec
+(note i is 1j).:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="3" colspan="3">
+         <widget class="QLineEdit" name="polar0">
+          <property name="text">
+           <string>1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="6" colspan="2">
+         <widget class="QLineEdit" name="polar1">
+          <property name="text">
+           <string>1j</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="8">
+         <widget class="QLabel" name="label_43">
+          <property name="text">
+           <string>z_min:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="w0">
+          <property name="text">
+           <string>1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="8">
+         <widget class="QLabel" name="label_48">
+          <property name="text">
+           <string>n_z:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="5">
+         <widget class="QLabel" name="label_50">
+          <property name="text">
+           <string>n_k:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="label_14">
+          <property name="font">
+           <font>
+            <italic>false</italic>
+           </font>
+          </property>
+          <property name="text">
+           <string>Set Simualtion Parameters</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="5">
+         <widget class="QLabel" name="label_37">
+          <property name="text">
+           <string>y_max:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="R0">
+          <property name="text">
+           <string>10</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="6">
+         <widget class="QLineEdit" name="nk">
+          <property name="text">
+           <string>500</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_33">
+          <property name="text">
+           <string>Geometric Radius (R0):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="6">
+         <widget class="QLineEdit" name="kmax">
+          <property name="text">
+           <string>50</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QLabel" name="label_49">
+          <property name="text">
+           <string>k_max:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="5">
+         <widget class="QLabel" name="label_47">
+          <property name="text">
+           <string>n_y:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="6">
+         <widget class="QLineEdit" name="ymin">
+          <property name="text">
+           <string>-15</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="9">
+         <widget class="QLineEdit" name="nz">
+          <property name="text">
+           <string>5</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="9">
+         <widget class="QLineEdit" name="zmax">
+          <property name="text">
+           <string>2</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_34">
+          <property name="text">
+           <string>x_min:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLineEdit" name="xmin">
+          <property name="text">
+           <string>-15</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="label_35">
+          <property name="text">
+           <string>x_max:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1">
+         <widget class="QLineEdit" name="xmax">
+          <property name="text">
+           <string>15</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QLabel" name="label_45">
+          <property name="text">
+           <string>n_x:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="1">
+         <widget class="QLineEdit" name="nx">
+          <property name="text">
+           <string>400</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0">
+         <widget class="QRadioButton" name="fullSimulation">
+          <property name="text">
+           <string>Compute Full Solution</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_17</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="9" column="1">
+         <widget class="QRadioButton" name="approxSimulation">
+          <property name="text">
+           <string>Compute Approximation</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_17</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="0" column="8" colspan="2">
+         <widget class="QPushButton" name="createImages">
+          <property name="text">
+           <string>Create Images</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="8">
+         <widget class="QLabel" name="label_53">
+          <property name="text">
+           <string>n:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="9">
+         <widget class="QLineEdit" name="n">
+          <property name="text">
+           <string>1.5</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -1642,21 +1925,22 @@ In chunks of:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_2"/>
-  <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup_5"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_7"/>
   <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_15"/>
+  <buttongroup name="buttonGroup_2"/>
   <buttongroup name="buttonGroup_10"/>
-  <buttongroup name="buttonGroup_11"/>
   <buttongroup name="buttonGroup_12"/>
   <buttongroup name="buttonGroup_13"/>
   <buttongroup name="buttonGroup_14"/>
-  <buttongroup name="buttonGroup_15"/>
   <buttongroup name="buttonGroup_16"/>
+  <buttongroup name="buttonGroup_11"/>
+  <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup_17"/>
  </buttongroups>
 </ui>

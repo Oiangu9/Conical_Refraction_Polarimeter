@@ -331,8 +331,8 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
         im3=image.copy()
         im2[np.logical_not(mask)]=0
         im3[mask]=0
-        self.save_images(im2.astype(np.uint8), './pene', str(angle)+'A')
-        self.save_images(im3.astype(np.uint8), './pene', str(angle)+'B')
+        self.save_images(im2.astype(np.uint8), './out', str(angle)+'A')
+        self.save_images(im3.astype(np.uint8), './out', str(angle)+'B')
         return udlr*np.abs(np.sum(image[mask])-np.sum(image[np.logical_not(mask)]))
 
     def prepare_arguments(self, im):

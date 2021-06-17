@@ -3,6 +3,7 @@
 from GUI.Design_ui import *
 from SOURCE.Image_Manager import *
 from SOURCE.Polarization_Obtention_Algorithms import *
+from SOURCE.Theoretical_Ring_Simulator import *
 try:
     from SOURCE.Camera_Controler import *
     global disable_camera_functionality
@@ -87,9 +88,10 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # Fullscreen shortcut
         self.FullScreenSc = QtWidgets.QShortcut(QtGui.QKeySequence('F11'), self)
         self.FullScreenSc.activated.connect(self.toggleFullScreen)
-        # Quit shortcut
+        # Quit shortcuts
         self.quitSc = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
         self.quitSc.activated.connect(self.close)
+        
 
         # connect plot signal to the plotting function. This way gui handles it when signal emision
         self.plotter_cv2.connect(self.show_cv2_image) #type=QtCore.Qt.BlockingQueuedConnection
@@ -153,6 +155,9 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.grabReference.clicked.connect(self.run_grab_reference)
         self.stopCamera.clicked.connect(self.stop_camera)
         self.runCamera.clicked.connect(self.run_camera)
+
+        # When Simulation button is pressed do it
+        self.createImages.clicked.connect(self.run_simulations)
 
         # Initialize a worker for the hard tasks
         self.strong_worker = Worker( None, None)
@@ -241,6 +246,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.run_histogram_algorithm.setEnabled(state)
         self.testCamera.setEnabled(state)
         self.grabReference.setEnabled(state)
+        self.createImages.setEnabled(state)
 
     def initialize_Angle_Calculator_instance_convert_images(self):
         """
@@ -684,8 +690,35 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.camera=Basler_Camera()
 
+    def run_simulations(self):
+        # Block everything to user
+        self.block_hard_user_interaction(False)
+        # Run worker for non-blocking computations
+        self.strong_worker.set_new_task_and_arguments(
+            self._run_simulations, []
+        )
+        self.strong_worker.start()
+
+    def _run_simulations(self):
+        simulator = RingSimulator( n=float(self.n.text()),
+            w0=float(self.w0.text()), R0=float(self.R0.text()), a0=1.0,
+            max_k=float(self.kmax.text()), num_k=int(self.nk.text()), nx=int(self.nx.text()),
+            ny=int(self.ny.text()), nz=int(self.nz.text()), xmin=float(self.xmin.text()),
+            xmax=float(self.xmax.text()),ymin=float(self.ymin.text()),ymax=float(self.ymax.text()),
+            zmin=float(self.zmin.text()), zmax=float(self.zmax.text()) )
+
+        inJones=np.array([eval(self.polar0.text()), eval(self.polar1.text())])
 
 
+        if self.fullSimulation.isChecked():
+            path=f"{self.output_directory.text()}/Simulated_Rings/Full"
+            os.makedirs(path, exist_ok=True)
+            simulator.compute_intensity_Trupin_and_Plot( inJones, path )
+        else:
+            path=f"{self.output_directory.text()}/Simulated_Rings/Approx"
+            os.makedirs(path, exist_ok=True)
+            simulator.compute_intensity_Todor_and_Plot(
+                np.arctan2(inJones.real[0], inJones.real[1]), path )
 
 
 
