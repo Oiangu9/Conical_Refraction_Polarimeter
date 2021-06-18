@@ -62,16 +62,16 @@ class RingSimulator():
         #self.I=np.abs(self.B0)**2+np.abs(self.B1)**2
 
     def _plot_Intensity(self, output_path, input_polarization):
-        for iz in range(self.nz):
+        for iz, z in enumerate(self.zs):
             plt.imshow(self.I[:,:,iz], cmap='hot', origin='upper', interpolation="none",
                 extent=[self.xmin,self.xmax,self.ymin,self.ymax])
             plt.colorbar()
-            plt.title(f"Input Polarization: {str(input_polarization)} \nz={self.zs[iz]}")
+            plt.title(f"Input Polarization: {str(input_polarization)} \nz={z}")
             plt.xlabel("x")
             plt.ylabel("y")
-            plt.savefig(f"{output_path}/{str(input_polarization)}_{iz}.png")
+            plt.savefig(f"{output_path}/{str(input_polarization)}_{z}.png")
             plt.clf()
-            cv2.imwrite(f"{output_path}/Raw_{str(input_polarization)}_{iz}.png",
+            cv2.imwrite(f"{output_path}/Raw_{str(input_polarization)}_{z}.png",
                 (65535*self.I[:,:,iz]/np.max(self.I[:,:,iz])).astype(np.uint16))
 
 
@@ -90,6 +90,13 @@ class RingSimulator():
 
 if __name__ == "__main__":
 
-    simulator=RingSimulator( n=1.5, w0=1, R0=10, a0=1.0, max_k=50, num_k=1000, nx=300, ny=320, nz=1, xmin=-15, xmax=15, ymin=-15, ymax=15, zmin=0, zmax=0)
-    simulator.compute_intensity_Trupin_and_Plot(np.array([1,1j])/np.sqrt(2))
-    simulator.compute_intensity_Todor_and_Plot(0)
+    simulator=RingSimulator( n=1.5, w0=1, R0=10, a0=1.0, max_k=50, num_k=1000, nx=100, ny=100, nz=1, xmin=-15, xmax=15, ymin=-15, ymax=15, zmin=0, zmax=0)
+    simulator.compute_intensity_Trupin_and_Plot( np.array([1,0]), '.')
+    simulator.compute_intensity_Trupin_and_Plot( np.array([0,1]), '.')
+    simulator.compute_intensity_Trupin_and_Plot( np.array([1,-1])/np.sqrt(2), '.')
+    simulator.compute_intensity_Trupin_and_Plot( np.array([1,1])/np.sqrt(2), '.')
+    simulator.compute_intensity_Trupin_and_Plot( np.array([8, np.pi])/np.sqrt(np.pi**2+64), '.' )
+    simulator.compute_intensity_Trupin_and_Plot( np.array([-8, np.pi])/np.sqrt(np.pi**2+64), '.' )
+    simulator.compute_intensity_Trupin_and_Plot( np.array([-8, -np.pi])/np.sqrt(np.pi**2+64), '.' )
+    simulator.compute_intensity_Trupin_and_Plot( np.array([8, -np.pi])/np.sqrt(np.pi**2+64), '.' )
+    simulator.compute_intensity_Todor_and_Plot(0, '.')

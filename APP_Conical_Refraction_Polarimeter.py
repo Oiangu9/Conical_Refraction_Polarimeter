@@ -91,7 +91,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # Quit shortcuts
         self.quitSc = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
         self.quitSc.activated.connect(self.close)
-        
+
 
         # connect plot signal to the plotting function. This way gui handles it when signal emision
         self.plotter_cv2.connect(self.show_cv2_image) #type=QtCore.Qt.BlockingQueuedConnection
@@ -196,7 +196,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             if os.path.isdir(path_info):
                 self.load_project_structure(path_info, parent_itm)
                 parent_itm.setIcon(0, QtGui.QIcon(self.master_directory+'/GUI/ICONS/file_cabinet.ico'))
-            elif path_info[-4:]==".tif":
+            elif path_info[-4:]==".tif" or path_info[-4:]==".png" or path_info[-4:]==".jpg":
                 parent_itm.setIcon(0, QtGui.QIcon(self.master_directory+'/GUI/ICONS/photo.ico'))
             else:
                 parent_itm.setIcon(0, QtGui.QIcon(self.master_directory+'/GUI/ICONS/file_text.ico'))
@@ -215,7 +215,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             while(item!=None):
                 path='/'+item.text(0)+path
                 item=item.parent()
-            files.append(path_till_tree[:-1]+path)
+            files.append(path_till_tree+path)
         return files
 
     def choose_directory(self, label, display_widget):
@@ -251,7 +251,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
     def initialize_Angle_Calculator_instance_convert_images(self):
         """
             Initializes an instance of the Image_Manager class and executes the
-            conversion of the raw images to the selected mode i607 or i203. The output images
+            conversion of the raw images to the selected mode iX, i607 or i203. The output images
             will be saved in the output directory.
 
         """
@@ -259,7 +259,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.block_hard_user_interaction(False)
 
         # save the mode chosen by the user
-        self.mode = 607 if self.use_i607.isChecked() else 203
+        self.mode = 607 if self.use_i607.isChecked() else 203 if self.use_i203.isChecked() else int(self.iX.text())
+
         # initialize instance
         self.image_loader = Image_Manager(self.mode,
             self.choose_interpolation_falg(self.interpolation_alg_centering))
@@ -282,7 +283,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # create directory for outputing the resulting converted images
         os.makedirs(self.output_directory.text()+f"/i{self.mode}_converted_images/", exist_ok=True)
         # convert the images
-        self.image_loader.compute_raw_to_i607_or_i203(self.output_directory.text()+
+        self.image_loader.compute_raw_to_iX(self.output_directory.text()+
                                                     f"/i{self.mode}_converted_images/")
         self.image_loader_initialized=True
 
@@ -503,7 +504,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.use_current_images.isChecked():
             # make sure there is an instance of image_loader initilized!
             if not self.image_loader_initialized:
-                self.mode = 607 if self.use_i607.isChecked() else 203
+                self.mode = 607 if self.use_i607.isChecked() else 203 if self.use_i203.isChecked() else int(self.iX.text())
                 # initialize instance
                 self.image_loader = Image_Manager(self.mode,
                     self.choose_interpolation_falg(self.interpolation_alg_centering))
@@ -511,7 +512,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                 if ret==1:
                     return 1
         else: # use all the images in the output directory
-            self.mode = 607 if self.use_converted_i607.isChecked() else 203
+            self.mode = 607 if self.use_i607.isChecked() else 203 if self.use_i203.isChecked() else int(self.iX.text())
             self.image_loader = Image_Manager(self.mode,
                 self.choose_interpolation_falg(self.interpolation_alg_centering))
             ret = self.image_loader.import_converted_images(
@@ -585,7 +586,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.camera.stop_camera=True
 
     def initialize_camera(self):
-        image_manager = Image_Manager(607 if self.use_i607.isChecked() else 203,
+        image_manager = Image_Manager(607 if self.use_i607.isChecked() else 203 if self.use_i203.isChecked() else int(self.iX.text()),
              self.choose_interpolation_falg(self.interpolation_alg_centering),
 		mainThreadPlotter=self.plotter_cv2)
         if self.liveG.isChecked(): # gradient algorithm########################################
@@ -718,7 +719,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             path=f"{self.output_directory.text()}/Simulated_Rings/Approx"
             os.makedirs(path, exist_ok=True)
             simulator.compute_intensity_Todor_and_Plot(
-                np.arctan2(inJones.real[0], inJones.real[1]), path )
+                2*np.arctan2(np.tan(inJones.real[1], inJones.real[0])), path ) # Arregleu! Eta gero bidali serverrera eta ein simulaziño guapo batzuk!
 
 
 

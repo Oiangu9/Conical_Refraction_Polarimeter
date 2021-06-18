@@ -9,7 +9,7 @@ class Image_Manager:
     def __init__(self, mode, interpolation_flag, mainThreadPlotter=None,
                     previs_ms=1000):
         """
-            Mode is expected to be 607 or 203, depending of whether i607 or i203 is desired to be
+            Mode is expected to be X, 607 or 203, depending of whether iX, i607 or i203 is desired to be
             used for all the algorithms.
         """
         self.mode = mode
@@ -24,7 +24,7 @@ class Image_Manager:
         """
             A list of full paths (strings) is expected with the images in it.
             This will import all the raw images into numpy arrays, ready to be converted into
-            i607 or i203. In fact, in the first verision, we will not check if they have the
+            iX, i607 or i203. In fact, in the first verision, we will not check if they have the
             same dimensions, and we will simply save them all into a single numpuy tensor for
             the sake of efficiency.
 
@@ -126,9 +126,9 @@ class Image_Manager:
             ).transpose()
 
 
-    def compute_raw_to_i607_or_i203(self, output_path=None):
+    def compute_raw_to_iX(self, output_path=None):
         """
-            Computes the converison to i607 or i203 and saves the resulting images as
+            Computes the converison to iX, i607 or i203 and saves the resulting images as
             png in the output directory provided as argument.
 
             The function assumes the desired images to be converted are saved in self.raw_images.
@@ -141,7 +141,7 @@ class Image_Manager:
         # Cropear after padding y computa again el centro de masas -ein funkiño bat izetie-
         # Aplica una translacion en coordenadas proyectovas por t1,t2 pa centrarlo exactamente
 
-        # crop the iamges with size (607+1+607)^2 or (203+1+203)^2 leaving the gravity center in
+        # crop the iamges with size (X+1+X)^2, (607+1+607)^2 or (203+1+203)^2 leaving the gravity center in
         # the central pixel of the image. In case the image is not big enough for the cropping,
         # a 0 padding will be made.
         self.centered_ring_images = np.zeros(
@@ -202,7 +202,7 @@ class Image_Manager:
 
     def import_converted_images(self, path_list):
         """
-        Instead of computing the i607or i203 images form raw images, we could also import
+        Instead of computing the iX, i607or i203 images form raw images, we could also import
         them directly, already converted. path_list should provide a list with the paths
         to converted images of the self.mode kind.
 
