@@ -159,6 +159,10 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # When Simulation button is pressed do it
         self.createImages.clicked.connect(self.run_simulations)
 
+        # When full test button is pressed do it
+        self.run_full_test.clicked.connect(self.run_full_benchmark)
+
+
         # Initialize a worker for the hard tasks
         self.strong_worker = Worker( None, None)
         self.strong_worker.finished.connect(lambda:
@@ -247,6 +251,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.testCamera.setEnabled(state)
         self.grabReference.setEnabled(state)
         self.createImages.setEnabled(state)
+        self.run_full_test.setEnabled(state)
 
     def initialize_Angle_Calculator_instance_convert_images(self):
         """
@@ -706,7 +711,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             max_k=float(self.kmax.text()), num_k=int(self.nk.text()), nx=int(self.nx.text()),
             ny=int(self.ny.text()), nz=int(self.nz.text()), xmin=float(self.xmin.text()),
             xmax=float(self.xmax.text()),ymin=float(self.ymin.text()),ymax=float(self.ymax.text()),
-            zmin=float(self.zmin.text()), zmax=float(self.zmax.text()) )
+            zmin=float(self.zmin.text()), zmax=float(self.zmax.text()),
+            sim_chunk_x=int(self.sim_chunk_x.text()), sim_chunk_y=int(self.sim_chunk_y.text()) )
 
         inJones=np.array([eval(self.polar0.text()), eval(self.polar1.text())])
 
@@ -719,7 +725,244 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             path=f"{self.output_directory.text()}/Simulated_Rings/Approx"
             os.makedirs(path, exist_ok=True)
             simulator.compute_intensity_Todor_and_Plot(
-                2*np.arctan2(np.tan(inJones.real[1], inJones.real[0])), path ) # Arregleu! Eta gero bidali serverrera eta ein simulaziño guapo batzuk!
+                np.arctan2(inJones.real[1], inJones.real[0]), path )
+
+    def run_full_benchmark(self):
+        # Block everything to user
+        self.block_hard_user_interaction(False)
+        # Run worker for non-blocking computations
+        self.strong_worker.set_new_task_and_arguments(
+            self._run_full_benchmark, []
+        )
+        self.strong_worker.start()
+
+    def _run_full_benchmark(self):
+        ret = self._check_image_loader_ready()
+        if ret==1: # failed!
+            return 1
+        logging.info(" Image loader ready!")
+        # Prepare dictionary to register all the information
+        benchu = {'Image Name':[], 'Algorithm':[], 'Time':[], 'Found Optimal':[], 'Optimal Precision':[], 'Found Polarization':[], 'Ground Truth Polarization':[], 'True Precision':[]}
+        # image names
+        image_names=self.image_loader.raw_images_names
+        # Get Ground Truth Polarization angles if simulated else set to Null
+        ground_truths={}
+        for name in image_names:
+            try:
+                ground_truths[name]=float(name.split('PolAngle_')[1].split('_')[0])
+            except:
+                ground_truths[name]=np.nan
+        # Function to extract algorithm run information into benchmark dictionary
+        def to_benchmark_dict(bench, alg, images, alg_name, ground_truths):
+            for key, name in zip(alg.times.keys(), images):
+                benchu['Image Name'].append(name)
+                benchu['Algorithm'].append(alg_name)
+                if type(alg.times[key]) is dict: # to treat brute force output stages
+                    benchu['Time'].append(sum(list(alg.times[key].values())))
+                    benchu['Found Optimal'].append(alg.optimals[key]['Stage_2'])
+                    benchu['Optimal Precision'].append(alg.precisions[key]['Stage_2'])
+                else:
+                    benchu['Time'].append(alg.times[key])
+                    benchu['Optimal Precision'].append(alg.precisions[key])
+                    try:
+                        benchu['Found Optimal'].append(alg.optimals[key])
+                    except:
+                        benchu['Found Optimal'].append(np.nan)
+
+                benchu['Found Polarization'].append(alg.angles[key]/2)
+                benchu['Ground Truth Polarization'].append(ground_truths[name])
+                benchu['True Precision'].append(abs(ground_truths[name]-alg.angles[key]))
+
+        import pandas as pd
+        import datetime
+        # Prepare Directories
+        stamp=datetime.datetime.now()
+        path=self.output_directory.text()+f"/Full_Benchmark/{stamp}/"
+        os.makedirs(path, exist_ok=True)
+
+        # ALGORITHM G ###################################################################
+        # Initialize instance of Gradient Algorithm calculator
+        gradient_algorithm = Gradient_Algorithm(self.image_loader,
+            eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
+            float(self.initial_guess_delta_pix.text()),
+            self.use_exact_grav_G.isChecked())
+        # Get arguments and run algorithm depending on the chosen stuff
+        logging.info(" Running Gradient Algorithm...")
+        gradient_algorithm.brute_force_search(
+            [float(self.angle_step_1_pix.text()), float(self.angle_step_2_pix.text()),
+             float(self.angle_step_3_pix.text())], [float(self.zoom1_ratio.text()),
+             float(self.zoom2_ratio.text())])
+        gradient_algorithm.save_result_plots_brute_force(path)
+        to_benchmark_dict(benchu, gradient_algorithm, image_names, "G - Brute Force", ground_truths)
+
+        gradient_algorithm.reInitialize(self.image_loader)
+        gradient_algorithm.fibonacci_ratio_search(
+            float(self.precision_fib_pix.text()), int(self.max_points_fib.text()),
+            float(self.cost_tolerance_fib.text())
+        )
+        gradient_algorithm.save_result_plots_fibonacci_or_quadratic(path)
+        to_benchmark_dict(benchu, gradient_algorithm, image_names, "G - Fibonacci Ratio", ground_truths)
+
+        gradient_algorithm.reInitialize(self.image_loader)
+        gradient_algorithm.quadratic_fit_search(
+            float(self.precision_quad_pix.text()),
+            int(self.max_it_quad.text()),
+            float(self.cost_tolerance_quad.text())
+        )
+        gradient_algorithm.save_result_plots_fibonacci_or_quadratic(path)
+        to_benchmark_dict(benchu, gradient_algorithm, image_names, "G - Quadratic Fit", ground_truths)
+
+        # ALGORITHM R ###################################################################
+        # Initialize instance of Rotation Algorithm calculator
+        rotation_algorithm = Rotation_Algorithm(self.image_loader,
+            eval(self.theta_min_R.text()), eval(self.theta_max_R.text()),
+            self.choose_interpolation_falg(self.interpolation_alg_opt),
+            float(self.initial_guess_delta_rad.text()), self.use_exact_grav_R.isChecked())
+        # Get arguments and run algorithm depending on the chosen stuff
+        logging.info(" Running Rotation Algorithm...")
+        rotation_algorithm.brute_force_search(
+                [float(self.angle_step_1_rad.text()), float(self.angle_step_2_rad.text()),
+                 float(self.angle_step_3_rad.text())], [float(self.zoom1_ratio.text()),
+                 float(self.zoom2_ratio.text())]
+            )
+        rotation_algorithm.save_result_plots_brute_force(path)
+        to_benchmark_dict(benchu, rotation_algorithm, image_names, "R - Brute Force", ground_truths)
+
+        rotation_algorithm.reInitialize(self.image_loader)
+        rotation_algorithm.fibonacci_ratio_search(
+                float(self.precision_fib_rad.text()), int(self.max_points_fib.text()),
+                float(self.cost_tolerance_fib.text())
+            )
+        rotation_algorithm.save_result_plots_fibonacci_or_quadratic(path)
+        to_benchmark_dict(benchu, rotation_algorithm, image_names, "R - Fibonacci Ratio", ground_truths)
+
+        rotation_algorithm.reInitialize(self.image_loader)
+        rotation_algorithm.quadratic_fit_search(
+                float(self.precision_quad_rad.text()),
+                int(self.max_it_quad.text()),
+                float(self.cost_tolerance_quad.text())
+            )
+        rotation_algorithm.save_result_plots_fibonacci_or_quadratic(path)
+        to_benchmark_dict(benchu, rotation_algorithm, image_names, "R - Quadratic Fit", ground_truths)
+
+        # ALGORITHM H #########################################################
+        # Initialize instance of Histogram Algorithm calculator
+        histogram_algorithm = Radial_Histogram_Algorithm(self.image_loader,
+            self.use_exact_grav_H.isChecked())
+        # Get arguments and run algorithm depending on the chosen stuff
+        logging.info(" Running Histogram Algorithm...")
+        """
+        histogram_algorithm.compute_histogram_masking(
+                float(self.angle_bin_size_H.text())
+                )
+
+        to_benchmark_dict(benchu, histogram_algorithm, image_names, "H - Masking Histogram", ground_truths)
+        histogram_algorithm.save_result_plots(path, "Masking_Histogram")
+        """
+        histogram_algorithm.reInitialize(self.image_loader)
+        histogram_algorithm.compute_histogram_binning(
+                float(self.angle_bin_size_H.text())
+            )
+        to_benchmark_dict(benchu, histogram_algorithm, image_names, "H - Binning Histogram", ground_truths)
+        histogram_algorithm.save_result_plots(path, "Binning_Histogram")
+
+        #histogram_algorithm.reInitialize(self.image_loader)
+        #histogram_algorithm.compute_histogram_interpolate(
+            #float(self.angle_bin_size_H.text())
+            #)
+        #to_benchmark_dict(benchu, histogram_algorithm, image_names, "H - Interpolating Histogram", ground_truths)
+        #histogram_algorithm.save_result_plots(path, "Interpolating_Histogram")
+
+        #if self.fit_cos_H.isChecked():
+        #    histogram_algorithm.refine_by_cosine_fit()
+
+        # ALGORITHM M ###########################################################################
+        # Initialize instance of Rotation Algorithm calculator
+
+        for method, full_meth in zip(["mask", "bin", "aff"],["- Masking", "- Binning", " - Affine"]):
+            mirror_algorithm = Mirror_Flip_Algorithm(self.image_loader,
+                eval(self.theta_min_M.text()), eval(self.theta_max_M.text()),
+                self.choose_interpolation_falg(self.interpolation_alg_opt),
+                float(self.initial_guess_delta_rad.text()), method, self.left_vs_right_M.isChecked(), self.use_exact_grav_M.isChecked())
+            # Get arguments and run algorithm depending on the chosen stuff
+            logging.info(" Running Mirror Flip Algorithm...")
+            mirror_algorithm.reInitialize(self.image_loader)
+            mirror_algorithm.brute_force_search(
+                    [float(self.angle_step_1_rad.text()), float(self.angle_step_2_rad.text()),
+                     float(self.angle_step_3_rad.text())], [float(self.zoom1_ratio.text()),
+                     float(self.zoom2_ratio.text())]
+                )
+            mirror_algorithm.save_result_plots_brute_force(path)
+            to_benchmark_dict(benchu, mirror_algorithm, image_names, "M - Brute Force"+full_meth, ground_truths)
+
+            mirror_algorithm.reInitialize(self.image_loader)
+            mirror_algorithm.fibonacci_ratio_search(
+                    float(self.precision_fib_rad.text()), int(self.max_points_fib.text()),
+                    float(self.cost_tolerance_fib.text())
+                )
+            mirror_algorithm.save_result_plots_fibonacci_or_quadratic(path)
+            to_benchmark_dict(benchu, mirror_algorithm, image_names, "M - Fibonacci Ratio"+full_meth, ground_truths)
+
+            mirror_algorithm.reInitialize(self.image_loader)
+            mirror_algorithm.quadratic_fit_search(
+                    float(self.precision_quad_rad.text()),
+                    int(self.max_it_quad.text()),
+                    float(self.cost_tolerance_quad.text())
+                )
+            mirror_algorithm.save_result_plots_fibonacci_or_quadratic(path)
+            to_benchmark_dict(benchu, mirror_algorithm, image_names, "M - Quadratic Fit"+full_meth, ground_truths)
+
+        benchu=pd.DataFrame(benchu).sort_values(by=['Image Name'])
+        logging.info(f"BENCHMARK RESULTS:\n{benchu}")
+        benchu.to_csv(path+"/Benchmark.csv")
+        benchu.to_excel(path+"/Benchmark.xlsx")
+        self.plot_benchmark_results(benchu, image_names, path)
+
+
+    def plot_benchmark_results(self, benchu, images, path):
+        fig, ax = plt.subplots(1,1,figsize=(20,12))
+        barWidth = 0.15
+        for name in images:
+            ax.set_title('Benchmark on Image:\n'+name+'\n')
+            benchm = benchu[benchu["Image Name"]==name]
+            r1 = np.arange(len(benchm["Time"]))
+
+            ax.bar(r1, benchm["Time"], color='#7f6d5f', width=barWidth, edgecolor='white', label='Time')
+            ax.set_ylabel("Time (s)", color='#7f6d5f')
+            ax.tick_params(axis='y', colors='#7f6d5f')
+
+            ax2=ax.twinx()
+            ax2.bar([x + barWidth for x in r1], benchm["Optimal Precision"], color='#557f2d', width=barWidth, edgecolor='white', label='Set Precision')
+            ax2.bar([x + 2*barWidth for x in r1], benchm["True Precision"], color='blue', width=barWidth, edgecolor='white', label='True Precision')
+            ax2.set_ylabel("Precision", color='blue')
+            ax2.tick_params(axis='y', colors='blue')
+            ax2.set_ylim((0,1))
+
+            ax3=ax.twinx()
+            ax3.bar([x + 3*barWidth for x in r1], benchm["Found Polarization"], color='orange', width=barWidth, edgecolor='white', label='Found Polarization')
+            ax3.bar([x + 4*barWidth for x in r1  ], benchm["Ground Truth Polarization"], color='violet', width=barWidth, edgecolor='white', label='G.True Polarization')
+            ax3.set_ylabel("Polarization (rad)", color='orange')
+            ax3.tick_params(axis='y', colors='orange')
+
+
+            ax3.spines['right'].set_position(('axes', 1.07))
+            ax3.set_frame_on(True)
+            ax3.patch.set_visible(False)
+
+            fig.legend(loc="upper right")
+
+            #ax.set_xlabel('Algorithm', fontweight='bold')
+            plt.xticks([r + barWidth for r in range(len(benchm["Time"]))], benchm['Algorithm'])
+            ax.tick_params(axis='x', rotation=30)
+            ax3.grid(True,color='#7f6d5f')
+            #ax2.grid(True, color='blue')
+            #ax3.grid(True, color='orange')
+            plt.savefig(path+f"/BENCH_{name}.png")
+            ax.clear()
+            ax2.clear()
+            ax3.clear()
+
+
 
 
 

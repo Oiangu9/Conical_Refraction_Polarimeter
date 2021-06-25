@@ -120,10 +120,10 @@ class Image_Manager:
 
         # Compute mass center for intensity (in each image axis)
         # [N_images, 2] (h_center,w_center)
-        return np.stack(
+        return np.nan_to_num( np.stack(
             (np.dot(intensity_in_h, np.arange(images.shape[-2]))/total_intensity,
              np.dot(intensity_in_w, np.arange(images.shape[-1]))/total_intensity)
-            ).transpose()
+            ).transpose() )
 
 
     def compute_raw_to_iX(self, output_path=None):

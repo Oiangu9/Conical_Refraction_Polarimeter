@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>866</width>
-    <height>511</height>
+    <height>513</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -72,7 +72,7 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -238,6 +238,12 @@ Interpolation Algorithm:</string>
         </item>
         <item row="6" column="3" rowspan="3" colspan="2">
          <widget class="QPushButton" name="convert_selected_images">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
            <string>Convert Selected Images</string>
           </property>
@@ -250,6 +256,17 @@ Interpolation Algorithm:</string>
         <string>Algorithm Settings and Test</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_6">
+        <item row="4" column="2">
+         <widget class="QRadioButton" name="use_converted_iX">
+          <property name="text">
+           <string>b) Use Images already converted in the
+format specified in the first tab . They will be searched in &quot;./iX&quot;</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_10</string>
+          </attribute>
+         </widget>
+        </item>
         <item row="3" column="1">
          <widget class="QRadioButton" name="output_plots">
           <property name="text">
@@ -285,21 +302,11 @@ Interpolation Algorithm:</string>
         <item row="3" column="2">
          <widget class="QRadioButton" name="use_current_images">
           <property name="text">
-           <string>a ) Use Selected Images 
+           <string>a) Use Selected Images 
 (if still not converted it will be done now)</string>
           </property>
           <property name="checked">
-           <bool>false</bool>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_10</string>
-          </attribute>
-         </widget>
-        </item>
-        <item row="4" column="3">
-         <widget class="QRadioButton" name="use_converted_i203">
-          <property name="text">
-           <string> ./i203_converted_images</string>
+           <bool>true</bool>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">buttonGroup_10</string>
@@ -319,7 +326,7 @@ Interpolation Algorithm:</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="0" rowspan="2" colspan="5">
+        <item row="0" column="0" rowspan="2" colspan="4">
          <widget class="QTabWidget" name="tabWidget_2">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -334,7 +341,7 @@ Interpolation Algorithm:</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
@@ -363,7 +370,7 @@ Interpolation Algorithm:</string>
                </size>
               </property>
               <property name="text">
-               <string>607</string>
+               <string>2000</string>
               </property>
              </widget>
             </item>
@@ -418,6 +425,12 @@ Interpolation Algorithm:</string>
             </item>
             <item row="1" column="2" colspan="3">
              <widget class="QPushButton" name="run_gradient_algorithm">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
               <property name="text">
                <string>RUN G</string>
               </property>
@@ -507,6 +520,12 @@ Interpolation Algorithm:</string>
             </item>
             <item row="1" column="3" colspan="3">
              <widget class="QPushButton" name="run_rotation_algorithm">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
               <property name="text">
                <string>RUN R</string>
               </property>
@@ -615,6 +634,12 @@ centered image</string>
             </item>
             <item row="3" column="4" rowspan="3">
              <widget class="QPushButton" name="run_histogram_algorithm">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
               <property name="text">
                <string>RUN H</string>
               </property>
@@ -781,6 +806,12 @@ centered image</string>
                 <width>500</width>
                 <height>16777215</height>
                </size>
+              </property>
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
               </property>
               <property name="text">
                <string>RUN M</string>
@@ -1228,23 +1259,16 @@ R, M Angle (rad):</string>
           </widget>
          </widget>
         </item>
-        <item row="3" column="3">
-         <widget class="QRadioButton" name="use_converted_i607">
-          <property name="text">
-           <string> ./i607_converted_images</string>
+        <item row="4" column="0">
+         <widget class="QPushButton" name="run_full_test">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
           </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_10</string>
-          </attribute>
-         </widget>
-        </item>
-        <item row="4" column="2">
-         <widget class="QLabel" name="label_7">
           <property name="text">
-           <string>b) Use all Converted Images in Output Data Directory:</string>
+           <string>Run Full Test</string>
           </property>
          </widget>
         </item>
@@ -1293,6 +1317,12 @@ R, M Angle (rad):</string>
         </item>
         <item row="5" column="0">
          <widget class="QPushButton" name="testCamera">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
            <string>TEST Camera</string>
           </property>
@@ -1313,6 +1343,12 @@ R, M Angle (rad):</string>
         </item>
         <item row="5" column="1">
          <widget class="QPushButton" name="grabReference">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
            <string>GRAB REFERENCE CHUNK</string>
           </property>
@@ -1356,6 +1392,12 @@ R, M Angle (rad):</string>
           <property name="enabled">
            <bool>false</bool>
           </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
            <string>RUN Camera</string>
           </property>
@@ -1375,6 +1417,12 @@ R, M Angle (rad):</string>
          <widget class="QPushButton" name="stopCamera">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
           </property>
           <property name="text">
            <string>STOP Camera</string>
@@ -1713,28 +1761,6 @@ In chunks of:</string>
           </property>
          </widget>
         </item>
-        <item row="12" column="0" colspan="3">
-         <widget class="QLabel" name="label_52">
-          <property name="text">
-           <string>Input Beam Polarization Jones Vec
-(note i is 1j).:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="12" column="3" colspan="3">
-         <widget class="QLineEdit" name="polar0">
-          <property name="text">
-           <string>1</string>
-          </property>
-         </widget>
-        </item>
-        <item row="12" column="6" colspan="2">
-         <widget class="QLineEdit" name="polar1">
-          <property name="text">
-           <string>1j</string>
-          </property>
-         </widget>
-        </item>
         <item row="5" column="8">
          <widget class="QLabel" name="label_43">
           <property name="text">
@@ -1767,7 +1793,9 @@ In chunks of:</string>
          <widget class="QLabel" name="label_14">
           <property name="font">
            <font>
+            <weight>75</weight>
             <italic>false</italic>
+            <bold>true</bold>
            </font>
           </property>
           <property name="text">
@@ -1912,6 +1940,12 @@ In chunks of:</string>
         </item>
         <item row="0" column="8" colspan="2">
          <widget class="QPushButton" name="createImages">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
            <string>Create Images</string>
           </property>
@@ -1931,6 +1965,58 @@ In chunks of:</string>
           </property>
          </widget>
         </item>
+        <item row="12" column="0">
+         <widget class="QLabel" name="label_52">
+          <property name="text">
+           <string>Input Beam Polarization 
+Jones Vector (note i is 1j).:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="1">
+         <widget class="QLineEdit" name="polar0">
+          <property name="text">
+           <string>1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="5">
+         <widget class="QLineEdit" name="polar1">
+          <property name="text">
+           <string>1j</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="9">
+         <widget class="QLineEdit" name="sim_chunk_x">
+          <property name="text">
+           <string>40</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="8">
+         <widget class="QLabel" name="label_61">
+          <property name="text">
+           <string>Compute x pixels
+ in Nx chunks:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="8">
+         <widget class="QLabel" name="label_66">
+          <property name="text">
+           <string>Compute y pixels
+ in Ny chunks:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="9">
+         <widget class="QLineEdit" name="sim_chunk_y">
+          <property name="text">
+           <string>40</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
@@ -1942,22 +2028,22 @@ In chunks of:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_12"/>
   <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_9"/>
   <buttongroup name="buttonGroup_10"/>
-  <buttongroup name="buttonGroup_11"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_13"/>
-  <buttongroup name="buttonGroup_17"/>
-  <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup_2"/>
-  <buttongroup name="buttonGroup_16"/>
-  <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup_5"/>
   <buttongroup name="buttonGroup_15"/>
   <buttongroup name="buttonGroup_8"/>
+  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup_12"/>
+  <buttongroup name="buttonGroup_16"/>
   <buttongroup name="buttonGroup_14"/>
-  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_17"/>
+  <buttongroup name="buttonGroup_11"/>
  </buttongroups>
 </ui>

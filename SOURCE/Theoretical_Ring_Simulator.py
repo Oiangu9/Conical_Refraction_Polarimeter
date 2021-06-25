@@ -2,9 +2,16 @@ import numpy as np
 from scipy.special import j0, j1
 import matplotlib.pyplot as plt
 import cv2
+'''
+th_pol=phi_CR/2
+phi_CR=th_pol*2
+
+input_pol_vec= (cos(th_pol), sin(th_pol)) con th_pol in [-pi/2, pi/2)
+= (cos(phi_CR/2), sin(phi_CR/2)) con phi_CR in [-pi, pi)
+'''
 
 class RingSimulator():
-    def __init__(self, n, w0, R0, a0, max_k, num_k, nx, ny, nz, xmin, xmax, ymin, ymax, zmin, zmax):
+    def __init__(self, n, w0, R0, a0, max_k, num_k, nx, ny, nz, xmin, xmax, ymin, ymax, zmin, zmax, sim_chunk_x, sim_chunk_y):
         self.n=n
         self.w0=w0
         self.R0=R0
@@ -21,6 +28,8 @@ class RingSimulator():
         self.zmin=zmin
         self.zmax=zmax
         self.rho0=R0/w0
+        self.sim_chunk_x=sim_chunk_x
+        self.sim_chunk_y=sim_chunk_y
         self._prepare_grid()
         self._compute_B0_B1()
 
@@ -47,9 +56,14 @@ class RingSimulator():
 
         ks, dk = np.linspace(start=0, stop=self.max_k, num=self.num_k, endpoint=True, retstep=True)
 
+        chunks_x = list(range(0, self.B0.shape[1],self.sim_chunk_x))+[self.B0.shape[1]]
+        chunks_y = list(range(0, self.B0.shape[0],self.sim_chunk_y))+[self.B0.shape[0]]
+
         for iz, z in enumerate(self.zs):
-            self.B0[ :, :, iz] = np.sum( self._gaussian_a(ks)*np.exp(-1j*ks**2*z**2/(2*self.n))*np.cos(ks*self.rho0)*j0(ks*self.rs)*ks, axis=-1)*dk/(2*np.pi) #[ny, nx, 1]
-            self.B1[ :, :, iz] = np.sum( self._gaussian_a(ks)*np.exp(-1j*ks**2*z**2/(2*self.n))*np.sin(ks*self.rho0)*j1(ks*self.rs)*ks, axis=-1 )*dk/(2*np.pi) #[ny, nx, 1]
+            for ix in range(len(chunks_x)-1):
+                for iy in range(len(chunks_y)-1):
+                    self.B0[ chunks_x[ix]:chunks_x[ix+1], chunks_y[iy]:chunks_y[iy+1], iz] = np.sum( self._gaussian_a(ks)*np.exp(-1j*ks**2*z**2/(2*self.n))*np.cos(ks*self.rho0)*j0(ks*self.rs[chunks_x[ix]:chunks_x[ix+1], chunks_y[iy]:chunks_y[iy+1]])*ks, axis=-1)*dk/(2*np.pi) #[ny, nx, 1]
+                    self.B1[ chunks_x[ix]:chunks_x[ix+1], chunks_y[iy]:chunks_y[iy+1], iz] = np.sum( self._gaussian_a(ks)*np.exp(-1j*ks**2*z**2/(2*self.n))*np.sin(ks*self.rho0)*j1(ks*self.rs[chunks_x[ix]:chunks_x[ix+1], chunks_y[iy]:chunks_y[iy+1]])*ks, axis=-1 )*dk/(2*np.pi) #[ny, nx, 1]
 
     def _compute_electric_displacements(self, in_polrz):
         self.D = np.stack((
@@ -62,41 +76,42 @@ class RingSimulator():
         #self.I=np.abs(self.B0)**2+np.abs(self.B1)**2
 
     def _plot_Intensity(self, output_path, input_polarization):
+        input_angle=input_polarization if type(input_polarization) in [int, float] else np.arctan2(input_polarization.real[1], input_polarization.real[0])
         for iz, z in enumerate(self.zs):
             plt.imshow(self.I[:,:,iz], cmap='hot', origin='upper', interpolation="none",
                 extent=[self.xmin,self.xmax,self.ymin,self.ymax])
             plt.colorbar()
-            plt.title(f"Input Polarization: {str(input_polarization)} \nz={z}")
+            plt.title(f"Input Polarization: {input_polarization} \nz={z}")
             plt.xlabel("x")
             plt.ylabel("y")
-            plt.savefig(f"{output_path}/{str(input_polarization)}_{z}.png")
+            plt.savefig(f"{output_path}/PolAngle_{input_angle:.15f}_Vector_{input_polarization}_CRAngle_{2*input_angle:.15f}_Z_{z}.png")
             plt.clf()
-            cv2.imwrite(f"{output_path}/Raw_{str(input_polarization)}_{z}.png",
+            cv2.imwrite(f"{output_path}/Raw_PolAngle_{input_angle:.15f}_Vector_{input_polarization}_CRAngle_{2*input_angle:.15f}_Z_{z}.png",
                 (65535*self.I[:,:,iz]/np.max(self.I[:,:,iz])).astype(np.uint16))
 
 
-    def compute_intensity_Trupin_and_Plot(self, input_polarization, out_path):
-        self._compute_electric_displacements(input_polarization)
+    def compute_intensity_Trupin_and_Plot(self, input_polarization_vec, out_path):
+        self._compute_electric_displacements(input_polarization_vec)
         self._compute_intensity_Turpin()
-        self._plot_Intensity(out_path, input_polarization)
+        self._plot_Intensity(out_path, input_polarization_vec)
 
-    def _compute_intensity_Todor(self, pol):
+    def _compute_intensity_Todor(self, pol_angle):
         self.nz=1
-        self.I = np.sin((self.phis-pol)/2)**2*(np.sqrt(2/(9*self.w0*np.pi))*(2*np.exp(-2*(self.rs-self.R0-self.w0)**2/self.w0**2)+np.exp(-2*(self.rs-self.R0+self.w0)**2/self.w0**2 )))/np.pi
-    def compute_intensity_Todor_and_Plot(self, input_polarization, out_path):
-        self._compute_intensity_Todor( input_polarization)
-        self._plot_Intensity(out_path, input_polarization)
+        self.I = np.cos((self.phis-2*pol_angle)/2)**2*(np.sqrt(2/(9*self.w0*np.pi))*(2*np.exp(-2*(self.rs-self.R0-self.w0)**2/self.w0**2)+np.exp(-2*(self.rs-self.R0+self.w0)**2/self.w0**2 )))/np.pi
+    def compute_intensity_Todor_and_Plot(self, input_polarization_angle, out_path):
+        self._compute_intensity_Todor( input_polarization_angle)
+        self._plot_Intensity(out_path, input_polarization_angle)
 
 
 if __name__ == "__main__":
 
-    simulator=RingSimulator( n=1.5, w0=1, R0=10, a0=1.0, max_k=50, num_k=1000, nx=100, ny=100, nz=1, xmin=-15, xmax=15, ymin=-15, ymax=15, zmin=0, zmax=0)
-    simulator.compute_intensity_Trupin_and_Plot( np.array([1,0]), '.')
-    simulator.compute_intensity_Trupin_and_Plot( np.array([0,1]), '.')
-    simulator.compute_intensity_Trupin_and_Plot( np.array([1,-1])/np.sqrt(2), '.')
-    simulator.compute_intensity_Trupin_and_Plot( np.array([1,1])/np.sqrt(2), '.')
-    simulator.compute_intensity_Trupin_and_Plot( np.array([8, np.pi])/np.sqrt(np.pi**2+64), '.' )
-    simulator.compute_intensity_Trupin_and_Plot( np.array([-8, np.pi])/np.sqrt(np.pi**2+64), '.' )
-    simulator.compute_intensity_Trupin_and_Plot( np.array([-8, -np.pi])/np.sqrt(np.pi**2+64), '.' )
-    simulator.compute_intensity_Trupin_and_Plot( np.array([8, -np.pi])/np.sqrt(np.pi**2+64), '.' )
-    simulator.compute_intensity_Todor_and_Plot(0, '.')
+    import os
+    phi_CRs = [-3, -2, np.pi/2, -1, 0, 1, np.pi/2, 2, 3, np.pi]
+    simulator=RingSimulator( n=1.5, w0=1, R0=10, a0=1.0, max_k=50, num_k=1000, nx=1215, ny=1215, nz=1, xmin=-15, xmax=15, ymin=-15, ymax=15, zmin=0, zmax=0, sim_chunk_x=500, sim_chunk_y=500)
+
+    for phi_CR in phi_CRs:
+        os.makedirs('./Simulated/phi_CR/Full/', exist_ok=True)
+        os.makedirs('./Simulated/phi_CR/Approx/', exist_ok=True)
+
+        simulator.compute_intensity_Trupin_and_Plot( np.array([np.cos(phi_CR/2), np.sin(phi_CR/2)]), './Simulated/phi_CR/Full/')
+        simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/phi_CR/Approx/')

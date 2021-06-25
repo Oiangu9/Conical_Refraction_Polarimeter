@@ -396,7 +396,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
         """
         zoom_ratios.append(1) #to avoid out of index in the last iteration
         for im, image_name in enumerate(self.image_names):
-            name=f"Brute_Force_{image_name}"
+            name=self.method+f"Brute_Force_{image_name}"
             (self.times[name],
             self.computed_points[name],
             self.optimals[name],
@@ -561,7 +561,7 @@ class Gradient_Algorithm(Polarization_Obtention_Algorithm):
             # all the images have the same mask for distance to center
             self.distances_to_grav = (self.cols-self.grav[0])**2+(self.rows-self.grav[1])**2
         else: # [N_images, h,w]
-            self.distances_to_grav = np.array([(cols-grav[0])**2+(rows-grav[1])**2
+            self.distances_to_grav = np.array([(self.cols-grav[0])**2+(self.rows-grav[1])**2
                 for grav in self.grav])
 
     def compute_new_gravicenter(self, image, radious, distances_to_grav):
@@ -570,8 +570,8 @@ class Gradient_Algorithm(Polarization_Obtention_Algorithm):
         intensity_in_w = np.sum(circle, axis=0) # weights for x [w]
         intensity_in_h = np.sum(circle, axis=1) # weights for y [h]
         total_intensity = intensity_in_h.sum()
-        return [np.dot(intensity_in_h, np.arange(circle.shape[0]))/total_intensity,
-         np.dot(intensity_in_w, np.arange(circle.shape[1]))/total_intensity]
+        return np.nan_to_num([np.dot(intensity_in_h, np.arange(circle.shape[0]))/total_intensity,
+         np.dot(intensity_in_w, np.arange(circle.shape[1]))/total_intensity], nan=self.mode)
 
     def evaluate_mask_radious(self, image, radious, distances_to_grav, grav):
         # mask the image in the circumference
@@ -581,8 +581,9 @@ class Gradient_Algorithm(Polarization_Obtention_Algorithm):
         intensity_in_w = np.sum(circle, axis=0) # weights for x [w]
         intensity_in_h = np.sum(circle, axis=1) # weights for y [h]
         total_intensity = intensity_in_h.sum()
-        new_grav = [np.dot(intensity_in_h, np.arange(circle.shape[0]))/total_intensity,
-            np.dot(intensity_in_w, np.arange(circle.shape[1]))/total_intensity]
+
+        new_grav = np.nan_to_num([np.dot(intensity_in_h, np.arange(circle.shape[0]))/total_intensity,
+            np.dot(intensity_in_w, np.arange(circle.shape[1]))/total_intensity], nan=self.mode)
         return -((new_grav[1]-grav[1])**2+(new_grav[0]-grav[0])**2)
         # the minus sign is because the algorithms will try to minimize the cost (and here we
         # are looking for the maximum)
