@@ -771,7 +771,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 benchu['Found Polarization'].append(alg.angles[key]/2)
                 benchu['Ground Truth Polarization'].append(ground_truths[name])
-                benchu['True Precision'].append(abs(ground_truths[name]-alg.angles[key]))
+                benchu['True Precision'].append(abs(ground_truths[name]-alg.angles[key]/2))
 
         import pandas as pd
         import datetime
@@ -912,7 +912,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             mirror_algorithm.save_result_plots_fibonacci_or_quadratic(path)
             to_benchmark_dict(benchu, mirror_algorithm, image_names, "M - Quadratic Fit"+full_meth, ground_truths)
 
-        benchu=pd.DataFrame(benchu).sort_values(by=['Image Name'])
+        benchu=pd.DataFrame(benchu).sort_values(by=['Image Name', 'Algorithm'])
         logging.info(f"BENCHMARK RESULTS:\n{benchu}")
         benchu.to_csv(path+"/Benchmark.csv")
         benchu.to_excel(path+"/Benchmark.xlsx")
@@ -936,7 +936,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             ax2.bar([x + 2*barWidth for x in r1], benchm["True Precision"], color='blue', width=barWidth, edgecolor='white', label='True Precision')
             ax2.set_ylabel("Precision", color='blue')
             ax2.tick_params(axis='y', colors='blue')
-            ax2.set_ylim((0,1))
+
 
             ax3=ax.twinx()
             ax3.bar([x + 3*barWidth for x in r1], benchm["Found Polarization"], color='orange', width=barWidth, edgecolor='white', label='Found Polarization')
@@ -954,6 +954,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             #ax.set_xlabel('Algorithm', fontweight='bold')
             plt.xticks([r + barWidth for r in range(len(benchm["Time"]))], benchm['Algorithm'])
             ax.tick_params(axis='x', rotation=30)
+            ax2.set_ylim((0,0.1))
             ax3.grid(True,color='#7f6d5f')
             #ax2.grid(True, color='blue')
             #ax3.grid(True, color='orange')

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>866</width>
-    <height>513</height>
+    <height>526</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -828,7 +828,7 @@ centered image</string>
             <item row="0" column="2" rowspan="9">
              <widget class="QTabWidget" name="tabWidget_4">
               <property name="currentIndex">
-               <number>1</number>
+               <number>0</number>
               </property>
               <widget class="QWidget" name="tab_12">
                <attribute name="title">
@@ -979,14 +979,14 @@ Precision:</string>
                 <item row="1" column="0">
                  <widget class="QLabel" name="label_15">
                   <property name="text">
-                   <string>Precision* (rad):</string>
+                   <string>Precision*:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="1">
                  <widget class="QLineEdit" name="precision_quad_pix">
                   <property name="text">
-                   <string>0.01</string>
+                   <string>1</string>
                   </property>
                  </widget>
                 </item>
@@ -1056,14 +1056,14 @@ Precision:</string>
                 <item row="1" column="0">
                  <widget class="QLabel" name="label_12">
                   <property name="text">
-                   <string>Precision* (rad):</string>
+                   <string>Precision*:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="1" colspan="2">
                  <widget class="QLineEdit" name="precision_fib_pix">
                   <property name="text">
-                   <string>0.01</string>
+                   <string>1</string>
                   </property>
                  </widget>
                 </item>
@@ -1115,7 +1115,7 @@ Precision:</string>
                </size>
               </property>
               <property name="text">
-               <string>0.1</string>
+               <string>100</string>
               </property>
              </widget>
             </item>
@@ -2028,21 +2028,21 @@ Jones Vector (note i is 1j).:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_9"/>
-  <buttongroup name="buttonGroup_10"/>
-  <buttongroup name="buttonGroup_15"/>
-  <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_2"/>
-  <buttongroup name="buttonGroup_6"/>
   <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_8"/>
+  <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_14"/>
+  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_12"/>
+  <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_16"/>
+  <buttongroup name="buttonGroup_15"/>
   <buttongroup name="buttonGroup_5"/>
   <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup_12"/>
-  <buttongroup name="buttonGroup_16"/>
-  <buttongroup name="buttonGroup_14"/>
-  <buttongroup name="buttonGroup_7"/>
-  <buttongroup name="buttonGroup_4"/>
   <buttongroup name="buttonGroup_17"/>
   <buttongroup name="buttonGroup_11"/>
  </buttongroups>

@@ -154,12 +154,12 @@ class Ad_Hoc_Optimizer:
 
         # Evaluate cost function for each angle
         active_points = np.stack((active_xs, [ self.evaluate_cost(image, angle, *args_for_cost) for angle in active_xs])) # [2 (xj,f(xj)),4]
-        # if the minium is in the boundary of the interval, make it not be the boundary
+        # if the minium is in the boundary of the interval, make it not be the boundary. we subtract the initial_guess_delta to break the symmetries
         if np.argmin(active_points[1])==0:
-            active_points[0, 3] -= 3*(self.b-self.a)/2
+            active_points[0, 3] -= 3*(self.b-self.a)/2+self.initial_guess_delta
             active_points[1,3] = self.evaluate_cost(image, active_points[0, 3], *args_for_cost)
         elif np.argmin(active_points[1])==3:
-            active_points[0, 0] += 3*(self.b-self.a)/2
+            active_points[0, 0] += 3*(self.b-self.a)/2+self.initial_guess_delta
             active_points[1,0] = self.evaluate_cost(image, active_points[0,0], *args_for_cost)
 
         # order the four pairs of points by their support position

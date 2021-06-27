@@ -313,7 +313,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
     def evaluate_mirror_affine(self, image_array, angle, center, udlr=1):
         # if udlr is 1 then we are minimizing the difference -> LR mode
         # if udlr is -1 then we are maximizing the difference -> UD mode
-        return udlr*np.sum(np.abs(self.mirror_flip_at_angle(image_array, -angle, center)-image_array))
+        return udlr*np.sum(np.abs(self.mirror_flip_at_angle(image_array, -angle, center)-image_array)) # we use minus angle to account for mirror flip in w
 
 
     def evaluate_mirror_bin(self, image, angle, angles_to_grav, udlr=1):
@@ -326,13 +326,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
 
     def evaluate_mirror_mask(self, image, angle, cols, rows, center, udlr=1):
         # angles must be in [-pi/2,pi/2] or [3pi/2,2pi]
-        mask=np.greater(rows, np.tan(-angle)*(cols-center[0])+center[1]) #[h,w]
-        im2=image.copy()
-        im3=image.copy()
-        im2[np.logical_not(mask)]=0
-        im3[mask]=0
-        self.save_images(im2.astype(np.uint8), './out', str(angle)+'A')
-        self.save_images(im3.astype(np.uint8), './out', str(angle)+'B')
+        mask=np.less(rows, np.tan(-angle)*(cols-center[1])+center[0]) #[h,w] we use minus angle to account for w flip and les instead of greater for the same reason
         return udlr*np.abs(np.sum(image[mask])-np.sum(image[np.logical_not(mask)]))
 
     def prepare_arguments(self, im):
@@ -346,7 +340,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
             self.cols = self.cols if self.cols is not None else np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
             # angles relative to the  gravicenter in range [-pi,pi] but for the reversed image
             if self.use_exact_gravicenter:
-                self.index_angles = -np.arctan2( self.cols.swapaxes(0,1)-self.grav[im][0], self.cols-self.grav[im][1] ) #[h,w]
+                self.index_angles = -np.arctan2( self.cols.swapaxes(0,1)-self.grav[im][0], self.cols-self.grav[im][1] ) #[h,w] we set minus because in reality we care for mirror flip in x for coordinate system
             else:
                 self.index_angles = self.index_angles if self.index_angles is not None else -np.arctan2( self.cols.swapaxes(0,1)-self.grav[0], self.cols-self.grav[1] ) #[h,w]
             return ( self.index_angles, self.udlr)
@@ -357,7 +351,8 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
         # such that if the output is positive, then R has more intensity and you know immediately that the good angle is the bigger one?
         # de fet esto sugiere un algoritmo con el polano ortogonal que directamente te encuentra el angulo que toca, pero bueno con los que buscan el eje simetrico el truco no parece que funcionara
         self.cols = self.cols if self.cols is not None else np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
-        mask=np.greater(self.cols.swapaxes(0,1), np.tan(angle)*(self.cols-center[0])+center[1]) #[h,w]
+        mask=np.less(self.cols.swapaxes(0,1), np.tan(-angle)*(self.cols-center[1])+center[0]) #[h,w] We set -angle, because the coordinates we are thinking of are a mirror flip in w
+            # also, we use less instead of greater because we are really thinking on the mirror fliped axes on w
         return np.sum(image[mask])-np.sum(image[np.logical_not(mask)])
 
     def get_polarization_angle(self, angle, image, center):
@@ -368,9 +363,11 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
         subtle check is required.
         """
         #if angle==np.pi or 0: In this case the correct one is not defined by this alg!!!
+        if angle==0 or abs(angle)==np.pi:
+            angle+=1e-12 # this solution is not ideal, but it works, since we will never get such a good precision
         diff=self.given_axis_angle_greater_minus_lower(angle if self.udlr==-1 else angle+np.pi/2, image, center)
         if self.udlr==-1:
-            angle=self.angle_to_pi_pi(angle+np.pi/2)
+            angle=self.angle_to_pi_pi(angle-np.pi/2)
         if diff>0: # then Upper>Lower -> then good one is the one in (0,pi)
             return angle+np.pi if angle<0 else angle
         else:
@@ -583,7 +580,7 @@ class Gradient_Algorithm(Polarization_Obtention_Algorithm):
         total_intensity = intensity_in_h.sum()
 
         new_grav = np.nan_to_num([np.dot(intensity_in_h, np.arange(circle.shape[0]))/total_intensity,
-            np.dot(intensity_in_w, np.arange(circle.shape[1]))/total_intensity], nan=self.mode)
+            np.dot(intensity_in_w, np.arange(circle.shape[1]))/total_intensity], nan=self.mode) # The nan to this number works only because the gravicenter is never exctly centered there, else the cost function would yield 0 and the three intial points would be aligned
         return -((new_grav[1]-grav[1])**2+(new_grav[0]-grav[0])**2)
         # the minus sign is because the algorithms will try to minimize the cost (and here we
         # are looking for the maximum)
@@ -896,7 +893,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
                     angle_steps, zoom_ratios,
                     self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
                     self.grav[im] if self.use_exact_gravicenter else self.grav))
-            self.angles[name]=self.optimals[name][f"Stage_{len(angle_steps)-1}"]/2
+            self.angles[name]=self.angle_to_pi_pi(self.optimals[name][f"Stage_{len(angle_steps)-1}"])/2
 
 
     def fibonacci_ratio_search(self, precision, maximum_points, cost_tol):
@@ -928,7 +925,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
                     precision, maximum_points, cost_tol,
                     self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
                     self.grav[im] if self.use_exact_gravicenter else self.grav))
-            self.angles[name]=self.optimals[name]/2
+            self.angles[name]=self.angle_to_pi_pi(self.optimals[name])/2
 
 
 
@@ -963,7 +960,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
                 precision, max_iterations, cost_tol,
                 self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
                     self.grav[im] if self.use_exact_gravicenter else self.grav))
-            self.angles[name]=self.optimals[name]/2
+            self.angles[name]=self.angle_to_pi_pi(self.optimals[name])/2
 
 
     def save_result_plots_fibonacci_or_quadratic(self, output_path):
