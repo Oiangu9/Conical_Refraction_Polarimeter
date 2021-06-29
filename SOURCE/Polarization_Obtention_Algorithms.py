@@ -242,7 +242,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
     def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta, method, left_vs_right, use_exact_gravicenter):
         """
             Argument image_loader is expected to be an instance of class Image_Loader,
-            which has already been initialized and has non-null attributes:
+            which has already been initialized and has non-None attributes:
             - self.mode: 203 or 607 depending on whther it contians i607 or i203 images
             - self.centered_ring_images: the [N_images, self.mode*2+1 (h), self.mode*2+1 (w)]
             - self.g_centered: intensity gravicenter in pixel index coordinates [N_images, 2 (h,w)]
@@ -769,20 +769,15 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
     - Y yet another que es even better existe casi seguro. Algo con una componente mas estocastica.
 
     OJOOOO!!!!
-    - Si realizo el mirror flip respecto al gravicentro exacto de cada imagen en en eje y?
-    - Y si realizo las rotaciones de la imagen relativas al gravicentro exacto de la imagen???
-    Si hago estas dos correciones, incluso accounteara por esas decimas problematicas!!
-
-    Otro suggetsion de algoritmo! Podrias ir probando mirror reflections relativos a angulos
-    diferentes a rectas ke pasan desde el gravicenter hasta encontrar el mirror reflection tal que
-    divide en una mitad y en la otra la suma de intensidades mas parecida entre ellas. Super
-    facil de hacerlo y se pueden usar los mismos tres algoritmos de busqueda si cambias la
-    funcion de coste
+    - Puede pasar el mismo problema que se daba en
+    el mirror algorithm, tal que puede dar el ángulo al mínimo en lugar del ángulo al máximo!
+    Si quieres considerar ángulos arbitrarios en la búsqueda entonces, deberías hacer la misma
+    comprobación final que en el mirror algorithm de hacer el +pi o no.
     """
     def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta, use_exact_gravicenter):
         """
             Argument image_loader is expected to be an instance of class Image_Loader,
-            which has already been initialized and has non-null attributes:
+            which has already been initialized and has non-None attributes:
             - self.mode: 203 or 607 depending on whther it contians i607 or i203 images
             - self.centered_ring_images: the [N_images, self.mode*2+1 (h), self.mode*2+1 (w)]
             - self.g_centered: intensity gravicenter in pixel index coordinates [N_images, 2 (h,w)]
@@ -796,6 +791,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
         """
         Polarization_Obtention_Algorithm.__init__(self,image_loader, use_exact_gravicenter)
         self.original_images = image_loader
+        self.images_float = image_loader.centered_ring_images.astype(np.float32)
         self.interpolation_flag = interpolation_flag
         self.min_angle = min_angle
         self.max_angle = max_angle
@@ -805,6 +801,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
         self.optimums={}
         self.optimals={}
         self.times={}
+        self.cols=np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
         self.optimizer = Ad_Hoc_Optimizer(min_angle, max_angle, initial_guess_delta, self.evaluate_image_rotation)
         if use_exact_gravicenter:
             self.grav=self.original_images.g_centered #[N_images, 2(h,w)]
@@ -823,10 +820,12 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
     def reInitialize(self, image_loader):
         Polarization_Obtention_Algorithm.reInitialize(self, image_loader)
         self.original_images = image_loader
+        self.images_float = image_loader.centered_ring_images.astype(np.float32)
         self.computed_points={}
         self.optimums={}
         self.optimals={}
         self.times={}
+        self.cols=np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
         if self.use_exact_gravicenter:
             self.grav=self.original_images.g_centered #[N_images, 2(h,w)]
             # custom mirror flip the images about the line through gravicenter
@@ -865,6 +864,30 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
         return np.sum(np.abs(self.rotate_image_by(image_to_rotate, angle, center)-reference_image))
 
 
+    def given_axis_angle_greater_minus_lower(self, angle, image, center):
+        # such that if the output is positive, then R has more intensity and you know immediately that the good angle is the bigger one?
+        # de fet esto sugiere un algoritmo con el polano ortogonal que directamente te encuentra el angulo que toca, pero bueno con los que buscan el eje simetrico el truco no parece que funcionara
+        mask=np.less(self.cols.swapaxes(0,1), np.tan(-angle)*(self.cols-center[1])+center[0]) #[h,w] We set -angle, because the coordinates we are thinking of are a mirror flip in w
+            # also, we use less instead of greater because we are really thinking on the mirror fliped axes on w
+        return np.sum(image[mask])-np.sum(image[np.logical_not(mask)])
+
+    def get_polarization_angle(self, angle, image, center):
+        """
+        All the mirror methods have the problem that we only get the
+        correct angle up to an angle pi. In order to know which is the
+        angle to the maximum of the ring (and not the minimum) a final
+        subtle check is required.
+        """
+        #if angle==np.pi or 0: In this case the correct one is not defined by this alg!!!
+        if angle==0 or abs(angle)==np.pi:
+            angle+=1e-12 # this solution is not ideal, but it works, since we will never get such a good precision
+        diff=self.given_axis_angle_greater_minus_lower(angle+np.pi/2, image, center)
+
+        if diff>0: # then Upper>Lower -> then good one is the one in (0,pi)
+            return angle+np.pi if angle<0 else angle
+        else:
+            return angle-np.pi if angle>0 else angle
+
     def brute_force_search(self, angle_steps, zoom_ratios):
         """
         What does this exactly do
@@ -893,7 +916,10 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
                     angle_steps, zoom_ratios,
                     self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
                     self.grav[im] if self.use_exact_gravicenter else self.grav))
-            self.angles[name]=self.angle_to_pi_pi(self.optimals[name][f"Stage_{len(angle_steps)-1}"])/2
+            self.optimals[name][f"Stage_{len(angle_steps)-1}"] =self.angle_to_pi_pi(self.optimals[name][f"Stage_{len(angle_steps)-1}"])
+            self.angles[name]=self.get_polarization_angle(self.optimals[name][f"Stage_{len(angle_steps)-1}"]/2, self.images_float[im],
+                self.grav[im] if self.use_exact_gravicenter else self.grav
+            )
 
 
     def fibonacci_ratio_search(self, precision, maximum_points, cost_tol):
@@ -919,14 +945,15 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
             name=f"Fibonacci_Search_{image_name}"
             (self.times[name],
             self.computed_points[name],
-            self.optimals[name],
+            optimal,
             self.optimums[name],
             self.precisions[name])=                self.optimizer.fibonacci_ratio_search(
                     precision, maximum_points, cost_tol,
                     self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
                     self.grav[im] if self.use_exact_gravicenter else self.grav))
-            self.angles[name]=self.angle_to_pi_pi(self.optimals[name])/2
-
+            self.optimals[name]=self.angle_to_pi_pi(optimal)
+            self.angles[name]=self.get_polarization_angle(self.optimals[name]/2, self.images_float[im],
+                self.grav[im] if self.use_exact_gravicenter else self.grav)
 
 
     def quadratic_fit_search(self, precision, max_iterations, cost_tol):
@@ -954,14 +981,15 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
             name=f"Quadratic_Search_{image_name}"
             (self.times[name],
             self.computed_points[name],
-            self.optimals[name],
+            optimal,
             self.optimums[name],
             self.precisions[name])=self.optimizer.quadratic_fit_search(
                 precision, max_iterations, cost_tol,
                 self.original_images.centered_ring_images[im], (self.mirror_images_wrt_width_axis[im],
                     self.grav[im] if self.use_exact_gravicenter else self.grav))
-            self.angles[name]=self.angle_to_pi_pi(self.optimals[name])/2
-
+            self.optimals[name]=self.angle_to_pi_pi(optimal)
+            self.angles[name]=self.get_polarization_angle(self.optimals[name]/2, self.images_float[im],
+                self.grav[im] if self.use_exact_gravicenter else self.grav)
 
     def save_result_plots_fibonacci_or_quadratic(self, output_path):
         """
@@ -998,3 +1026,203 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
                 ax.grid(True)
             fig.suptitle(f"Polarization angle=Polarization Angle={self.angles[name]}+-{self.precisions[name][f'Stage_{len(axes)-1}']/2} rad")
             plt.savefig(f"{output_path}/Rotation_Algorithm/{name}.png")
+
+
+class Simulator_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
+    """
+    Execute first the Gradient Algorithm to get an estimation of the angle phi_CR and the radious
+    R0 (in pixels) of the CR ring in the image.
+    Then using these estimates togther with z=0, execute a coordinate descent in phi_CR, R0 and Z
+    space to find the simulated CR ring that best fits the experimental image.
+
+    All images can be processed in chunks because we will not fix any stop condition like the
+    consecutive difference between found optimals (we could, but as it is so expensive to
+    execute the simulations, we will not yet do it -if we are to optimize it all then perhaps
+    yes). Instead we will fix a number of coordinate descent cycles for all selected images at
+    once!
+
+    """
+    def __init__(self, image_loader, coordinate_descent_cycles, min_z, max_z, min_phi, max_phi, min_radi, max_radi, initial_guess_delta_R0, initial_guess_delta_rad, initial_guess_delta_Z, n, w0, a0, max_k, num_k, nx, xmin, xmax ,ymin, ymax, xChunk, yChunk, min_radi_G=None, max_radi_G=None, use_exact_gravicenter_G=None, initial_guess_delta_G=None):
+        Polarization_Obtention_Algorithm.__init__(self,image_loader, use_exact_gravicenter_G)
+        self.cycles=coordinate_descent_cycles
+        self.min_Z=min_Z
+        self.max_Z=max_Z
+        self.min_phi=min_phi
+        self.max_phi=max_phi
+        self.min_radi=min_radi
+        self.max_radi=max_radi
+        self.min_radi_G=min_radi_G
+        self.max_radi_G=max_radi_G
+        self.initial_guess_delta_rad=initial_guess_delta_rad
+        self.initial_guess_delta_pix=initial_guess_delta_pix
+        self.mode=image_loader.mode
+        self.simulator=RingSimulator_Optimizer(n=n, w0=w0, a0=a0, max_k=max_k, num_k=num_k, nx=nx, ny=nx, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, sim_chunk_x=xChunk, sim_chunk_y=yChunk)
+        if self.use_exact_gravicenter_G is not None:
+            algorithm_G = Gradient_Algorithm(image_loader, self.min_rad_G, self.max_rad_G, self.initial_guess_delta_G, self.use_exact_gravicenter_G)
+
+        self.angle_optimizer=Ad_Hoc_Optimizer(min_phi, max_phi, initial_guess_delta_rad, self.evaluate_simulation_phi)
+        self.radious_optimizer=Ad_Hoc_Optimizer(min_radi, max_radi, initial_guess_delta_R0, self.evaluate_simulation_R0)
+        self.Z_optimizer=Ad_Hoc_Optimizer(min_Z, max_Z, initial_guess_delta_Z, self.evaluate_simulation_Z)
+
+    def evaluate_simulation_phi(self, exp_image, angle, R0_pix_best, Z_best):
+        return np.sum(np.abs(exp_image-self.simulator.compute_CR_ring(angle, R0_pix_best, Z_best)))
+
+    def evaluate_simulation_R0(self, exp_image, R0_pix, angle_best, Z_best):
+        return np.sum(np.abs(exp_image-self.simulator.compute_CR_ring(angle, R0_pix_best, Z_best)))
+
+    def evaluate_simulation_Z(self, exp_image, Z, angle_best, R0_pix):
+        return np.sum(np.abs(exp_image-self.simulator.compute_CR_ring(angle, R0_pix_best, Z_best)))
+
+    def fibonacci_ratio_search(self, precision_pix, maximum_points_R0, precision_phi,
+        maximum_points_phi, precision_Z, maximum_points_Z, cost_tol, precision_G,
+        maximum_points_G, cost_tol_G):
+        # We first find an estimation for R0 and phiCR using the gradient algorithm
+        algorithm_G.fibonacci_ratio_search(precision_G, maximum_points_G, cost_tol_G)
+
+        # We now execute a sequence of linear optimizations for each coordinate for every cycle
+        for im, image_name in enumerate(self.original_images.raw_images_names):
+            self.times[name]={}
+            self.radious_points[name]={}
+            self.Z_points[name]={}
+            self.phi_points[name]={}
+            # use the results from the gradient algorithm to initialize the best triplet
+            self.R0_pix_best[name]=[2*algorithm_G.optimals[name]]
+            self.Z_best[name]=[0.0]
+            self.phi_CR_best[name]=[algorithm_G.angles[name]]
+            for cycle in range(cycles):
+                # Optimize Radious
+                (time_rad, self.radious_points[name][f'Cycle {cycle}'], R0_pix_best, radi_optimum,
+                 _)=self.radious_optimizer.fibonacci_ratio_search(
+                    precision_pix, maximum_points_R0, cost_tol,
+                    self.original_images.centered_ring_images[im],
+                    (self.phi_CR_best[name][-1], self.Z_best[name][-1])
+                )
+
+                # Optimize Angle
+                (time_ang, self.phi_points[name][f'Cycle {cycle}'], phi_CR_best, phi_optimum, _)=self.angle_optimizer.fibonacci_ratio_search(
+                    precision_phi, maximum_points_phi, cost_tol,
+                    self.original_images.centered_ring_images[im],
+                    (self.R0_pix_best[name][-1], self.Z_best[name][-1])
+                )
+
+                # Optimize Z
+                self.Z_optimizer.a=-2*np.sqrt(1/3)*R0_pix_best*self.simulator.dx
+                self.Z_optimizer.b=-self.Z_optimizer.a
+                (time_Z, self.Z_points[name][f'Cycle {cycle}'], Z_best, Z_optimum,
+                    _)=self.Z_optimizer.fibonacci_ratio_search(
+                        precision_Z, maximum_points_Z, cost_tol,
+                        self.original_images.centered_ring_images[im],
+                        (self.phi_CR_best[name][-1], self.R0_pix_best[name][-1])
+                    )
+
+                self.times[name][f'Cycle {cycle}']=time_rad+time_ang+time_Z
+                self.R0_pix_best[name].append(R0_pix_best)
+                self.phi_CR_best[name].append(phi_CR_best)
+                self.Z_best[name].append(Z_best)
+
+                # check if convergence criterion is met
+                if((abs(Z_optimum-phi_optimum)<cost_tol and
+                    abs(phi_optimum-radi_optimum)<cost_tol)
+                    or (abs(self.R0_pix_best[name][-2]-R0_pix_best)<precision_pix and
+                    abs(self.phi_CR_best[-2]-phi_CR_best)<precision_phi and
+                    abs(self.Z_best[name][-2]-Z_best)<precision_Z)):
+
+                    break
+
+
+    def quadratic_fit_search(self, precision_pix, maximum_points_R0, precision_phi,
+        maximum_points_phi, precision_Z, maximum_points_Z, cost_tol, precision_G,
+        maximum_points_G, cost_tol_G):
+        # We first find an estimation for R0 and phiCR using the gradient algorithm
+        algorithm_G.quadratic_fit_search(precision_G, maximum_points_G, cost_tol_G)
+
+        # We now execute a sequence of linear optimizations for each coordinate for every cycle
+        for im, image_name in enumerate(self.original_images.raw_images_names):
+            self.times[name]={}
+            self.radious_points[name]={}
+            self.Z_points[name]={}
+            self.phi_points[name]={}
+            # use the results from the gradient algorithm to initialize the best triplet
+            self.R0_pix_best[name]=[2*algorithm_G.optimals[name]]
+            self.Z_best[name]=[0.0]
+            self.phi_CR_best[name]=[algorithm_G.angles[name]]
+            simulations=0
+            for cycle in range(cycles):
+                # Optimize Radious
+                (time_rad, self.radious_points[name][cycle], R0_pix_best, radi_optimum,
+                 _)=self.radious_optimizer.quadratic_fit_search(
+                    precision_pix, maximum_points_R0, cost_tol,
+                    self.original_images.centered_ring_images[im],
+                    (self.phi_CR_best[name][-1], self.Z_best[name][-1]), self.R0_pix_best[name][-1]
+                )
+
+                # Optimize Angle
+                (time_ang, self.phi_points[name][cycle], phi_CR_best, phi_optimum, _)=self.angle_optimizer.quadratic_fit_search(
+                    precision_phi, maximum_points_phi, cost_tol,
+                    self.original_images.centered_ring_images[im],
+                    (R0_pix_best, self.Z_best[name][-1]), self.phi_CR_best[name][-1]
+                )
+
+                # Optimize Z
+                self.Z_optimizer.a=-2*np.sqrt(1/3)*R0_pix_best*self.simulator.dx
+                self.Z_optimizer.b=-self.Z_optimizer.a
+                (time_Z, self.Z_points[name][cycle], Z_best, Z_optimum,
+                    _)=self.Z_optimizer.quadratic_fit_search(
+                        precision_Z, maximum_points_Z, cost_tol,
+                        self.original_images.centered_ring_images[im],
+                        (phi_CR_best, R0_pix_best), self.Z_best[name][-1]
+                    )
+
+                self.times[name][cycle]=time_rad+time_ang+time_Z
+                self.R0_pix_best[name].append(R0_pix_best)
+                self.phi_CR_best[name].append(phi_CR_best)
+                self.Z_best[name].append(Z_best)
+
+                simulations+=len(self.phi_points[name][cycle])+len(self.radious_points[name][cycle])+len(self.Z_points[name][cycle])
+
+                # check if convergence criterion is met
+                if((abs(Z_optimum-phi_optimum)<cost_tol and
+                        abs(phi_optimum-radi_optimum)<cost_tol)
+                        or (abs(self.R0_pix_best[name][-2]-R0_pix_best)<precision_pix and
+                        abs(self.phi_CR_best[-2]-phi_CR_best)<precision_phi and
+                        abs(self.Z_best[name][-2]-Z_best)<precision_Z)):
+                    self.last_cycle=cycle
+                    break
+            self.best_radii[name]=R0_pix_best
+            self.best_zs[name]=Z_best
+            self.best_angles[name]=phi_CR_best
+            self.simulations_required[name]=simulations
+
+
+    def save_result_plots(Self, out_path, meth_name):
+        os.makedirs(f"{output_path}/Simulation_Coordinate_Descent/", exist_ok=True)
+        self.algorithm_G.save_result_plots_fibonacci_or_quadratic(f"{output_path}/Simulation_Coordinate_Descent/")
+        fig = plt.figure(figsize=(5*self.last_cycle,5*3))
+        fig, axes = plt.subplots(self.last_cycle, 3)
+
+        for name in self.phi_points.keys():
+            for cycle in range(self.last_cycle):
+                for i in range(3):
+                    axes[cycle, i].clear()
+
+                axes[cycle, 0].plot(self.radious_points[name][:,0], self.radious_points[name][:,1], 'o', label=f'R0 descent fixing phiCR={self.phi_CR_best[name][cycle]}; Z={self.Z_best[name][cycle]}')
+                axes[cycle, 1].plot(self.phi_points[name][:,0], self.phi_points[name][:,1], 'o', label=f'phiCR descent fixing R0={self.R0_pix_best[name][cycle+1]}; Z={self.Z_best[name][cycle]}')
+                axes[xyxle, 2].plot(self.Z_points[name][:,0], self.Z_points[name][:,1], 'o', label=f'Z descent fixing R0={self.R0_pix_best[name][cycle+1]}; phiCR={self.phi_CR_best[name][cycle+1]}')
+
+                axes[cycle, 0].set_xlabel("R0 (pixels)")
+                axes[cycle, 1].set_xlabel("phi_CR (rad)")
+                axes[cycle, 2].set_xlabel("Z (w0-s)")
+                axes[cycle, 0].set_title(f"Best of cycle={self.R0_pix_best[name][cycle]}\n Computed points={len(self.radious_points[name][cycle])}")
+                axes[cycle, 1].set_title(f"Best of cycle={self.phi_CR_best[name][cycle]}\n Computed points={len(self.phi_points[name][cycle])}")
+                axes[cycle, 2].set_title(f"Best of cycle={self.Z_best[name][cycle]}\n Computed points={len(self.Z_points[name][cycle])}")
+
+                for i in range(3):
+                    axes[cycle, i].set_ylabel("sum(abs(simulated_image(phiCR, R0, Z)-exper_image))")
+                    axes[cycle, i].grid(True)
+                    axes[cycle, i].legend()
+
+                fig.suptitle(f"{meth_name}  {name}\nBest triplet: phiCR={self.best_angles[name]}rad; R0={self.best_radii[name]}pix; Z={self.best_zs[name]}w0")
+            plt.savefig(f"{out_path}/Simulation_Coordinate_Descent/{meth_name}__{name}.png")
+            simulator.compute_and_plot_CR_ring(self, CR_ring_angle=self.best_angles[name], R0_pixels=self.best_radii[name], Z=self.best_zs[name], output_path=f"{out_path}/Simulation_Coordinate_Descent/", name)
+
+# last todo, izengo zan integretie en el full test. Gero Jaxice eta orduen bai yasta testie ia typoak eta bugek!

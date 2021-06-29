@@ -148,6 +148,10 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             self.execute_histogram_algorithm)
         self.run_gradient_algorithm.clicked.connect(
             self.execute_gradient_algorithm)
+        self.run_sc.clicked.connect(
+            self.execute_simulation_coordinate_descent_algorithm)
+        self.run_ss.clicked.connect(
+            self.execute_simulation_tracker_simplex_algorithm)
 
         # When live test buttons are pressed execute stuff
         self.camera_initialized=False
@@ -252,6 +256,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.grabReference.setEnabled(state)
         self.createImages.setEnabled(state)
         self.run_full_test.setEnabled(state)
+        self.run_sc.setEnabled(state)
+        self.run_ss.setEnabled(state)
 
     def initialize_Angle_Calculator_instance_convert_images(self):
         """
@@ -537,6 +543,87 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             "Bit exact nearest neighbor interpolation":cv2.INTER_NEAREST_EXACT}
         return flags[combo_widget.currentText()]
 
+    def execute_simulation_coordinate_descent_algorithm(self):
+        # Block everything to user
+        self.block_hard_user_interaction(False)
+        # Run worker for non-blocking computations
+        self.strong_worker.set_new_task_and_arguments(
+            self._execute_simulation_coordinate_descent_algorithm, []
+        )
+        self.strong_worker.start()
+
+    def _execute_simulation_coordinate_descent_algorithm(self):
+        ret = self._check_image_loader_ready()
+        if ret==1: # failed!
+            return 1
+        logging.info(" Image loader ready!")
+        # Initialize instance of Simulation Coordinate descent Algorithm calculator
+        simulator_cd_algorithm = Simualtion_Coordinate_Descent_Algorithm(self.image_loader,
+            int(self.max_cycles.text()), None, None,
+            eval(self.min_phi_S.text()), eval(self.max_phi_S.text()),
+            eval(self.min_R0_S.text()), eval(self.max_R0_S.text()),
+            float(self.initial_guess_delta_R0_SC.text()),
+            float(self.initial_guess_delta_phi_SC.text()),
+            float(self.initial_guess_delta_Z_SC.text()),
+            eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
+            n=float(self.n_S.text()), w0=float(Self.w0_S.text()), a0=float(self.a0_S.text()),
+            max_k=float(self.maxK_S.text()), num_k=int(self.numK_S.text()),
+            nx=eval(self.nx_S.text()), xmin=float(self.xmin_S.text()),
+            xmax=float(self.xmax_S.text()) ,ymin=float(self.ymin_S.text()),
+            ymax=float(self.ymax_S.text()), xChunk=int(self.xChunks_S.text()),
+            yChunk=int(self.yChunks_S.text()),
+            min_radi_G=eval(self.min_rad_G_2.text()),
+            max_radi_G=eval(self.max_rad_G_2.text()),
+            use_exact_gravicenter_G=self.use_exact_grav_G_2.isChecked(),
+            initial_guess_delta_G=float(self.initial_guess_G_2.text()))
+
+        # Get arguments and run algorithm depending on the chosen stuff
+        logging.info(" Running Simulation Coordinate Descent Algorithm...")
+        if self.fibonacci_SC.isChecked():
+            simulator_cd_algorithm.fibonacci_ratio_search(
+                float(self.prec_R0_SC.text()),
+                int(self.max_pt_R0_SC.text()),
+                float(self.prec_phi_SC.text()),
+                int(self.max_pt_phi_SC.text()),
+                float(self.prec_Z_SC.text()),
+                int(self.max_pt_Z_SC.text()),
+                float(self.abs_cost_tol_SC.text()),
+                float(self.precision_G_2.text()), int(self.max_it_G_2.text()),
+                float(self.cost_tol_G_2.text())
+            )
+
+        else:
+            simulator_cd_algorithm.quadratic_fit_search(
+                float(self.prec_R0_SC.text()),
+                int(self.max_pt_R0_SC.text()),
+                float(self.prec_phi_SC.text()),
+                int(self.max_pt_phi_SC.text()),
+                float(self.prec_Z_SC.text()),
+                int(self.max_pt_Z_SC.text()),
+                float(self.abs_cost_tol_SC.text()),
+                float(self.precision_G_2.text()), int(self.max_it_G_2.text()),
+                float(self.cost_tol_G_2.text())
+            )
+        logging.info(f"Times (s) = {simulator_cd_algorithm.times}\n\nFound optimal radii in pixels = {simulator_cd_algorithm.best_radii}\n\Z plane position (w0 units) = {simulator_cd_algorithm.best_zs}\n\nPolarization Angle (rad)={simulator_cd_algorithm.best_angles}\n\nNumber of Simulations required ={simulator_cs_algorithm.simulations_required}")
+
+        if (self.output_plots.isChecked()):
+            simulator_cd_algorithm.save_result_plots(self.output_directory.text())
+
+
+
+    def execute_simulation_tracker_simplex_algorithm(self):
+        # Block everything to user
+        self.block_hard_user_interaction(False)
+        # Run worker for non-blocking computations
+        self.strong_worker.set_new_task_and_arguments(
+            self._execute_simulation_tracker_simplex_algorithm, []
+        )
+        self.strong_worker.start()
+
+    def _execute_simulation_tracker_simplex_algorithm(self):
+        pass
+
+
 
     def run_test_camera(self):
         # Block everything to user
@@ -742,16 +829,20 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             return 1
         logging.info(" Image loader ready!")
         # Prepare dictionary to register all the information
-        benchu = {'Image Name':[], 'Algorithm':[], 'Time':[], 'Found Optimal':[], 'Optimal Precision':[], 'Found Polarization':[], 'Ground Truth Polarization':[], 'True Precision':[]}
+        benchu = {'Image Name':[], 'Algorithm':[], 'Time':[], 'Found Optimal':[], 'Optimal Precision':[], 'Found Polarization':[], 'Ground Truth Polarization':[], 'True Precision':[], 'Correct Decimals':[]}
         # image names
         image_names=self.image_loader.raw_images_names
-        # Get Ground Truth Polarization angles if simulated else set to Null
+        # Get Ground Truth Polarization angles if simulated else set to None
         ground_truths={}
         for name in image_names:
             try:
                 ground_truths[name]=float(name.split('PolAngle_')[1].split('_')[0])
             except:
                 ground_truths[name]=np.nan
+
+        def num_of_zeros(n): # To count the number of zero decimals before non-zeros
+            s = '{:.16f}'.format(n).split('.')[1]
+            return len(s) - len(s.lstrip('0'))
         # Function to extract algorithm run information into benchmark dictionary
         def to_benchmark_dict(bench, alg, images, alg_name, ground_truths):
             for key, name in zip(alg.times.keys(), images):
@@ -771,7 +862,11 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 benchu['Found Polarization'].append(alg.angles[key]/2)
                 benchu['Ground Truth Polarization'].append(ground_truths[name])
-                benchu['True Precision'].append(abs(ground_truths[name]-alg.angles[key]/2))
+                benchu['True Precision'].append(abs(abs(ground_truths[name])-abs(alg.angles[key]/2)))
+                try:
+                    benchu['Correct Decimals'].append(num_of_zeros(benchu['True Precision'][-1]))
+                except:
+                    benchu['Correct Decimals'].append(0)
 
         import pandas as pd
         import datetime
@@ -921,40 +1016,52 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def plot_benchmark_results(self, benchu, images, path):
         fig, ax = plt.subplots(1,1,figsize=(20,12))
-        barWidth = 0.15
+        barWidth = 0.1
         for name in images:
             ax.set_title('Benchmark on Image:\n'+name+'\n')
             benchm = benchu[benchu["Image Name"]==name]
             r1 = np.arange(len(benchm["Time"]))
 
-            ax.bar(r1, benchm["Time"], color='#7f6d5f', width=barWidth, edgecolor='white', label='Time')
-            ax.set_ylabel("Time (s)", color='#7f6d5f')
-            ax.tick_params(axis='y', colors='#7f6d5f')
+            ax.bar(r1, benchm["Time"], color='orange', width=barWidth, edgecolor='white', label='Time')
+            ax.set_ylabel("Time (s)", color='orange')
+            ax.tick_params(axis='y', colors='orange')
 
             ax2=ax.twinx()
             ax2.bar([x + barWidth for x in r1], benchm["Optimal Precision"], color='#557f2d', width=barWidth, edgecolor='white', label='Set Precision')
             ax2.bar([x + 2*barWidth for x in r1], benchm["True Precision"], color='blue', width=barWidth, edgecolor='white', label='True Precision')
             ax2.set_ylabel("Precision", color='blue')
             ax2.tick_params(axis='y', colors='blue')
+            ax2.set_ylim((0,0.02))
 
 
             ax3=ax.twinx()
-            ax3.bar([x + 3*barWidth for x in r1], benchm["Found Polarization"], color='orange', width=barWidth, edgecolor='white', label='Found Polarization')
-            ax3.bar([x + 4*barWidth for x in r1  ], benchm["Ground Truth Polarization"], color='violet', width=barWidth, edgecolor='white', label='G.True Polarization')
-            ax3.set_ylabel("Polarization (rad)", color='orange')
-            ax3.tick_params(axis='y', colors='orange')
-
+            ax3.bar([x + 3*barWidth for x in r1], benchm["Found Polarization"], color='#7f6d5f', width=barWidth, edgecolor='white', label='Found Polarization')
+            ax3.bar([x + 4*barWidth for x in r1  ], benchm["Ground Truth Polarization"], color='brown', width=barWidth, edgecolor='white', label='G.True Polarization')
+            ax3.tick_params(axis='y', colors='#7f6d5f')
 
             ax3.spines['right'].set_position(('axes', 1.07))
             ax3.set_frame_on(True)
             ax3.patch.set_visible(False)
+            ax3.set_ylabel("Polarization (rad)", color='#7f6d5f')
+            ax3.set_ylim((-np.pi/2, np.pi/2))
+
+            ax4 = ax.twinx()
+            ax4.bar([x + 5*barWidth for x in r1], benchm["Correct Decimals"], color='red', width=barWidth, edgecolor='white', label='Correct Decimals')
+            ax4.yaxis.tick_left()
+            rspine = ax4.spines['left']
+            rspine.set_position(('axes', -0.07))
+            ax4.yaxis.set_label_position("left")
+            ax4.tick_params(axis='y', colors='red')
+            ax4.set_ylim((0,10))
+            #ax4.set_frame_on(True)
+            #ax4.patch.set_visible(False)
+            ax4.set_ylabel("Number of correct Decimals", color='red')
 
             fig.legend(loc="upper right")
 
             #ax.set_xlabel('Algorithm', fontweight='bold')
             plt.xticks([r + barWidth for r in range(len(benchm["Time"]))], benchm['Algorithm'])
-            ax.tick_params(axis='x', rotation=30)
-            ax2.set_ylim((0,0.1))
+            ax.tick_params(axis='x', rotation=30, length=10, width=2)
             ax3.grid(True,color='#7f6d5f')
             #ax2.grid(True, color='blue')
             #ax3.grid(True, color='orange')
@@ -962,10 +1069,9 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             ax.clear()
             ax2.clear()
             ax3.clear()
-
-
-
-
+            ax4.clear()
+            fig.clf()
+            ax=fig.add_subplot(111)
 
 
 if __name__ == "__main__":

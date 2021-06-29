@@ -212,7 +212,7 @@ Interpolation Algorithm:</string>
            <string>Use i607 images</string>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">buttonGroup</string>
@@ -230,6 +230,9 @@ Interpolation Algorithm:</string>
          <widget class="QRadioButton" name="use_iX">
           <property name="text">
            <string>Use iX images with X:</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">buttonGroup</string>
@@ -341,11 +344,11 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>5</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
-            <string>G - Gradient Algorithm</string>
+            <string>G - Gradient Alg.</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_2">
             <item row="0" column="3">
@@ -363,6 +366,9 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
             </item>
             <item row="0" column="4">
              <widget class="QLineEdit" name="max_rad_G">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>200</width>
@@ -370,12 +376,15 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
                </size>
               </property>
               <property name="text">
-               <string>2000</string>
+               <string>np.sqrt(2)*image_loader.mode</string>
               </property>
              </widget>
             </item>
             <item row="0" column="2">
              <widget class="QLineEdit" name="min_rad_G">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>200</width>
@@ -440,7 +449,7 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
           </widget>
           <widget class="QWidget" name="tab_4">
            <attribute name="title">
-            <string>R - Rotatation Algorithm</string>
+            <string>R - Rotatation Alg.</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_3">
             <item row="0" column="0">
@@ -481,6 +490,9 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
             </item>
             <item row="0" column="3">
              <widget class="QLineEdit" name="theta_min_R">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>200</width>
@@ -494,6 +506,9 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
             </item>
             <item row="0" column="5">
              <widget class="QLineEdit" name="theta_max_R">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>200</width>
@@ -535,7 +550,7 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
           </widget>
           <widget class="QWidget" name="tab_5">
            <attribute name="title">
-            <string>H - Radial Histogram Algorithm</string>
+            <string>H - Angular Histogram Alg.</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="0" column="0" rowspan="2">
@@ -561,7 +576,7 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
             <item row="0" column="2" rowspan="2" alignment="Qt::AlignLeft">
              <widget class="QLineEdit" name="angle_bin_size_H">
               <property name="text">
-               <string>0.1</string>
+               <string>0.01</string>
               </property>
              </widget>
             </item>
@@ -649,7 +664,7 @@ centered image</string>
           </widget>
           <widget class="QWidget" name="tab_6">
            <attribute name="title">
-            <string>M - Mirror Algorithm</string>
+            <string>M - Mirror Alg.</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_5">
             <item row="0" column="0">
@@ -822,13 +837,13 @@ centered image</string>
           </widget>
           <widget class="QWidget" name="tab_10">
            <attribute name="title">
-            <string>Search Algorithm for G, R and M</string>
+            <string>Search Algorithm for G, R, M and SC</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_7">
             <item row="0" column="2" rowspan="9">
              <widget class="QTabWidget" name="tabWidget_4">
               <property name="currentIndex">
-               <number>0</number>
+               <number>2</number>
               </property>
               <widget class="QWidget" name="tab_12">
                <attribute name="title">
@@ -866,7 +881,7 @@ centered image</string>
                 <item row="1" column="2" colspan="2">
                  <widget class="QLineEdit" name="angle_step_1_pix">
                   <property name="text">
-                   <string>10</string>
+                   <string>100</string>
                   </property>
                  </widget>
                 </item>
@@ -887,7 +902,7 @@ centered image</string>
                 <item row="2" column="2" colspan="2">
                  <widget class="QLineEdit" name="angle_step_2_pix">
                   <property name="text">
-                   <string>4</string>
+                   <string>40</string>
                   </property>
                  </widget>
                 </item>
@@ -909,7 +924,7 @@ Precision:</string>
                 <item row="3" column="2" colspan="2">
                  <widget class="QLineEdit" name="angle_step_3_pix">
                   <property name="text">
-                   <string>2</string>
+                   <string>5</string>
                   </property>
                  </widget>
                 </item>
@@ -1253,6 +1268,692 @@ Precision:</string>
                <string>Guess delta
 R, M Angle (rad):</string>
               </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_16">
+           <attribute name="title">
+            <string>S - Simulation Alg.</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_13">
+            <item row="0" column="0">
+             <widget class="QTabWidget" name="tabWidget_5">
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <property name="tabBarAutoHide">
+               <bool>true</bool>
+              </property>
+              <widget class="QWidget" name="tab_20">
+               <attribute name="title">
+                <string>Simulation Settings</string>
+               </attribute>
+               <layout class="QGridLayout" name="gridLayout_17">
+                <item row="3" column="8">
+                 <widget class="QLabel" name="label_101">
+                  <property name="text">
+                   <string>Simulate in y Chunks:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="4" colspan="3">
+                 <widget class="QLabel" name="label_99">
+                  <property name="text">
+                   <string>ymax:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="7">
+                 <widget class="QLineEdit" name="ymax_S">
+                  <property name="text">
+                   <string>15</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0" rowspan="3">
+                 <widget class="QLabel" name="label_91">
+                  <property name="text">
+                   <string>w0:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="7" rowspan="2">
+                 <widget class="QLineEdit" name="ymin_S">
+                  <property name="text">
+                   <string>-15</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="0" colspan="3">
+                 <widget class="QLabel" name="label_93">
+                  <property name="text">
+                   <string>maxK:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="3">
+                 <widget class="QLineEdit" name="maxK_S">
+                  <property name="text">
+                   <string>50</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="0" colspan="2">
+                 <widget class="QLabel" name="label_94">
+                  <property name="text">
+                   <string>numK:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="0" rowspan="2" colspan="2">
+                 <widget class="QLabel" name="label_92">
+                  <property name="text">
+                   <string>a0:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="4" rowspan="2" colspan="3">
+                 <widget class="QLabel" name="label_98">
+                  <property name="text">
+                   <string>ymin:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="4" rowspan="2">
+                 <widget class="QLabel" name="label_96">
+                  <property name="text">
+                   <string>xmin:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_90">
+                  <property name="text">
+                   <string>n:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="8">
+                 <widget class="QLabel" name="label_100">
+                  <property name="text">
+                   <string>Simulate in x Chunks:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="9">
+                 <widget class="QLineEdit" name="yChunks_S">
+                  <property name="text">
+                   <string>500</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="4" rowspan="2" colspan="3">
+                 <widget class="QLabel" name="label_97">
+                  <property name="text">
+                   <string>xmax:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="7">
+                 <widget class="QLineEdit" name="xmax_S">
+                  <property name="text">
+                   <string>15</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="4">
+                 <widget class="QLabel" name="label_95">
+                  <property name="text">
+                   <string>nx=ny:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="7">
+                 <widget class="QLineEdit" name="nx_S">
+                  <property name="text">
+                   <string>self.image_loader.mode*2+1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="6" colspan="2">
+                 <widget class="QLineEdit" name="xmin_S">
+                  <property name="text">
+                   <string>-15</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="3">
+                 <widget class="QLineEdit" name="numK_S">
+                  <property name="text">
+                   <string>500</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="3">
+                 <widget class="QLineEdit" name="a0_S">
+                  <property name="text">
+                   <string>1.0</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="3" rowspan="2">
+                 <widget class="QLineEdit" name="w0_S">
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3">
+                 <widget class="QLineEdit" name="n_S">
+                  <property name="text">
+                   <string>1.5</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="9">
+                 <widget class="QLineEdit" name="xChunks_S">
+                  <property name="text">
+                   <string>500</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="8" column="9">
+                 <widget class="QRadioButton" name="use_GPU_S">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>Use GPU (Jax)</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="tab_17">
+               <attribute name="title">
+                <string>G Alg. Options</string>
+               </attribute>
+               <layout class="QGridLayout" name="gridLayout_18">
+                <item row="0" column="4">
+                 <widget class="QLabel" name="label_84">
+                  <property name="text">
+                   <string>Rel. Cost Tolerance:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="5">
+                 <widget class="QLineEdit" name="max_it_G_2">
+                  <property name="text">
+                   <string>1000</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0" colspan="2">
+                 <widget class="QLineEdit" name="min_rad_G_2">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>200</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_86">
+                  <property name="text">
+                   <string>Initial Guess Delta (pix):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1" colspan="3">
+                 <widget class="QLineEdit" name="initial_guess_G_2">
+                  <property name="text">
+                   <string>100</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="4">
+                 <widget class="QLabel" name="label_83">
+                  <property name="text">
+                   <string>Precision* (pix):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="5">
+                 <widget class="QLineEdit" name="precision_G_2">
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QLabel" name="label_74">
+                  <property name="maximumSize">
+                   <size>
+                    <width>30</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>to</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_75">
+                  <property name="maximumSize">
+                   <size>
+                    <width>200</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Angle Range (pixels):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="2">
+                 <widget class="QRadioButton" name="use_image_center_G_2">
+                  <property name="text">
+                   <string>Center in middle pixel of centered image</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_19</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="0" column="5">
+                 <widget class="QLineEdit" name="cost_tol_G_2">
+                  <property name="text">
+                   <string>0</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="4">
+                 <widget class="QLabel" name="label_85">
+                  <property name="text">
+                   <string>Max Iterations:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0" colspan="2">
+                 <widget class="QRadioButton" name="use_exact_grav_G_2">
+                  <property name="text">
+                   <string>Center exactly in Gravicenter</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_19</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="3" column="3" colspan="3">
+                 <widget class="QLineEdit" name="max_rad_G_2">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>200</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>np.sqrt(2)*image_loader.mode</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="tab_21">
+               <attribute name="title">
+                <string>Search Domain</string>
+               </attribute>
+               <layout class="QGridLayout" name="gridLayout_19">
+                <item row="2" column="3">
+                 <widget class="QLabel" name="label_70">
+                  <property name="text">
+                   <string>Min phi_CR (rad):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="2">
+                 <widget class="QLineEdit" name="max_R0_S">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>np.sqrt(2)*image_loader.mode</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0" colspan="2">
+                 <widget class="QLabel" name="label_72">
+                  <property name="text">
+                   <string>Min R0 (pix):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QLineEdit" name="min_R0_S">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0" colspan="2">
+                 <widget class="QLabel" name="label_73">
+                  <property name="text">
+                   <string>Max R0 (pix):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="5">
+                 <widget class="QLineEdit" name="max_phi_S">
+                  <property name="text">
+                   <string>np.pi</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QLineEdit" name="minZ_S">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>-np.sqrt(4/3)*best_R0</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_69">
+                  <property name="text">
+                   <string>Min Z:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="3">
+                 <widget class="QLabel" name="label_71">
+                  <property name="text">
+                   <string>Max phi_CR (rad):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_68">
+                  <property name="text">
+                   <string>Max Z:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="5">
+                 <widget class="QLineEdit" name="min_phi_S">
+                  <property name="text">
+                   <string>-np.pi</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QLineEdit" name="maxZ_S">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>np.sqrt(4/3)*best_R0</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="tab_18">
+               <attribute name="title">
+                <string>SC - Coordinate Descent</string>
+               </attribute>
+               <layout class="QGridLayout" name="gridLayout_20">
+                <item row="0" column="0" colspan="2">
+                 <widget class="QLabel" name="label_7">
+                  <property name="text">
+                   <string>Max Coordinate Desc. cycles:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_76">
+                  <property name="text">
+                   <string>Abs. Cost Tolerance:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1" colspan="2">
+                 <widget class="QLineEdit" name="abs_cost_tol_SC">
+                  <property name="text">
+                   <string>1e-5</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="3" colspan="2">
+                 <widget class="QLabel" name="label_80">
+                  <property name="text">
+                   <string>Max points phi (per cycle):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="5">
+                 <widget class="QLineEdit" name="max_pt_phi_SC">
+                  <property name="text">
+                   <string>15</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="6">
+                 <widget class="QLabel" name="label_89">
+                  <property name="text">
+                   <string>Initial guess delta phi:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="7">
+                 <widget class="QLineEdit" name="initial_guess_delta_phi_SC">
+                  <property name="text">
+                   <string>0.01</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_77">
+                  <property name="text">
+                   <string>Precision* phi_CR:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1" colspan="2">
+                 <widget class="QLineEdit" name="prec_phi_SC">
+                  <property name="text">
+                   <string>0.001</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="3" colspan="2">
+                 <widget class="QLabel" name="label_81">
+                  <property name="text">
+                   <string>Max points R0 (per cycle):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="5">
+                 <widget class="QLineEdit" name="max_pt_R0_SC">
+                  <property name="text">
+                   <string>15</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="6">
+                 <widget class="QLabel" name="label_87">
+                  <property name="text">
+                   <string>Initial guess delta R0:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="7">
+                 <widget class="QLineEdit" name="initial_guess_delta_R0_SC">
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_78">
+                  <property name="text">
+                   <string>Precision* R0_pix:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1" colspan="2">
+                 <widget class="QLineEdit" name="prec_R0_SC">
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="3" colspan="2">
+                 <widget class="QLabel" name="label_82">
+                  <property name="text">
+                   <string>Max points Z (per cycle):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="5">
+                 <widget class="QLineEdit" name="max_pt_Z_SC">
+                  <property name="text">
+                   <string>15</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="6">
+                 <widget class="QLabel" name="label_88">
+                  <property name="text">
+                   <string>Initial guess delta Z:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="7">
+                 <widget class="QLineEdit" name="initial_guess_delta_Z_SC">
+                  <property name="text">
+                   <string>0.1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_79">
+                  <property name="text">
+                   <string>Precision* Z:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1" colspan="2">
+                 <widget class="QLineEdit" name="prec_Z_SC">
+                  <property name="text">
+                   <string>0.1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="5">
+                 <widget class="QRadioButton" name="fibonacci_SC">
+                  <property name="text">
+                   <string>Use Fibonacci Ratio Search</string>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_18</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="0" column="6">
+                 <widget class="QRadioButton" name="quadratic_SC">
+                  <property name="text">
+                   <string>Use Quadratic Fit Search</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">buttonGroup_18</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="4" column="6" colspan="2">
+                 <widget class="QPushButton" name="run_SC">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>RUN SC</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLineEdit" name="max_cycles">
+                  <property name="text">
+                   <string>3</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="3" colspan="3">
+                 <widget class="QRadioButton" name="radioButton_3">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>Use Gradient Alg. for initial guess</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="tab_19">
+               <attribute name="title">
+                <string>SS - Tracker Simplex </string>
+               </attribute>
+               <widget class="QPushButton" name="run_SS">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="geometry">
+                 <rect>
+                  <x>360</x>
+                  <y>110</y>
+                  <width>108</width>
+                  <height>34</height>
+                 </rect>
+                </property>
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>RUN SS</string>
+                </property>
+               </widget>
+              </widget>
              </widget>
             </item>
            </layout>
@@ -1703,42 +2404,42 @@ In chunks of:</string>
         <string>Simulate Theoretical Ring</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_12">
-        <item row="6" column="8">
+        <item row="7" column="8">
          <widget class="QLabel" name="label_44">
           <property name="text">
            <string>z_max:</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="6">
+        <item row="7" column="6">
          <widget class="QLineEdit" name="ymax">
           <property name="text">
            <string>15</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="9">
+        <item row="6" column="9">
          <widget class="QLineEdit" name="zmin">
           <property name="text">
            <string>-2</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="5">
+        <item row="10" column="5">
          <widget class="QLabel" name="label_51">
           <property name="text">
            <string>Input Beam:</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
+        <item row="2" column="0">
          <widget class="QLabel" name="label_32">
           <property name="text">
            <string>Laser Waist Radius (w0):</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="6">
+        <item row="10" column="6">
          <widget class="QComboBox" name="beam">
           <item>
            <property name="text">
@@ -1747,49 +2448,49 @@ In chunks of:</string>
           </item>
          </widget>
         </item>
-        <item row="7" column="6">
+        <item row="8" column="6">
          <widget class="QLineEdit" name="ny">
           <property name="text">
            <string>400</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="5">
+        <item row="6" column="5">
          <widget class="QLabel" name="label_36">
           <property name="text">
            <string>y_min:</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="8">
+        <item row="6" column="8">
          <widget class="QLabel" name="label_43">
           <property name="text">
            <string>z_min:</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QLineEdit" name="w0">
           <property name="text">
            <string>1</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="8">
+        <item row="8" column="8">
          <widget class="QLabel" name="label_48">
           <property name="text">
            <string>n_z:</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="5">
+        <item row="4" column="5">
          <widget class="QLabel" name="label_50">
           <property name="text">
            <string>n_k:</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="0" colspan="2">
+        <item row="1" column="0" colspan="2">
          <widget class="QLabel" name="label_14">
           <property name="font">
            <font>
@@ -1803,119 +2504,119 @@ In chunks of:</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="5">
+        <item row="7" column="5">
          <widget class="QLabel" name="label_37">
           <property name="text">
            <string>y_max:</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
+        <item row="4" column="1">
          <widget class="QLineEdit" name="R0">
           <property name="text">
            <string>10</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="6">
+        <item row="4" column="6">
          <widget class="QLineEdit" name="nk">
           <property name="text">
            <string>500</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
+        <item row="4" column="0">
          <widget class="QLabel" name="label_33">
           <property name="text">
            <string>Geometric Radius (R0):</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="6">
+        <item row="2" column="6">
          <widget class="QLineEdit" name="kmax">
           <property name="text">
            <string>50</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="5">
+        <item row="2" column="5">
          <widget class="QLabel" name="label_49">
           <property name="text">
            <string>k_max:</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="5">
+        <item row="8" column="5">
          <widget class="QLabel" name="label_47">
           <property name="text">
            <string>n_y:</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="6">
+        <item row="6" column="6">
          <widget class="QLineEdit" name="ymin">
           <property name="text">
            <string>-15</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="9">
+        <item row="8" column="9">
          <widget class="QLineEdit" name="nz">
           <property name="text">
            <string>5</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="9">
+        <item row="7" column="9">
          <widget class="QLineEdit" name="zmax">
           <property name="text">
            <string>2</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
+        <item row="6" column="0">
          <widget class="QLabel" name="label_34">
           <property name="text">
            <string>x_min:</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="1">
+        <item row="6" column="1">
          <widget class="QLineEdit" name="xmin">
           <property name="text">
            <string>-15</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="0">
+        <item row="7" column="0">
          <widget class="QLabel" name="label_35">
           <property name="text">
            <string>x_max:</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
+        <item row="7" column="1">
          <widget class="QLineEdit" name="xmax">
           <property name="text">
            <string>15</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="0">
+        <item row="8" column="0">
          <widget class="QLabel" name="label_45">
           <property name="text">
            <string>n_x:</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="1">
+        <item row="8" column="1">
          <widget class="QLineEdit" name="nx">
           <property name="text">
            <string>400</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="0">
+        <item row="10" column="0">
          <widget class="QRadioButton" name="fullSimulation">
           <property name="text">
            <string>Compute Full Solution</string>
@@ -1928,7 +2629,7 @@ In chunks of:</string>
           </attribute>
          </widget>
         </item>
-        <item row="9" column="1">
+        <item row="10" column="1">
          <widget class="QRadioButton" name="approxSimulation">
           <property name="text">
            <string>Compute Approximation</string>
@@ -1938,7 +2639,7 @@ In chunks of:</string>
           </attribute>
          </widget>
         </item>
-        <item row="0" column="8" colspan="2">
+        <item row="1" column="8" colspan="2">
          <widget class="QPushButton" name="createImages">
           <property name="font">
            <font>
@@ -1951,21 +2652,21 @@ In chunks of:</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="8">
+        <item row="2" column="8">
          <widget class="QLabel" name="label_53">
           <property name="text">
            <string>n:</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="9">
+        <item row="2" column="9">
          <widget class="QLineEdit" name="n">
           <property name="text">
            <string>1.5</string>
           </property>
          </widget>
         </item>
-        <item row="12" column="0">
+        <item row="13" column="0">
          <widget class="QLabel" name="label_52">
           <property name="text">
            <string>Input Beam Polarization 
@@ -1973,28 +2674,28 @@ Jones Vector (note i is 1j).:</string>
           </property>
          </widget>
         </item>
-        <item row="12" column="1">
+        <item row="13" column="1">
          <widget class="QLineEdit" name="polar0">
           <property name="text">
            <string>1</string>
           </property>
          </widget>
         </item>
-        <item row="12" column="5">
+        <item row="13" column="5">
          <widget class="QLineEdit" name="polar1">
           <property name="text">
            <string>1j</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="9">
+        <item row="10" column="9">
          <widget class="QLineEdit" name="sim_chunk_x">
           <property name="text">
            <string>40</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="8">
+        <item row="10" column="8">
          <widget class="QLabel" name="label_61">
           <property name="text">
            <string>Compute x pixels
@@ -2002,7 +2703,7 @@ Jones Vector (note i is 1j).:</string>
           </property>
          </widget>
         </item>
-        <item row="12" column="8">
+        <item row="13" column="8">
          <widget class="QLabel" name="label_66">
           <property name="text">
            <string>Compute y pixels
@@ -2010,10 +2711,20 @@ Jones Vector (note i is 1j).:</string>
           </property>
          </widget>
         </item>
-        <item row="12" column="9">
+        <item row="13" column="9">
          <widget class="QLineEdit" name="sim_chunk_y">
           <property name="text">
            <string>40</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="6">
+         <widget class="QRadioButton" name="radioButton_5">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Use GPU (Jax)</string>
           </property>
          </widget>
         </item>
@@ -2028,22 +2739,24 @@ Jones Vector (note i is 1j).:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_13"/>
-  <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_3"/>
   <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_7"/>
-  <buttongroup name="buttonGroup_2"/>
   <buttongroup name="buttonGroup_14"/>
-  <buttongroup name="buttonGroup_9"/>
-  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_2"/>
   <buttongroup name="buttonGroup_12"/>
   <buttongroup name="buttonGroup_10"/>
-  <buttongroup name="buttonGroup_16"/>
   <buttongroup name="buttonGroup_15"/>
-  <buttongroup name="buttonGroup_5"/>
-  <buttongroup name="buttonGroup_3"/>
   <buttongroup name="buttonGroup_17"/>
+  <buttongroup name="buttonGroup_16"/>
+  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup_6"/>
   <buttongroup name="buttonGroup_11"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_18"/>
+  <buttongroup name="buttonGroup_19"/>
  </buttongroups>
 </ui>

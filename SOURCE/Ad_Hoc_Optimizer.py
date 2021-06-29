@@ -66,7 +66,7 @@ class Ad_Hoc_Optimizer:
         while self.F_n[-1]<=F_Nplus1:
             self.F_n.append(self.F_n[-1]+self.F_n[-2])
 
-    def fibonacci_ratio_search(self, precision, maximum_points, cost_tol, image, args_for_cost):
+    def fibonacci_ratio_search(self, precision, maximum_points, cost_tol, image, args_for_cost, initial_guess=None):
         """
         Arguments
         --------
@@ -97,7 +97,7 @@ class Ad_Hoc_Optimizer:
 
         t=time()
         # prepare the first point triad just like in quadratic fit search
-        active_points = self.initialize_correct_point_quad(image, args_for_cost)
+        active_points = self.initialize_correct_point_quad(image, args_for_cost, initial_guess)
         # for plotting
         computed_points = active_points.transpose().tolist() # list of all the pairs of (xj,f(xj))
 
@@ -135,7 +135,7 @@ class Ad_Hoc_Optimizer:
             self._round_to_sig(active_points[0,min_point], ach_precision),
             active_points[1,min_point], ach_precision)
 
-    def initialize_correct_point_quad(self, image, args_for_cost):
+    def initialize_correct_point_quad(self, image, args_for_cost, initial_guess=None):
         """
         We initialize a point quad where the minimum of the cost function is for sure not in the
         boundaries of the quad.
@@ -147,9 +147,15 @@ class Ad_Hoc_Optimizer:
         pairs of points is in position 1 or 2.
         """
         # Initialize the active points to consider in the first iteration
-        active_xs = np.array([self.a,
+        if initial_guess==None:
+            active_xs = np.array([self.a,
                                 0.5*(self.b+self.a-self.initial_guess_delta),
                                 0.5*(self.b+self.a+self.initial_guess_delta),
+                                self.b], dtype=np.float64)
+        else: # we have already a candidate for the minimum
+            active_xs = np.array([self.a,
+                                initial_guess-self.initial_guess_delta,
+                                initial_guess+self.initial_guess_delta,
                                 self.b], dtype=np.float64)
 
         # Evaluate cost function for each angle
@@ -165,7 +171,7 @@ class Ad_Hoc_Optimizer:
         # order the four pairs of points by their support position
         return active_points[:, np.argsort(active_points[0])]
 
-    def quadratic_fit_search(self, precision, max_iterations, cost_tol, image, args_for_cost):
+    def quadratic_fit_search(self, precision, max_iterations, cost_tol, image, args_for_cost, initial_guess=None):
         """
         Arguments
         --------
@@ -192,7 +198,7 @@ class Ad_Hoc_Optimizer:
             args_for_cost = (args_for_cost,)
         t=time()
         it=0
-        active_points = self.initialize_correct_point_quad( image, args_for_cost)
+        active_points = self.initialize_correct_point_quad( image, args_for_cost, initial_guess)
 
         computed_points = active_points.transpose().tolist() # list of all the pairs of (xj,f(xj))
 
