@@ -524,7 +524,6 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
 class Gradient_Algorithm(Polarization_Obtention_Algorithm):
     def __init__(self, image_loader, min_radious, max_radious, initial_guess_delta, use_exact_gravicenter, initialize_it=True):
         Polarization_Obtention_Algorithm.__init__(self,image_loader, use_exact_gravicenter)
-        print("Horra!")
         self.optimizer = Ad_Hoc_Optimizer(min_radious, max_radious, initial_guess_delta, self.evaluate_mask_radious)
         self.original_images = image_loader
         #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
@@ -540,7 +539,6 @@ class Gradient_Algorithm(Polarization_Obtention_Algorithm):
         # compute the distance matrices to the gravicenter of the images
         self.cols=np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
         self.rows=self.cols.swapaxes(0,1) #[h,w]
-        print("Gure!")
         if initialize_it:
             if use_exact_gravicenter: #[N_images, 2 (h,w)]
                 self.grav = image_loader.g_centered.squeeze() # squeeze in case there is only one image

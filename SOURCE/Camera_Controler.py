@@ -60,7 +60,6 @@ class Pi_Camera(Camera_Controler):
         self.stop_camera=False
 
     def grab_and_fix_reference(self):
-        print("Ref path",self.reference_path)
         self.outputStream.truncate(0)
         self.camera.start_preview()
         # Camera warm-up time
@@ -68,13 +67,10 @@ class Pi_Camera(Camera_Controler):
         for im in range(self.images_chunk):
             # capture raw image
             self.camera.capture(self.outputStream, 'yuv')
-            print(self.outputStream.array.dtype, self.outputStream.array.shape, self.images.shape, self.outputStream.array)
             # put it in the array for the captured images of this chunk. The array is recorded in uint8
             self.images[im,:,:] = self.outputStream.array[:,:,0] #[h, w, yuv3]->[h,w,y]
             # reset stream
             cv2.imwrite("11.png", self.outputStream.array[:,:,0])
-            cv2.imwrite("2.png", self.outputStream.array[:,:,1])
-            cv2.imwrite("3.png", self.outputStream.array[:,:,2])
             self.outputStream.truncate(0)
             # get a name for the image
             self.names[im]=(datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S)"))
@@ -84,7 +80,7 @@ class Pi_Camera(Camera_Controler):
         self.image_manager.input_raw_images( self.images.astype(np.float64)/np.amax(self.images, axis=(1,2)), self.names)
         self.image_manager.compute_raw_to_iX()
         cv2.imwrite("1.png", (255*self.image_manager.centered_ring_images[0]).astype(np.uint8))
-        
+
         # Get angles
         print("Get Angles")
         self.angle_algorithm.reInitialize(self.image_manager)
