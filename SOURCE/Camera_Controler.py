@@ -49,6 +49,7 @@ class Pi_Camera(Camera_Controler):
         self.outputStream = picamera.array.PiYUVArray(self.camera)
         self.raw_w=(width + 31) // 32 * 32
         self.raw_h=(height + 15) // 16 * 16
+        print(self.w, self.h, self.raw_w, self.raw_h)
         self.images=np.zeros((images_chunk,height, width), dtype=np.uint16)
         self.names=['i' for i in range(images_chunk)]
 
@@ -77,7 +78,7 @@ class Pi_Camera(Camera_Controler):
         self.camera.stop_preview()
 
         # Process the captured images
-        self.image_manager.input_raw_images(self.images.astype(np.float64), self.names)
+        self.image_manager.input_raw_images( self.images.astype(np.float64)/np.amax(self.images, axis=(1,2)), self.names)
         self.image_manager.compute_raw_to_iX()
         # Get angles
         self.angle_algorithm.reInitialize(self.image_manager)

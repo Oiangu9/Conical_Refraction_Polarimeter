@@ -244,16 +244,17 @@ class Image_Manager:
 
         We could introduce an option to print angles in degrees here.
         """
+        self.centered_images_to_plot=(65535*self.centered_ring_images).astype(np.uint16)
         for im, (name, angle) in enumerate(pol_angles.items()):
             # Note that the image will be permanently modified!
-            cv2.putText(self.centered_ring_images[im],
+            cv2.putText(self.centered_images_to_plot[im],
                 f"{angle} +-{precisions[name]} rad", # text to insert
                 (10,500), # spot in the image
                 cv2.FONT_HERSHEY_SIMPLEX, # font
                 1, # font scale
                 (255,255,255), # font color,
                 2) # line type
-            self.mainThreadPlotter.emit(self.centered_ring_images[im],
+            self.mainThreadPlotter.emit(self.centered_images_to_plot[im],
                 self.previs_ms, name )
             if output_path:
-                cv2.imwrite(f"{output_path}/{self.raw_images_names[im].dtype(np.uint16)}.png", self.centered_ring_images[im].dtype(np.uint16))
+                cv2.imwrite(f"{output_path}/{self.raw_images_names[im][im]}.png", self.centered_images_to_plot[im])
