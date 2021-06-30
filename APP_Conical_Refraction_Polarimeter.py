@@ -678,6 +678,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
     def run_camera(self):
         # Block everything to user
         self.block_hard_user_interaction(False)
+        self.runCamera.setEnabled(False)
         # Run worker for non-blocking computations
         self.strong_worker.set_new_task_and_arguments(
             self._run_camera, []
@@ -689,6 +690,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.camera.take_and_process_frames(int(self.totalFrames.text()), int(self.outputEvery.text()))
         self.block_hard_user_interaction(True)
         self.stopCamera.setEnabled(False)
+        self.runCamera.setEnabled(True)
         self.tabWidget_3.setEnabled(True)
 
     def stop_camera(self):

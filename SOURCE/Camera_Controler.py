@@ -138,6 +138,7 @@ class Pi_Camera(Camera_Controler):
             # Check if Stop was hit by user
             if self.stop_camera:
                 self.stop_camera=False
+                self.progressBar.emit(0)
                 return 1
 
 
