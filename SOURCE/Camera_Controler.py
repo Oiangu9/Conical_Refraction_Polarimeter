@@ -52,6 +52,17 @@ class Pi_Camera(Camera_Controler):
         self.images=np.zeros((images_chunk,height, width), dtype=np.uint16)
         self.names=['i' for i in range(images_chunk)]
 
+    def reinitialize(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, width, height):
+        Camera_Controler.__init__(self,angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar)
+        #self.camera = PiCamera() If camera initialized multiple times yields an error
+        self.camera.resolution = (width, height)
+        self.camera.framerate = 15
+        self.outputStream = picamera.array.PiYUVArray(self.camera)
+        self.raw_w=(width + 31) // 32 * 32
+        self.raw_h=(height + 15) // 16 * 16
+        self.images=np.zeros((images_chunk,height, width), dtype=np.uint16)
+        self.names=['i' for i in range(images_chunk)]
+
     def test_Camera(self):
         self.camera.start_preview()
         while(self.stop_camera==False):

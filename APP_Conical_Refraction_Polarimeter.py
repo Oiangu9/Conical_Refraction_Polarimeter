@@ -160,7 +160,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             self.execute_simulation_tracker_simplex_algorithm)
 
         # When live test buttons are pressed execute stuff
-        self.camera_initialized=False
+        self.Picamera_initialized=False
         self.testCamera.clicked.connect(self.run_test_camera)
         self.grabReference.clicked.connect(self.run_grab_reference)
         self.stopCamera.clicked.connect(self.stop_camera)
@@ -788,13 +788,21 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                 )
 
         if self.use_PiCamera.isChecked():
-
-            self.camera=Pi_Camera(angle_algorithm, angle_function,
-                 float(self.referenceAngle.text()), int(self.imagesInChunks.text()),
-                 image_manager,
-                 self.saveLifeOutput.isChecked(),
-                 self.output_directory.text(), self.barUpdate_Live,
-                 int(self.pi_w.text()), int(self.pi_h.text()))
+            if not self.Picamera_initialized:
+                self.camera=Pi_Camera(angle_algorithm, angle_function,
+                     float(self.referenceAngle.text()), int(self.imagesInChunks.text()),
+                     image_manager,
+                     self.saveLifeOutput.isChecked(),
+                     self.output_directory.text(), self.barUpdate_Live,
+                     int(self.pi_w.text()), int(self.pi_h.text()))
+                self.Picamera_initialized=True
+            else:
+                self.camera.reInitialize(angle_algorithm, angle_function,
+                     float(self.referenceAngle.text()), int(self.imagesInChunks.text()),
+                     image_manager,
+                     self.saveLifeOutput.isChecked(),
+                     self.output_directory.text(), self.barUpdate_Live,
+                     int(self.pi_w.text()), int(self.pi_h.text()))
 
         else:
             self.camera=Basler_Camera()
