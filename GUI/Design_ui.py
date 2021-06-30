@@ -1471,7 +1471,7 @@ class Ui_MainWindow(object):
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.tab_9), _translate("MainWindow", "Basler Camera"))
         self.showContinously.setText(_translate("MainWindow", "Show Continously"))
         self.referenceAngle.setText(_translate("MainWindow", "0"))
-        self.outputEvery.setText(_translate("MainWindow", "100"))
+        self.outputEvery.setText(_translate("MainWindow", "1"))
         self.label_25.setText(_translate("MainWindow", "Save Outputs Every (chunks):"))
         self.saveLifeOutput.setText(_translate("MainWindow", "Save Outputs"))
         self.dont_SaveLifeOutput.setText(_translate("MainWindow", "Do not Save Outputs"))
@@ -1484,12 +1484,12 @@ class Ui_MainWindow(object):
         self.showNothing.setText(_translate("MainWindow", "Show Nothing"))
         self.showImagesAngles.setText(_translate("MainWindow", "Plot only Images and angle"))
         self.showAll.setText(_translate("MainWindow", "Plot all results"))
-        self.imagesInChunks.setText(_translate("MainWindow", "1"))
+        self.imagesInChunks.setText(_translate("MainWindow", "2"))
         self.label_28.setText(_translate("MainWindow", "Process Images\n"
 "In chunks of:"))
         self.label_24.setText(_translate("MainWindow", "Total Frames to Take\n"
 " (set 0 for non-stop):"))
-        self.totalFrames.setText(_translate("MainWindow", "1000"))
+        self.totalFrames.setText(_translate("MainWindow", "8"))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.tab_11), _translate("MainWindow", "Life Take Settings"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), _translate("MainWindow", "Compute Angle Life"))
         self.label_44.setText(_translate("MainWindow", "z_max:"))
