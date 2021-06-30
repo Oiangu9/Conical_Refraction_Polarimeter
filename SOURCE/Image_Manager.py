@@ -117,6 +117,16 @@ class Image_Manager:
         intensity_in_w = np.sum(images, axis=1) # weights for x [N_imgs, raw_width]
         intensity_in_h = np.sum(images, axis=2) # weights for y [N_imgs, raw_height]
         total_intensity = intensity_in_h.sum(axis=1)
+        import matplotlib.pyplot as plt
+        #plt.plot(np.arange(intensity_in_w.shape[-1]), intensity_in_w[0], label="w")
+        #plt.legend()
+        #plt.savefig(f"./{self.k}_w.png")
+        #plt.clf()
+        #plt.plot(np.arange(intensity_in_h.shape[-1]), intensity_in_h[0], label="h")
+        #plt.legend()
+        #plt.savefig(f"./{self.k}_h.png")
+        #self.k+=1
+        plt.clf()
 
         # Compute mass center for intensity (in each image axis)
         # [N_images, 2] (h_center,w_center)

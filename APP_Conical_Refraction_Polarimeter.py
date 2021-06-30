@@ -700,10 +700,15 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
              self.choose_interpolation_falg(self.interpolation_alg_centering),
 		           mainThreadPlotter=self.plotter_cv2)
         if self.liveG.isChecked(): # gradient algorithm########################################
+            print(image_manager,
+                eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
+                float(self.initial_guess_delta_pix.text()),
+                self.use_exact_grav_G.isChecked(),False)
             angle_algorithm = Gradient_Algorithm(image_manager,
                 eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
                 float(self.initial_guess_delta_pix.text()),
                 self.use_exact_grav_G.isChecked(), initialize_it=False)
+            print("Horrraaaaa!")
             if self.brute.isChecked():
                 angle_function=lambda:angle_algorithm.brute_force_search(
                     [float(self.angle_step_1_pix.text()), float(self.angle_step_2_pix.text()),
@@ -721,6 +726,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                     int(self.max_it_quad.text()),
                     float(self.cost_tolerance_quad.text())
                 )
+            print("Olentzero!")
 
         elif self.liveR.isChecked(): # rotation algorithm##########################################
             angle_algorithm = Rotation_Algorithm(image_manager,
