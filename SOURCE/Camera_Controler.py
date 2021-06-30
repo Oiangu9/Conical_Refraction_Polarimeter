@@ -21,10 +21,10 @@ class Camera_Controler:
         self.output_path=None
         self.reference_path=None
         if save_outputs:
-            os.makedirs(f"{output_path}/Live_Take/Reference/", exist_ok=True)
-            os.makedirs(f"{output_path}/Live_Take/Sequence/", exist_ok=True)
-            self.output_path=output_path+"/Live_Take/Sequence/"
-            self.reference_path=output_path+"/Live_Take/Reference/"
+            os.makedirs(f"{output_path}/Life_Take/Reference/", exist_ok=True)
+            os.makedirs(f"{output_path}/Life_Take/Sequence/", exist_ok=True)
+            self.output_path=output_path+"/Life_Take/Sequence/"
+            self.reference_path=output_path+"/Life_Take/Reference/"
         self.progressBar=progressBar
 
     def test_Camera(self):
@@ -67,6 +67,7 @@ class Pi_Camera(Camera_Controler):
         for im in range(self.images_chunk):
             # capture raw image
             self.camera.capture(self.outputStream, 'yuv')
+            print(self.outputStream.array.dtype, self.outputStream.array)
             # put it in the array for the captured images of this chunk
             self.images[im,:,:] = self.outputStream.array[:,:,0] #[h, w, yuv3]->[h,w,y]
             # reset stream
@@ -76,7 +77,7 @@ class Pi_Camera(Camera_Controler):
         self.camera.stop_preview()
 
         # Process the captured images
-        self.image_manager.input_raw_images(self.images, self.names)
+        self.image_manager.input_raw_images(self.images.astype(np.float64), self.names)
         self.image_manager.compute_raw_to_iX()
         # Get angles
         self.angle_algorithm.reInitialize(self.image_manager)
@@ -86,7 +87,7 @@ class Pi_Camera(Camera_Controler):
         self.angle_algorithm.process_obtained_angles()
 
         # Show results (and save them if asked by user)
-        self.image_manager.plot_rings_and_angles(self.angle_algorithm.polarization, self.angle_algorithm.polarization_precision, output_path=self.output_path)
+        self.image_manager.plot_rings_and_angles(self.angle_algorithm.polarization, self.angle_algorithm.polarization_precision, output_path=self.reference_path)
 
 
     def take_and_process_frames(self, num_frames, save_every):

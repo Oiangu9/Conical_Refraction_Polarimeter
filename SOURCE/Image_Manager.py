@@ -256,4 +256,4 @@ class Image_Manager:
             self.mainThreadPlotter.emit(self.centered_ring_images[im],
                 self.previs_ms, name )
             if output_path:
-                cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_ring_images[im])
+                cv2.imwrite(f"{output_path}/{self.raw_images_names[im].dtype(np.uint16)}.png", self.centered_ring_images[im].dtype(np.uint16))
