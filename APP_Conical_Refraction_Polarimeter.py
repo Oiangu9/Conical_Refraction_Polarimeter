@@ -697,7 +697,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 		           mainThreadPlotter=self.plotter_cv2)
         self.mode = 607 if self.use_i607.isChecked() else 203 if self.use_i203.isChecked() else int(self.iX.text())
 
-        if self.liveH.isChecked(): # gradient algorithm########################################
+        if self.liveG.isChecked(): # gradient algorithm########################################
             angle_algorithm = Gradient_Algorithm(image_manager,
                 eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
                 float(self.initial_guess_delta_pix.text()),

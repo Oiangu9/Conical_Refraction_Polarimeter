@@ -255,6 +255,7 @@ class Image_Manager:
         We could introduce an option to print angles in degrees here.
         """
         self.centered_images_to_plot=(255*self.centered_ring_images).astype(np.uint8)
+        cv2.imwrite('hau.png', self.centered_images_to_plot[0])
         for im, (name, angle) in enumerate(pol_angles.items()):
             # Note that the image will be permanently modified!
             cv2.putText(self.centered_images_to_plot[im],

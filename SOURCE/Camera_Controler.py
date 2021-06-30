@@ -82,16 +82,13 @@ class Pi_Camera(Camera_Controler):
         cv2.imwrite("1.png", (255*self.image_manager.centered_ring_images[0]).astype(np.uint8))
 
         # Get angles
-        print("Get Angles")
         self.angle_algorithm.reInitialize(self.image_manager)
         self.compute_angles_func()
         # Set their average angle as the reference angle given the custom 'zero'
         self.angle_algorithm.set_reference_angle(self.ref_angle)
         self.angle_algorithm.process_obtained_angles()
-        print("Plot last")
         # Show results (and save them if asked by user)
         self.image_manager.plot_rings_and_angles(self.angle_algorithm.polarization, self.angle_algorithm.polarization_precision, output_path=self.reference_path)
-        print("DONE!")
 
 
     def take_and_process_frames(self, num_frames, save_every):
