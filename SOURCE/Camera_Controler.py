@@ -130,7 +130,7 @@ class Pi_Camera(Camera_Controler):
 
             # Show results (and save them if chunk%outputEvery==0)
             self.image_manager.plot_rings_and_angles(self.angle_algorithm.polarization, self.angle_algorithm.polarization_precision,
-                output_path=None if chunk%outputEvery!=0 else self.output_path)
+                output_path=None if chunk%save_every!=0 else self.output_path)
 
             # Update progressBar
             self.progressBar.emit(100*chunk/total_chunks)
