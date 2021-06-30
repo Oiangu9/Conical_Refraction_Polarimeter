@@ -654,6 +654,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.camera.test_Camera()
         self.block_hard_user_interaction(True)
         self.stopCamera.setEnabled(False)
+        self.tabWidget_3.setEnabled(True)
+
 
     def run_grab_reference(self):
         # Block everything to user
@@ -671,6 +673,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.block_hard_user_interaction(True)
         self.stopCamera.setEnabled(False)
         self.runCamera.setEnabled(True)
+        self.tabWidget_3.setEnabled(False)
 
     def run_camera(self):
         # Block everything to user
@@ -683,10 +686,10 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def _run_camera(self):
         self.stopCamera.setEnabled(True)
-        self.initialize_camera()
         self.camera.take_and_process_frames(int(self.totalFrames.text()), int(self.outputEvery.text()))
         self.block_hard_user_interaction(True)
         self.stopCamera.setEnabled(False)
+        self.tabWidget_3.setEnabled(True)
 
     def stop_camera(self):
         self.camera.stop_camera=True

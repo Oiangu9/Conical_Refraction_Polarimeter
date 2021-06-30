@@ -939,6 +939,7 @@ class Ui_MainWindow(object):
         self.stopCamera.setObjectName("stopCamera")
         self.gridLayout_14.addWidget(self.stopCamera, 5, 3, 1, 1)
         self.tabWidget_3 = QtWidgets.QTabWidget(self.tab_7)
+        self.tabWidget_3.setEnabled(True)
         self.tabWidget_3.setObjectName("tabWidget_3")
         self.tab_8 = QtWidgets.QWidget()
         self.tab_8.setObjectName("tab_8")
@@ -1215,7 +1216,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(2)
         self.tabWidget_2.setCurrentIndex(5)
         self.tabWidget_4.setCurrentIndex(2)
         self.tabWidget_5.setCurrentIndex(1)
