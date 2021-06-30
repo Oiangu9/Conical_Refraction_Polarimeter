@@ -104,7 +104,7 @@ class Pi_Camera(Camera_Controler):
     def take_and_process_frames(self, num_frames, save_every):
         self.progressBar.emit(0)
         self.outputStream.truncate(0)
-        camera.start_preview()
+        self.camera.start_preview()
         # Camera warm-up time
         sleep(2)
         camera.stop_preview()
@@ -112,7 +112,7 @@ class Pi_Camera(Camera_Controler):
         for chunk in range(total_chunks):
             for im in range(self.images_chunk):
                 # capture raw image
-                camera.capture(self.outputStream, 'yuv')
+                self.camera.capture(self.outputStream, 'yuv')
                 # put it in the array for the captured images of this chunk
                 self.images[im,:,:] = self.outputStream.array[:,:,0] #[h, w, yuv3]->[h,w,luminance]
                 # reset stream
