@@ -5,17 +5,28 @@ from SOURCE.Image_Manager import *
 from SOURCE.Polarization_Obtention_Algorithms import *
 from SOURCE.Theoretical_Ring_Simulator import *
 global disable_gpu_functionality
-global disable_camera_functionality
+global disable_PiCamera_functionality
+global disable_BaslerCamera_functionality
+import sys
 try:
     from SOURCE.GPU_Classes import *
     disable_gpu_functionality=False
 except:
     disable_gpu_functionality=True
+
 try:
-    from SOURCE.Camera_Controler import *
-    disable_camera_functionality=False
+    from SOURCE.Camera_Controler_PiCamera import Pi_Camera
+    disable_PiCamera_functionality=False
 except:
-    disable_camera_functionality=True
+    #print("Unexpected error:", sys.exc_info()[1])
+    disable_PiCamera_functionality=True
+
+try:
+    from SOURCE.Camera_Controler_BaslerCamera import Basler_Camera
+    disable_BaslerCamera_functionality=False
+except:
+    #print("Unexpected error:", sys.exc_info()[1])
+    disable_BaslerCamera_functionality=True
 
 from glob import glob
 import logging
@@ -71,6 +82,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
     plotter_cv2 = QtCore.pyqtSignal(np.ndarray, int, str)
     # expecting array to plot, int with the time to waitKey and a string with the label to show
 
+
     # Create a progress bar updater signal
     barUpdate_Live = QtCore.pyqtSignal(int)
 
@@ -100,7 +112,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
         # connect plot signal to the plotting function. This way gui handles it when signal emision
-        self.plotter_cv2.connect(self.show_cv2_image) #type=QtCore.Qt.BlockingQueuedConnection
+        self.plotter_cv2.connect(self.show_cv2_image, type=QtCore.Qt.BlockingQueuedConnection) #type=QtCore.Qt.BlockingQueuedConnection
         # and connect signal to progress bar update: now run "self.barUpdate_Live.emit(10)"
         self.barUpdate_Live.connect(self.progressBar_Life.setValue)
 
@@ -179,9 +191,18 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             self.block_hard_user_interaction(True))
 
         # disbale camera functionalities if not available their drivers
-        if disable_camera_functionality:
+        if disable_PiCamera_functionality and disable_BaslerCamera_functionality:
             self.testCamera.setEnabled(False)
             self.grabReference.setEnabled(False)
+
+        elif disable_PiCamera_functionality:
+            self.use_BaslerCamera.setChecked(True)
+            self.use_PiCamera.setEnabled(False)
+
+        elif disable_BaslerCamera_functionality:
+            self.use_PiCamera.setChecked(FTrue)
+            self.use_BaslerCamera.setEnabled(False)
+        # else both are available
 
         # disable gpu functionalities if jax is not available
         if disable_gpu_functionality:
@@ -810,7 +831,15 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                      int(self.pi_w.text()), int(self.pi_h.text()))
 
         else:
-            self.camera=Basler_Camera()
+            self.camera=Basler_Camera(angle_algorithm, angle_function,
+                 float(self.referenceAngle.text()), int(self.imagesInChunks.text()),
+                 image_manager,
+                 self.saveLifeOutput.isChecked(),
+                 self.output_directory.text(), self.barUpdate_Live,
+                 int(self.basler_w.text()), int(self.basler_h.text()),
+                 int(self.offsetx.text()), int(self.offsety.text()),
+                 int(self.max_buffer_num.text()),
+                 self.plotter_cv2, float(self.frame_previs_ms.text()))
 
     def run_simulations(self):
         # Block everything to user

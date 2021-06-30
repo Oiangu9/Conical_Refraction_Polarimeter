@@ -58,7 +58,8 @@ try:
             print("SizeX: ", grabResult.Width)
             print("SizeY: ", grabResult.Height)
             img = grabResult.Array
-            cv.imwrite("i.png", img)
+            print(img.dtype)
+            cv2.imwrite("i_Custoom.png", img)
             print("Gray value of first pixel: ", img[0, 0], "Image size: ", img.shape)
         else:
             print("Error: ", grabResult.ErrorCode, grabResult.ErrorDescription)

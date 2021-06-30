@@ -1,13 +1,12 @@
-from picamera import PiCamera
-import picamera.array
 from time import sleep
-from pypylon import pylon
-from pypylon import genicam
 import cv2
 import sys
 import os
 import numpy as np
 import datetime
+from picamera import PiCamera
+import picamera.array
+
 
 class Camera_Controler:
     def __init__(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar):
@@ -31,7 +30,7 @@ class Camera_Controler:
         pass
     def grab_and_fix_reference(self):
         pass
-    def take_process_frames(self, num_frames, save_every):
+    def take_and_process_frames(self, num_frames, save_every):
         pass
 
 class Pi_Camera(Camera_Controler):
@@ -141,15 +140,3 @@ class Pi_Camera(Camera_Controler):
                 self.progressBar.emit(0)
                 return 1
         self.progressBar.emit(100)
-
-
-class Basler_Camera(Camera_Controler):
-    def __init__(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar):
-        Camera_Controler.__init__(self,angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar)
-
-    def test_Camera(self):
-        pass
-    def grab_and_fix_reference(self):
-        pass
-    def take_process_frames(self, num_frames, save_every):
-        pass

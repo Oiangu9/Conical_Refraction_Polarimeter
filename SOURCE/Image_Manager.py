@@ -262,9 +262,9 @@ class Image_Manager:
                 (10,500), # spot in the image
                 cv2.FONT_HERSHEY_SIMPLEX, # font
                 1, # font scale
-                (0,0,0), # font color,
+                (255,0,0), # font color,
                 2) # line type
-            #self.mainThreadPlotter.emit(self.centered_images_to_plot[im],
-            #    self.previs_ms, name )
+            self.mainThreadPlotter.emit(self.centered_images_to_plot[im],
+                self.previs_ms, name )
             if output_path:
                 cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_images_to_plot[im])

@@ -2208,7 +2208,20 @@ Max (4056 x 3040)</string>
               </attribute>
              </widget>
             </item>
-            <item row="1" column="4">
+            <item row="2" column="4">
+             <widget class="QRadioButton" name="radioButton_4">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Use RAW Bayer format</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">buttonGroup_16</string>
+              </attribute>
+             </widget>
+            </item>
+            <item row="2" column="3">
              <widget class="QRadioButton" name="radioButton_2">
               <property name="enabled">
                <bool>false</bool>
@@ -2227,6 +2240,138 @@ Max (4056 x 3040)</string>
            <attribute name="title">
             <string>Basler Camera</string>
            </attribute>
+           <widget class="QLabel" name="label_67">
+            <property name="geometry">
+             <rect>
+              <x>15</x>
+              <y>57</y>
+              <width>94</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Resolution (wxh):
+Max (728x542)</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="basler_w">
+            <property name="geometry">
+             <rect>
+              <x>115</x>
+              <y>60</y>
+              <width>280</width>
+              <height>24</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>720</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_102">
+            <property name="geometry">
+             <rect>
+              <x>401</x>
+              <y>57</y>
+              <width>133</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>x</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="basler_h">
+            <property name="geometry">
+             <rect>
+              <x>540</x>
+              <y>60</y>
+              <width>279</width>
+              <height>24</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>540</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_103">
+            <property name="geometry">
+             <rect>
+              <x>30</x>
+              <y>130</y>
+              <width>80</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Offset X:</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_104">
+            <property name="geometry">
+             <rect>
+              <x>30</x>
+              <y>180</y>
+              <width>80</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Offset Y:</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="offsetx">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>130</y>
+              <width>280</width>
+              <height>24</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="offsety">
+            <property name="geometry">
+             <rect>
+              <x>110</x>
+              <y>180</y>
+              <width>280</width>
+              <height>24</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="label_105">
+            <property name="geometry">
+             <rect>
+              <x>450</x>
+              <y>130</y>
+              <width>80</width>
+              <height>26</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Max Buffer Num:
+(default 10)</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="max_buffer_num">
+            <property name="geometry">
+             <rect>
+              <x>560</x>
+              <y>130</y>
+              <width>161</width>
+              <height>24</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>10</string>
+            </property>
+           </widget>
           </widget>
           <widget class="QWidget" name="tab_11">
            <attribute name="title">
@@ -2309,7 +2454,7 @@ Max (4056 x 3040)</string>
              </widget>
             </item>
             <item row="4" column="3">
-             <widget class="QLineEdit" name="lineEdit">
+             <widget class="QLineEdit" name="frame_previs_ms">
               <property name="text">
                <string>100</string>
               </property>
@@ -2751,24 +2896,24 @@ Jones Vector (note i is 1j).:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_15"/>
-  <buttongroup name="buttonGroup_16"/>
   <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_5"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_10"/>
-  <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_14"/>
+  <buttongroup name="buttonGroup_13"/>
   <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup_6"/>
   <buttongroup name="buttonGroup_11"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_15"/>
+  <buttongroup name="buttonGroup_14"/>
+  <buttongroup name="buttonGroup_12"/>
+  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_16"/>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_19"/>
   <buttongroup name="buttonGroup_7"/>
   <buttongroup name="buttonGroup_17"/>
-  <buttongroup name="buttonGroup_13"/>
-  <buttongroup name="buttonGroup_9"/>
-  <buttongroup name="buttonGroup_2"/>
-  <buttongroup name="buttonGroup_19"/>
   <buttongroup name="buttonGroup_18"/>
-  <buttongroup name="buttonGroup_12"/>
-  <buttongroup name="buttonGroup_4"/>
  </buttongroups>
 </ui>
