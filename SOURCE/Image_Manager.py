@@ -262,7 +262,7 @@ class Image_Manager:
                 (10,500), # spot in the image
                 cv2.FONT_HERSHEY_SIMPLEX, # font
                 1, # font scale
-                (255,255,255), # font color,
+                (255,0,0), # font color,
                 2) # line type
             #self.mainThreadPlotter.emit(self.centered_images_to_plot[im],
             #    self.previs_ms, name )

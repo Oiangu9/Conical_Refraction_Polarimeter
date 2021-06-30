@@ -140,7 +140,7 @@ class Pi_Camera(Camera_Controler):
                 self.stop_camera=False
                 self.progressBar.emit(0)
                 return 1
-
+        self.progressBar.emit(100)
 
 
 class Basler_Camera(Camera_Controler):
