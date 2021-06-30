@@ -76,8 +76,8 @@ class Pi_Camera(Camera_Controler):
             cv2.imwrite("2.png", self.outputStream.array[:,:,1])
             cv2.imwrite("3.png", self.outputStream.array[:,:,2])
             print(np.amax(self.outputStream.array, axis=(1,2)), self.outputStream.array.dtype)
-            cv2.imwrite("4.png", (255*(self.outputStream.array.astype(np.float64)/np.amax(self.outputStream.array, axis=(1,2)))).astype(np.uint8)[:,:,0])
-            cv2.imwrite("5.png",  (65535*(self.outputStream.array.astype(np.float64)/np.amax(self.outputStream.array, axis=(1,2)))).astype(np.uint8)[:,:,0])
+            cv2.imwrite("4.png", (255*(self.outputStream.array.astype(np.float64)/np.amax(self.outputStream.array, axis=(0,1)))).astype(np.uint8)[:,:,0])
+            cv2.imwrite("5.png",  (65535*(self.outputStream.array.astype(np.float64)/np.amax(self.outputStream.array, axis=(0,1)))).astype(np.uint8)[:,:,0])
             #cv2.imwrite("6.png", self.outputStream.array[:,:,0])
 
 
