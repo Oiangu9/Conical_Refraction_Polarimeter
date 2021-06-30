@@ -107,7 +107,7 @@ class Pi_Camera(Camera_Controler):
         self.camera.start_preview()
         # Camera warm-up time
         sleep(2)
-        camera.stop_preview()
+        self.camera.stop_preview()
         total_chunks=num_frames//self.images_chunk+1
         for chunk in range(total_chunks):
             for im in range(self.images_chunk):
