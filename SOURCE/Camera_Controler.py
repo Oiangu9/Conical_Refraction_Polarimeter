@@ -69,27 +69,21 @@ class Pi_Camera(Camera_Controler):
             # capture raw image
             self.camera.capture(self.outputStream, 'yuv')
             print(self.outputStream.array.dtype, self.outputStream.array.shape, self.images.shape, self.outputStream.array)
-            # put it in the array for the captured images of this chunk
+            # put it in the array for the captured images of this chunk. The array is recorded in uint8
             self.images[im,:,:] = self.outputStream.array[:,:,0] #[h, w, yuv3]->[h,w,y]
             # reset stream
             cv2.imwrite("11.png", self.outputStream.array[:,:,0])
             cv2.imwrite("2.png", self.outputStream.array[:,:,1])
             cv2.imwrite("3.png", self.outputStream.array[:,:,2])
-            print(np.amax(self.outputStream.array, axis=(1,2)), self.outputStream.array.dtype)
-            cv2.imwrite("4.png", (255*(self.outputStream.array.astype(np.float64)/np.amax(self.outputStream.array, axis=(0,1)))).astype(np.uint8)[:,:,0])
-            cv2.imwrite("5.png",  (65535*(self.outputStream.array.astype(np.float64)/np.amax(self.outputStream.array, axis=(0,1)))).astype(np.uint16)[:,:,0])
-            #cv2.imwrite("6.png", self.outputStream.array[:,:,0])
-
-
             self.outputStream.truncate(0)
             # get a name for the image
             self.names[im]=(datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S)"))
         self.camera.stop_preview()
 
         # Process the captured images
-        print("Proces images")
         self.image_manager.input_raw_images( self.images.astype(np.float64)/np.amax(self.images, axis=(1,2)), self.names)
         self.image_manager.compute_raw_to_iX()
+        cv2.imwrite("1.png", (255*self.image_manager.centered_ring_images[0]).astype(np.uint8))
         # Get angles
         print("Get Angles")
         self.angle_algorithm.reInitialize(self.image_manager)

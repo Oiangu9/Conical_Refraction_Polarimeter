@@ -259,4 +259,4 @@ class Image_Manager:
             #    self.previs_ms, name )
             if output_path:
                 print(f"Im ploting True rings at {output_path}")
-                cv2.imwrite(f"{output_path}/{self.raw_images_names[im][im]}.png", self.centered_images_to_plot[im])
+                cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_images_to_plot[im])
