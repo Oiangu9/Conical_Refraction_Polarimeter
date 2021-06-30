@@ -98,7 +98,7 @@ class Polarization_Obtention_Algorithm:
 
 
 class Radial_Histogram_Algorithm(Polarization_Obtention_Algorithm):
-    def __init__(self, image_loader, use_exact_gravicenter):
+    def __init__(self, image_loader, use_exact_gravicenter, initialize_it=True):
         Polarization_Obtention_Algorithm.__init__(self,image_loader, use_exact_gravicenter)
         self.images = image_loader.centered_ring_images
         if use_exact_gravicenter:
@@ -250,7 +250,7 @@ class Radial_Histogram_Algorithm(Polarization_Obtention_Algorithm):
 
 
 class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
-    def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta, method, left_vs_right, use_exact_gravicenter):
+    def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta, method, left_vs_right, use_exact_gravicenter, initialize_it=True):
         """
             Argument image_loader is expected to be an instance of class Image_Loader,
             which has already been initialized and has non-None attributes:
@@ -522,7 +522,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
 
 
 class Gradient_Algorithm(Polarization_Obtention_Algorithm):
-    def __init__(self, image_loader, min_radious, max_radious, initial_guess_delta, use_exact_gravicenter):
+    def __init__(self, image_loader, min_radious, max_radious, initial_guess_delta, use_exact_gravicenter, initialize_it=True):
         Polarization_Obtention_Algorithm.__init__(self,image_loader, use_exact_gravicenter)
         self.optimizer = Ad_Hoc_Optimizer(min_radious, max_radious, initial_guess_delta, self.evaluate_mask_radious)
         self.original_images = image_loader
@@ -536,21 +536,23 @@ class Gradient_Algorithm(Polarization_Obtention_Algorithm):
         self.optimals={}
         self.times={}
         self.masked_gravs={}
-
-        if use_exact_gravicenter: #[N_images, 2 (h,w)]
-            self.grav = image_loader.g_centered.squeeze() # squeeze in case there is only one image
-        else: # then use the image center as gravicenter
-            self.grav = np.array([self.mode]*2)+0.5
-
         # compute the distance matrices to the gravicenter of the images
         self.cols=np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
         self.rows=self.cols.swapaxes(0,1) #[h,w]
-        if not self.use_exact_gravicenter or len(self.grav.shape)==1: #[h,w]
-            # all the images have the same mask for distance to center
-            self.distances_to_grav = (self.cols-self.grav[0])**2+(self.rows-self.grav[1])**2
-        else: # [N_images, h,w]
-            self.distances_to_grav = np.array([(self.cols-grav[0])**2+(self.rows-grav[1])**2
-                for grav in self.grav])
+
+        if initialize_it:
+            if use_exact_gravicenter: #[N_images, 2 (h,w)]
+                self.grav = image_loader.g_centered.squeeze() # squeeze in case there is only one image
+            else: # then use the image center as gravicenter
+                self.grav = np.array([self.mode]*2)+0.5
+
+
+            if not self.use_exact_gravicenter or len(self.grav.shape)==1: #[h,w]
+                # all the images have the same mask for distance to center
+                self.distances_to_grav = (self.cols-self.grav[0])**2+(self.rows-self.grav[1])**2
+            else: # [N_images, h,w]
+                self.distances_to_grav = np.array([(self.cols-grav[0])**2+(self.rows-grav[1])**2
+                    for grav in self.grav])
 
     def reInitialize(self, image_loader):
         Polarization_Obtention_Algorithm.reInitialize(self, image_loader)
@@ -785,7 +787,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
     Si quieres considerar ángulos arbitrarios en la búsqueda entonces, deberías hacer la misma
     comprobación final que en el mirror algorithm de hacer el +pi o no.
     """
-    def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta, use_exact_gravicenter):
+    def __init__(self, image_loader, min_angle, max_angle, interpolation_flag, initial_guess_delta, use_exact_gravicenter, initialize_it=True):
         """
             Argument image_loader is expected to be an instance of class Image_Loader,
             which has already been initialized and has non-None attributes:
@@ -802,7 +804,6 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
         """
         Polarization_Obtention_Algorithm.__init__(self,image_loader, use_exact_gravicenter)
         self.original_images = image_loader
-        self.images_float = image_loader.centered_ring_images.astype(np.float32)
         self.interpolation_flag = interpolation_flag
         self.min_angle = min_angle
         self.max_angle = max_angle
@@ -814,19 +815,21 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
         self.times={}
         self.cols=np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
         self.optimizer = Ad_Hoc_Optimizer(min_angle, max_angle, initial_guess_delta, self.evaluate_image_rotation)
-        if use_exact_gravicenter:
-            self.grav=self.original_images.g_centered #[N_images, 2(h,w)]
-            # custom mirror flip the images about the line through gravicenter
-            self.mirror_images_wrt_width_axis=np.array([
-                self.horizontal_mirror_flip_crossing(
-                    self.original_images.centered_ring_images[im], self.grav[im][0])
-                for im in range(self.grav.shape[0])]) #[N_images, h,w]
-        else:
-            # gravicenter the same for all
-            self.grav=np.array(2*[self.mode])+0.5
-            # mirror flipping image is trivial
-            self.mirror_images_wrt_width_axis = np.flip(image_loader.centered_ring_images, 1)
-            #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
+        if initialize_it:
+            self.images_float = image_loader.centered_ring_images.astype(np.float32)
+            if use_exact_gravicenter:
+                self.grav=self.original_images.g_centered #[N_images, 2(h,w)]
+                # custom mirror flip the images about the line through gravicenter
+                self.mirror_images_wrt_width_axis=np.array([
+                    self.horizontal_mirror_flip_crossing(
+                        self.original_images.centered_ring_images[im], self.grav[im][0])
+                    for im in range(self.grav.shape[0])]) #[N_images, h,w]
+            else:
+                # gravicenter the same for all
+                self.grav=np.array(2*[self.mode])+0.5
+                # mirror flipping image is trivial
+                self.mirror_images_wrt_width_axis = np.flip(image_loader.centered_ring_images, 1)
+                #self.save_images(self.mirror_images_wrt_width_axis, "./OUTPUT/", [name+"_mirror" for name in self.original_images.raw_images_names])
 
     def reInitialize(self, image_loader):
         Polarization_Obtention_Algorithm.reInitialize(self, image_loader)

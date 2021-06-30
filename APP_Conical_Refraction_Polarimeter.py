@@ -699,7 +699,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             angle_algorithm = Gradient_Algorithm(image_manager,
                 eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
                 float(self.initial_guess_delta_pix.text()),
-                self.use_exact_grav_G.isChecked())
+                self.use_exact_grav_G.isChecked(), initialize_it=False)
             if self.brute.isChecked():
                 angle_function=lambda:angle_algorithm.brute_force_search(
                     [float(self.angle_step_1_pix.text()), float(self.angle_step_2_pix.text()),
@@ -722,7 +722,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             angle_algorithm = Rotation_Algorithm(image_manager,
                 eval(self.theta_min_R.text()), eval(self.theta_max_R.text()),
                 self.choose_interpolation_falg(self.interpolation_alg_opt),
-                float(self.initial_guess_delta_rad.text()), self.use_exact_grav_R.isChecked())
+                float(self.initial_guess_delta_rad.text()), self.use_exact_grav_R.isChecked(), initialize_it=False)
 
             if self.brute.isChecked():
                 angle_function=lambda:angle_algorithm.brute_force_search(
@@ -744,7 +744,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
         elif self.liveH.isChecked(): # histogram algorithm####################################
             angle_algorithm = Radial_Histogram_Algorithm(image_manager,
-                self.use_exact_grav_H.isChecked())
+                self.use_exact_grav_H.isChecked(), initialize_it=False)
             if self.use_raw_idx_mask_H.isChecked():
                 angle_function=lambda:angle_algorithm.compute_histogram_masking(
                     float(self.angle_bin_size_H.text())
@@ -765,7 +765,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             angle_algorithm = Mirror_Flip_Algorithm(image_manager,
                 eval(self.theta_min_M.text()), eval(self.theta_max_M.text()),
                 self.choose_interpolation_falg(self.interpolation_alg_opt),
-                float(self.initial_guess_delta_rad.text()), method, self.left_vs_right_M.isChecked(), self.use_exact_grav_M.isChecked())
+                float(self.initial_guess_delta_rad.text()), method, self.left_vs_right_M.isChecked(), self.use_exact_grav_M.isChecked(), initialize_it=False)
             # Get arguments and run algorithm depending on the chosen stuff
             if self.brute.isChecked():
                 angle_function=lambda:angle_algorithm.brute_force_search(
