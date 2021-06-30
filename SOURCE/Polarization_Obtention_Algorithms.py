@@ -5,7 +5,10 @@ from time import time
 import os
 from SOURCE.Ad_Hoc_Optimizer import Ad_Hoc_Optimizer
 from SOURCE.Theoretical_Ring_Simulator import *
-from SOURCE.GPU_Classes import *
+try:
+    from SOURCE.GPU_Classes import *
+except:
+    pass
 import logging
 
 """
