@@ -244,8 +244,8 @@ class Image_Manager:
 
         We could introduce an option to print angles in degrees here.
         """
-        print(f"Im ploting rings at {output_path}")
-        self.centered_images_to_plot=(65535*self.centered_ring_images).astype(np.uint16)
+        print(f"Im ploting rings at {output_path} max pix {np.amax(self.centered_ring_images, (1,2))}")
+        self.centered_images_to_plot=(255*self.centered_ring_images).astype(np.uint8)
         for im, (name, angle) in enumerate(pol_angles.items()):
             # Note that the image will be permanently modified!
             cv2.putText(self.centered_images_to_plot[im],
