@@ -7,7 +7,7 @@ from time import time
 
 class Image_Manager:
     def __init__(self, mode, interpolation_flag, mainThreadPlotter=None,
-                    previs_ms=1000):
+                    previs_ms=1500):
         """
             Mode is expected to be X, 607 or 203, depending of whether iX, i607 or i203 is desired to be
             used for all the algorithms.

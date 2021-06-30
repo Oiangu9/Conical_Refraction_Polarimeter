@@ -72,6 +72,15 @@ class Pi_Camera(Camera_Controler):
             # put it in the array for the captured images of this chunk
             self.images[im,:,:] = self.outputStream.array[:,:,0] #[h, w, yuv3]->[h,w,y]
             # reset stream
+            cv2.imwrite("11.png", self.outputStream.array[:,:,0])
+            cv2.imwrite("2.png", self.outputStream.array[:,:,1])
+            cv2.imwrite("3.png", self.outputStream.array[:,:,2])
+            print(np.amax(self.outputStream.array, axis=(1,2)), self.outputStream.array.dtype)
+            cv2.imwrite("4.png", (255*(self.outputStream.array.astype(np.float64)/np.amax(self.outputStream.array, axis=(1,2)))).astype(np.uint8)[:,:,0])
+            cv2.imwrite("5.png",  (65535*(self.outputStream.array.astype(np.float64)/np.amax(self.outputStream.array, axis=(1,2)))).astype(np.uint8)[:,:,0])
+            #cv2.imwrite("6.png", self.outputStream.array[:,:,0])
+
+
             self.outputStream.truncate(0)
             # get a name for the image
             self.names[im]=(datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S)"))
