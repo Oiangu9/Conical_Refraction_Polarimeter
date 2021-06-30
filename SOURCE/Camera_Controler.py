@@ -49,7 +49,7 @@ class Pi_Camera(Camera_Controler):
         self.outputStream = picamera.array.PiYUVArray(self.camera)
         self.raw_w=(width + 31) // 32 * 32
         self.raw_h=(height + 15) // 16 * 16
-        print(self.w, self.h, self.raw_w, self.raw_h)
+        print(width, height, self.raw_w, self.raw_h)
         self.images=np.zeros((images_chunk,height, width), dtype=np.uint16)
         self.names=['i' for i in range(images_chunk)]
 
