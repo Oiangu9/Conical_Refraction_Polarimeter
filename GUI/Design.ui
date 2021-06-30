@@ -72,7 +72,7 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -2277,7 +2277,7 @@ Max (4056 x 3040)</string>
                <string>Save Outputs</string>
               </property>
               <property name="checked">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroup_13</string>
@@ -2290,7 +2290,7 @@ Max (4056 x 3040)</string>
                <string>Do not Save Outputs</string>
               </property>
               <property name="checked">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
               <attribute name="buttonGroup">
                <string notr="true">buttonGroup_13</string>
@@ -2748,24 +2748,24 @@ Jones Vector (note i is 1j).:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_12"/>
-  <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup_14"/>
-  <buttongroup name="buttonGroup_2"/>
-  <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_19"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_15"/>
-  <buttongroup name="buttonGroup_7"/>
-  <buttongroup name="buttonGroup_10"/>
   <buttongroup name="buttonGroup_9"/>
-  <buttongroup name="buttonGroup_11"/>
-  <buttongroup name="buttonGroup_13"/>
-  <buttongroup name="buttonGroup_16"/>
-  <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_8"/>
   <buttongroup name="buttonGroup_18"/>
+  <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_2"/>
   <buttongroup name="buttonGroup_17"/>
+  <buttongroup name="buttonGroup_4"/>
+  <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_19"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_14"/>
+  <buttongroup name="buttonGroup_15"/>
+  <buttongroup name="buttonGroup_11"/>
+  <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_12"/>
+  <buttongroup name="buttonGroup_16"/>
  </buttongroups>
 </ui>

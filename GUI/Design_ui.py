@@ -2,12 +2,11 @@
 
 # Form implementation generated from reading ui file './GUI/Design.ui'
 #
-# Created by: PyQt5 UI code generator 5.12
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -1005,14 +1004,14 @@ class Ui_MainWindow(object):
         self.label_25.setObjectName("label_25")
         self.gridLayout_10.addWidget(self.label_25, 8, 0, 1, 1)
         self.saveLifeOutput = QtWidgets.QRadioButton(self.tab_11)
-        self.saveLifeOutput.setChecked(False)
+        self.saveLifeOutput.setChecked(True)
         self.saveLifeOutput.setObjectName("saveLifeOutput")
         self.buttonGroup_13 = QtWidgets.QButtonGroup(MainWindow)
         self.buttonGroup_13.setObjectName("buttonGroup_13")
         self.buttonGroup_13.addButton(self.saveLifeOutput)
         self.gridLayout_10.addWidget(self.saveLifeOutput, 4, 0, 1, 1)
         self.dont_SaveLifeOutput = QtWidgets.QRadioButton(self.tab_11)
-        self.dont_SaveLifeOutput.setChecked(True)
+        self.dont_SaveLifeOutput.setChecked(False)
         self.dont_SaveLifeOutput.setObjectName("dont_SaveLifeOutput")
         self.buttonGroup_13.addButton(self.dont_SaveLifeOutput)
         self.gridLayout_10.addWidget(self.dont_SaveLifeOutput, 4, 1, 1, 1)
@@ -1216,7 +1215,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(2)
         self.tabWidget_2.setCurrentIndex(5)
         self.tabWidget_4.setCurrentIndex(2)
         self.tabWidget_5.setCurrentIndex(3)
@@ -1540,8 +1539,6 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_15), _translate("MainWindow", "Simulate Theoretical Ring"))
 
 
-
-
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -1550,3 +1547,4 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+

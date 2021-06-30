@@ -91,6 +91,7 @@ class Pi_Camera(Camera_Controler):
         print("Plot last")
         # Show results (and save them if asked by user)
         self.image_manager.plot_rings_and_angles(self.angle_algorithm.polarization, self.angle_algorithm.polarization_precision, output_path=self.reference_path)
+        print("DONE!")
 
 
     def take_and_process_frames(self, num_frames, save_every):
