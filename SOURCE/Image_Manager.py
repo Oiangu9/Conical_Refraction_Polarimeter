@@ -17,7 +17,7 @@ class Image_Manager:
         self.previs_ms=previs_ms
         self.mainThreadPlotter=mainThreadPlotter
         self.raw_images_names=None
-        self.centered_ring_images=None
+        self.centered_ring_images=np.array([])
         self.g_centered=np.array([0,1])
 
     def get_raw_images_to_compute(self, path_list):
