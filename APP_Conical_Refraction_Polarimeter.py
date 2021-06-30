@@ -665,7 +665,9 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.strong_worker.start()
 
     def _run_grab_reference(self):
+        print("ia")
         self.stopCamera.setEnabled(True)
+        ptiny("hau bez")
         self.initialize_camera()
         print("Hemen0")
         self.camera.grab_and_fix_reference()
@@ -687,7 +689,9 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def _run_camera(self):
         self.stopCamera.setEnabled(True)
+        print("pene")
         self.initialize_camera()
+        print("pene2")
         self.camera.take_and_process_frames()
         self.block_hard_user_interaction(True)
         self.stopCamera.setEnabled(False)
