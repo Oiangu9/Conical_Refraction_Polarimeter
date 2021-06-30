@@ -696,9 +696,17 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.camera.stop_camera=True
 
     def initialize_camera(self):
+        print(image_manager,
+            eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
+            float(self.initial_guess_delta_pix.text()),
+            self.use_exact_grav_G.isChecked(),False)
         image_manager = Image_Manager(607 if self.use_i607.isChecked() else 203 if self.use_i203.isChecked() else int(self.iX.text()),
              self.choose_interpolation_falg(self.interpolation_alg_centering),
 		           mainThreadPlotter=self.plotter_cv2)
+        print(image_manager,
+            eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
+            float(self.initial_guess_delta_pix.text()),
+            self.use_exact_grav_G.isChecked(),False)
         if self.liveG.isChecked(): # gradient algorithm########################################
             print(image_manager,
                 eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
