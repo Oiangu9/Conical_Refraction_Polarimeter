@@ -255,8 +255,8 @@ class Image_Manager:
                 1, # font scale
                 (255,255,255), # font color,
                 2) # line type
-            self.mainThreadPlotter.emit(self.centered_images_to_plot[im],
-                self.previs_ms, name )
+            #self.mainThreadPlotter.emit(self.centered_images_to_plot[im],
+            #    self.previs_ms, name )
             if output_path:
                 print(f"Im ploting True rings at {output_path}")
                 cv2.imwrite(f"{output_path}/{self.raw_images_names[im][im]}.png", self.centered_images_to_plot[im])
