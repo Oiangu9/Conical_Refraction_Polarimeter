@@ -35,6 +35,12 @@ class Camera_Controler:
         pass
 
 class Pi_Camera(Camera_Controler):
+    '''
+    YUV captures
+        https://picamera.readthedocs.io/en/release-1.10/recipes2.html
+    Raw Bayer Capture
+
+    '''
         def __init__(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, width, height):
             Camera_Controler.__init__(self,angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar)
             self.camera = PiCamera()
@@ -43,7 +49,7 @@ class Pi_Camera(Camera_Controler):
             self.outputStream = picamera.array.PiYUVArray(self.camera)
             self.raw_w=(width + 31) // 32 * 32
             self.raw_h=(height + 15) // 16 * 16
-            self.images=np.zeros((images_chunk,height, width))
+            self.images=np.zeros((images_chunk,height, width), dtype=np.uint16)
             self.names=['i' for i in range(images_chunk)]
 
         def test_Camera(self):
@@ -71,7 +77,7 @@ class Pi_Camera(Camera_Controler):
 
             # Process the captured images
             self.image_manager.input_raw_images(self.images, self.names)
-            self.image_manager.compute_raw_to_i607_or_i203()
+            self.image_manager.compute_raw_to_iX()
             # Get angles
             self.angle_algorithm.reInitialize(self.image_manager)
             self.compute_angles_func()
@@ -104,7 +110,7 @@ class Pi_Camera(Camera_Controler):
 
                 # Process the captured images
                 self.image_manager.input_raw_images(self.images, self.names)
-                self.image_manager.compute_raw_to_i607_or_i203()
+                self.image_manager.compute_raw_to_iX()
                 # Get angles
                 self.angle_algorithm.reInitialize(self.image_manager)
                 self.compute_angles_func()

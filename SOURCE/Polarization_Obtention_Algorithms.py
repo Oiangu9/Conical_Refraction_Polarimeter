@@ -6,7 +6,6 @@ import os
 from SOURCE.Ad_Hoc_Optimizer import Ad_Hoc_Optimizer
 from SOURCE.Theoretical_Ring_Simulator import *
 from SOURCE.GPU_Classes import *
-from skimage.metrics import structural_similarity as ssim
 import logging
 
 """
@@ -1200,7 +1199,7 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
             self.Z_points[name]={}
             self.phi_points[name]={}
             # use the results from the gradient algorithm to initialize the best triplet
-            self.R0_pix_best[name]=[1.7*self.algorithm_G.optimals[f'Fibonacci_Search_{name}']]
+            self.R0_pix_best[name]=[2.5*np.sqrt(-self.algorithm_G.optimals[f'Fibonacci_Search_{name}'])]
             self.Z_best[name]=[0.0]
             self.phi_CR_best[name]=[self.algorithm_G.angles[f'Fibonacci_Search_{name}']]
             simulations=0
@@ -1265,7 +1264,7 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
             self.Z_points[name]={}
             self.phi_points[name]={}
             # use the results from the gradient algorithm to initialize the best triplet
-            self.R0_pix_best[name]=[1.7*self.algorithm_G.optimals[f'Quadratic_Search_{name}']]
+            self.R0_pix_best[name]=[2.5*np.sqrt(-self.algorithm_G.optimums[f'Quadratic_Search_{name}'])]
             self.Z_best[name]=[0.0]
             self.phi_CR_best[name]=[self.algorithm_G.angles[f'Quadratic_Search_{name}']]
             simulations=0
