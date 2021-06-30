@@ -696,7 +696,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.camera.stop_camera=True
 
     def initialize_camera(self):
-        print(image_manager,
+        print(None,
             eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
             float(self.initial_guess_delta_pix.text()),
             self.use_exact_grav_G.isChecked(),False)
