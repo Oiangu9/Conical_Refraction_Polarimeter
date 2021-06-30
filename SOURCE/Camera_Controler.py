@@ -49,7 +49,6 @@ class Pi_Camera(Camera_Controler):
         self.outputStream = picamera.array.PiYUVArray(self.camera)
         self.raw_w=(width + 31) // 32 * 32
         self.raw_h=(height + 15) // 16 * 16
-        print(width, height, self.raw_w, self.raw_h)
         self.images=np.zeros((images_chunk,height, width), dtype=np.uint16)
         self.names=['i' for i in range(images_chunk)]
 
@@ -61,6 +60,7 @@ class Pi_Camera(Camera_Controler):
         self.stop_camera=False
 
     def grab_and_fix_reference(self):
+        print("Ref path",self.reference_path)
         self.outputStream.truncate(0)
         self.camera.start_preview()
         # Camera warm-up time
@@ -68,7 +68,7 @@ class Pi_Camera(Camera_Controler):
         for im in range(self.images_chunk):
             # capture raw image
             self.camera.capture(self.outputStream, 'yuv')
-            print(self.outputStream.array.dtype, self.outputStream.array)
+            print(self.outputStream.array.dtype, self.outputStream.array.shape, self.images.shape, self.outputStream.array)
             # put it in the array for the captured images of this chunk
             self.images[im,:,:] = self.outputStream.array[:,:,0] #[h, w, yuv3]->[h,w,y]
             # reset stream
