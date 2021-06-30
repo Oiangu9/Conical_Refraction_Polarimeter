@@ -244,6 +244,7 @@ class Image_Manager:
 
         We could introduce an option to print angles in degrees here.
         """
+        print(f"Im ploting rings at {output_path}")
         self.centered_images_to_plot=(65535*self.centered_ring_images).astype(np.uint16)
         for im, (name, angle) in enumerate(pol_angles.items()):
             # Note that the image will be permanently modified!
@@ -257,4 +258,5 @@ class Image_Manager:
             self.mainThreadPlotter.emit(self.centered_images_to_plot[im],
                 self.previs_ms, name )
             if output_path:
+                print(f"Im ploting True rings at {output_path}")
                 cv2.imwrite(f"{output_path}/{self.raw_images_names[im][im]}.png", self.centered_images_to_plot[im])
