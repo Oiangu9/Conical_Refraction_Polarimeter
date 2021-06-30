@@ -711,7 +711,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
             float(self.initial_guess_delta_pix.text()),
             self.use_exact_grav_G.isChecked(),False)
-        if self.liveG.isChecked(): # gradient algorithm########################################
+        if self.liveH.isChecked(): # gradient algorithm########################################
             print(image_manager,
                 eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
                 float(self.initial_guess_delta_pix.text()),
