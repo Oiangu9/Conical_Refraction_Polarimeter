@@ -52,7 +52,7 @@ class Pi_Camera(Camera_Controler):
         self.images=np.zeros((images_chunk,height, width), dtype=np.uint16)
         self.names=['i' for i in range(images_chunk)]
 
-    def reinitialize(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, width, height):
+    def reInitialize(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, width, height):
         Camera_Controler.__init__(self,angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar)
         #self.camera = PiCamera() If camera initialized multiple times yields an error
         self.camera.resolution = (width, height)
