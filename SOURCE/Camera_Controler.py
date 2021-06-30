@@ -90,7 +90,6 @@ class Pi_Camera(Camera_Controler):
         # Process the captured images
         self.image_manager.input_raw_images( self.images.astype(np.float64)/np.amax(self.images, axis=(1,2)), self.names)
         self.image_manager.compute_raw_to_iX()
-        cv2.imwrite("1.png", (255*self.image_manager.centered_ring_images[0]).astype(np.uint8))
 
         # Get angles
         self.angle_algorithm.reInitialize(self.image_manager)
@@ -122,7 +121,7 @@ class Pi_Camera(Camera_Controler):
                 self.names[im]=(datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S)"))
 
             # Process the captured images
-            self.image_manager.input_raw_images(self.images, self.names)
+            self.image_manager.input_raw_images(self.images.astype(np.float64)/np.amax(self.images, axis=(1,2)), self.names)
             self.image_manager.compute_raw_to_iX()
             # Get angles
             self.angle_algorithm.reInitialize(self.image_manager)

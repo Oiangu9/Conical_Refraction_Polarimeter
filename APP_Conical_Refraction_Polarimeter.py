@@ -684,7 +684,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
     def _run_camera(self):
         self.stopCamera.setEnabled(True)
         self.initialize_camera()
-        self.camera.take_and_process_frames()
+        self.camera.take_and_process_frames(int(self.totalFrames.text()), int(self.outputEvery.text()))
         self.block_hard_user_interaction(True)
         self.stopCamera.setEnabled(False)
 
