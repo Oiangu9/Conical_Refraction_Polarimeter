@@ -4,13 +4,19 @@ from GUI.Design_ui import *
 from SOURCE.Image_Manager import *
 from SOURCE.Polarization_Obtention_Algorithms import *
 from SOURCE.Theoretical_Ring_Simulator import *
+global disable_gpu_functionality
+global disable_camera_functionality
+try:
+    from SOURCE.GPU_Classes import *
+    disable_gpu_functionality=False
+except:
+    disable_gpu_functionality=True
 try:
     from SOURCE.Camera_Controler import *
-    global disable_camera_functionality
     disable_camera_functionality=False
 except:
-    global diable_camera_functionality
     disable_camera_functionality=True
+
 from glob import glob
 import logging
 import sys
@@ -82,7 +88,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             self.setFont(font)
         else:
             self.resize(800, 400)
-            self.showFullScreen()
+            #self.showFullScreen()
 
 
         # Fullscreen shortcut
@@ -148,9 +154,9 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             self.execute_histogram_algorithm)
         self.run_gradient_algorithm.clicked.connect(
             self.execute_gradient_algorithm)
-        self.run_sc.clicked.connect(
+        self.run_SC.clicked.connect(
             self.execute_simulation_coordinate_descent_algorithm)
-        self.run_ss.clicked.connect(
+        self.run_SS.clicked.connect(
             self.execute_simulation_tracker_simplex_algorithm)
 
         # When live test buttons are pressed execute stuff
@@ -176,6 +182,13 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         if disable_camera_functionality:
             self.testCamera.setEnabled(False)
             self.grabReference.setEnabled(False)
+
+        # disable gpu functionalities if jax is not available
+        if disable_gpu_functionality:
+            self.use_GPU_S.setChecked(False)
+            self.use_GPU_Sim_Th.setChecked(False)
+            self.use_GPU_S.setEnabled(False)
+            self.use_GPU_Sim_Th.setEnabled(False)
 
     def toggleFullScreen(self):
         if self.isFullScreen():
@@ -256,8 +269,8 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.grabReference.setEnabled(state)
         self.createImages.setEnabled(state)
         self.run_full_test.setEnabled(state)
-        self.run_sc.setEnabled(state)
-        self.run_ss.setEnabled(state)
+        self.run_SC.setEnabled(state)
+        self.run_SS.setEnabled(state)
 
     def initialize_Angle_Calculator_instance_convert_images(self):
         """
@@ -558,20 +571,19 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             return 1
         logging.info(" Image loader ready!")
         # Initialize instance of Simulation Coordinate descent Algorithm calculator
-        simulator_cd_algorithm = Simualtion_Coordinate_Descent_Algorithm(self.image_loader,
+        simulator_cd_algorithm = Simulation_Coordinate_Descent_Algorithm(self.image_loader,
             int(self.max_cycles.text()), None, None,
             eval(self.min_phi_S.text()), eval(self.max_phi_S.text()),
             eval(self.min_R0_S.text()), eval(self.max_R0_S.text()),
             float(self.initial_guess_delta_R0_SC.text()),
             float(self.initial_guess_delta_phi_SC.text()),
             float(self.initial_guess_delta_Z_SC.text()),
-            eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
-            n=float(self.n_S.text()), w0=float(Self.w0_S.text()), a0=float(self.a0_S.text()),
+            n=float(self.n_S.text()), w0=float(self.w0_S.text()), a0=float(self.a0_S.text()),
             max_k=float(self.maxK_S.text()), num_k=int(self.numK_S.text()),
             nx=eval(self.nx_S.text()), xmin=float(self.xmin_S.text()),
             xmax=float(self.xmax_S.text()) ,ymin=float(self.ymin_S.text()),
             ymax=float(self.ymax_S.text()), xChunk=int(self.xChunks_S.text()),
-            yChunk=int(self.yChunks_S.text()),
+            yChunk=int(self.yChunks_S.text()), gpu=self.use_GPU_S.isChecked(),
             min_radi_G=eval(self.min_rad_G_2.text()),
             max_radi_G=eval(self.max_rad_G_2.text()),
             use_exact_gravicenter_G=self.use_exact_grav_G_2.isChecked(),
@@ -580,6 +592,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # Get arguments and run algorithm depending on the chosen stuff
         logging.info(" Running Simulation Coordinate Descent Algorithm...")
         if self.fibonacci_SC.isChecked():
+            mname="Fibonacci_Search_"
             simulator_cd_algorithm.fibonacci_ratio_search(
                 float(self.prec_R0_SC.text()),
                 int(self.max_pt_R0_SC.text()),
@@ -593,6 +606,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             )
 
         else:
+            mname="Quadratic_Search_"
             simulator_cd_algorithm.quadratic_fit_search(
                 float(self.prec_R0_SC.text()),
                 int(self.max_pt_R0_SC.text()),
@@ -604,10 +618,10 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                 float(self.precision_G_2.text()), int(self.max_it_G_2.text()),
                 float(self.cost_tol_G_2.text())
             )
-        logging.info(f"Times (s) = {simulator_cd_algorithm.times}\n\nFound optimal radii in pixels = {simulator_cd_algorithm.best_radii}\n\Z plane position (w0 units) = {simulator_cd_algorithm.best_zs}\n\nPolarization Angle (rad)={simulator_cd_algorithm.best_angles}\n\nNumber of Simulations required ={simulator_cs_algorithm.simulations_required}")
+        logging.info(f"Times (s) = {simulator_cd_algorithm.times}\n\nFound optimal radii in pixels = {simulator_cd_algorithm.best_radii}\n\Z plane position (w0 units) = {simulator_cd_algorithm.best_zs}\n\nPolarization Angle (rad)={simulator_cd_algorithm.best_angles}\n\nNumber of Simulations required ={simulator_cd_algorithm.simulations_required}")
 
         if (self.output_plots.isChecked()):
-            simulator_cd_algorithm.save_result_plots(self.output_directory.text())
+            simulator_cd_algorithm.save_result_plots(self.output_directory.text(), mname)
 
 
 
@@ -793,13 +807,23 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         self.strong_worker.start()
 
     def _run_simulations(self):
-        simulator = RingSimulator( n=float(self.n.text()),
-            w0=float(self.w0.text()), R0=float(self.R0.text()), a0=1.0,
-            max_k=float(self.kmax.text()), num_k=int(self.nk.text()), nx=int(self.nx.text()),
-            ny=int(self.ny.text()), nz=int(self.nz.text()), xmin=float(self.xmin.text()),
-            xmax=float(self.xmax.text()),ymin=float(self.ymin.text()),ymax=float(self.ymax.text()),
-            zmin=float(self.zmin.text()), zmax=float(self.zmax.text()),
-            sim_chunk_x=int(self.sim_chunk_x.text()), sim_chunk_y=int(self.sim_chunk_y.text()) )
+        if self.use_GPU_Sim_Th.isChecked():
+            simulator = RingSimulator_GPU( n=float(self.n.text()),
+                w0=float(self.w0.text()), R0=float(self.R0.text()), a0=1.0,
+                max_k=float(self.kmax.text()), num_k=int(self.nk.text()), nx=int(self.nx.text()),
+                ny=int(self.ny.text()), nz=int(self.nz.text()), xmin=float(self.xmin.text()),
+                xmax=float(self.xmax.text()),ymin=float(self.ymin.text()),ymax=float(self.ymax.text()),
+                zmin=float(self.zmin.text()), zmax=float(self.zmax.text()),
+                sim_chunk_x=int(self.sim_chunk_x.text()), sim_chunk_y=int(self.sim_chunk_y.text()) )
+
+        else:
+            simulator = RingSimulator( n=float(self.n.text()),
+                w0=float(self.w0.text()), R0=float(self.R0.text()), a0=1.0,
+                max_k=float(self.kmax.text()), num_k=int(self.nk.text()), nx=int(self.nx.text()),
+                ny=int(self.ny.text()), nz=int(self.nz.text()), xmin=float(self.xmin.text()),
+                xmax=float(self.xmax.text()),ymin=float(self.ymin.text()),ymax=float(self.ymax.text()),
+                zmin=float(self.zmin.text()), zmax=float(self.zmax.text()),
+                sim_chunk_x=int(self.sim_chunk_x.text()), sim_chunk_y=int(self.sim_chunk_y.text()) )
 
         inJones=np.array([eval(self.polar0.text()), eval(self.polar1.text())])
 

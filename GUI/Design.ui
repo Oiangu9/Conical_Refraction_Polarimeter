@@ -202,7 +202,7 @@ Interpolation Algorithm:</string>
         <item row="5" column="4">
          <widget class="QLineEdit" name="iX">
           <property name="text">
-           <string>807</string>
+           <string>100</string>
           </property>
          </widget>
         </item>
@@ -265,6 +265,9 @@ Interpolation Algorithm:</string>
            <string>b) Use Images already converted in the
 format specified in the first tab . They will be searched in &quot;./iX&quot;</string>
           </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
           <attribute name="buttonGroup">
            <string notr="true">buttonGroup_10</string>
           </attribute>
@@ -309,7 +312,7 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
 (if still not converted it will be done now)</string>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">buttonGroup_10</string>
@@ -376,7 +379,7 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
                </size>
               </property>
               <property name="text">
-               <string>np.sqrt(2)*image_loader.mode</string>
+               <string>np.sqrt(2)*self.image_loader.mode</string>
               </property>
              </widget>
             </item>
@@ -1280,7 +1283,7 @@ R, M Angle (rad):</string>
             <item row="0" column="0">
              <widget class="QTabWidget" name="tabWidget_5">
               <property name="currentIndex">
-               <number>0</number>
+               <number>3</number>
               </property>
               <property name="tabBarAutoHide">
                <bool>true</bool>
@@ -1384,7 +1387,7 @@ R, M Angle (rad):</string>
                 <item row="3" column="9">
                  <widget class="QLineEdit" name="yChunks_S">
                   <property name="text">
-                   <string>500</string>
+                   <string>300</string>
                   </property>
                  </widget>
                 </item>
@@ -1426,7 +1429,7 @@ R, M Angle (rad):</string>
                 <item row="8" column="3">
                  <widget class="QLineEdit" name="numK_S">
                   <property name="text">
-                   <string>500</string>
+                   <string>400</string>
                   </property>
                  </widget>
                 </item>
@@ -1454,17 +1457,20 @@ R, M Angle (rad):</string>
                 <item row="1" column="9">
                  <widget class="QLineEdit" name="xChunks_S">
                   <property name="text">
-                   <string>500</string>
+                   <string>300</string>
                   </property>
                  </widget>
                 </item>
                 <item row="8" column="9">
                  <widget class="QRadioButton" name="use_GPU_S">
                   <property name="enabled">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="text">
                    <string>Use GPU (Jax)</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -1608,7 +1614,7 @@ R, M Angle (rad):</string>
                    </size>
                   </property>
                   <property name="text">
-                   <string>np.sqrt(2)*image_loader.mode</string>
+                   <string>np.sqrt(2)*self.image_loader.mode</string>
                   </property>
                  </widget>
                 </item>
@@ -1632,7 +1638,7 @@ R, M Angle (rad):</string>
                    <bool>false</bool>
                   </property>
                   <property name="text">
-                   <string>np.sqrt(2)*image_loader.mode</string>
+                   <string>np.sqrt(2)*self.image_loader.mode</string>
                   </property>
                  </widget>
                 </item>
@@ -1739,7 +1745,7 @@ R, M Angle (rad):</string>
                 <item row="1" column="1" colspan="2">
                  <widget class="QLineEdit" name="abs_cost_tol_SC">
                   <property name="text">
-                   <string>1e-5</string>
+                   <string>1e-11</string>
                   </property>
                  </widget>
                 </item>
@@ -1823,7 +1829,7 @@ R, M Angle (rad):</string>
                 <item row="3" column="1" colspan="2">
                  <widget class="QLineEdit" name="prec_R0_SC">
                   <property name="text">
-                   <string>1</string>
+                   <string>0.01</string>
                   </property>
                  </widget>
                 </item>
@@ -1851,7 +1857,7 @@ R, M Angle (rad):</string>
                 <item row="3" column="7">
                  <widget class="QLineEdit" name="initial_guess_delta_Z_SC">
                   <property name="text">
-                   <string>0.1</string>
+                   <string>0.01</string>
                   </property>
                  </widget>
                 </item>
@@ -1865,7 +1871,7 @@ R, M Angle (rad):</string>
                 <item row="4" column="1" colspan="2">
                  <widget class="QLineEdit" name="prec_Z_SC">
                   <property name="text">
-                   <string>0.1</string>
+                   <string>0.01</string>
                   </property>
                  </widget>
                 </item>
@@ -1908,7 +1914,7 @@ R, M Angle (rad):</string>
                 <item row="0" column="2">
                  <widget class="QLineEdit" name="max_cycles">
                   <property name="text">
-                   <string>3</string>
+                   <string>1</string>
                   </property>
                  </widget>
                 </item>
@@ -2719,12 +2725,15 @@ Jones Vector (note i is 1j).:</string>
          </widget>
         </item>
         <item row="1" column="6">
-         <widget class="QRadioButton" name="radioButton_5">
+         <widget class="QRadioButton" name="use_GPU_Sim_Th">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="text">
            <string>Use GPU (Jax)</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -2739,24 +2748,24 @@ Jones Vector (note i is 1j).:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_14"/>
-  <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_2"/>
   <buttongroup name="buttonGroup_12"/>
-  <buttongroup name="buttonGroup_10"/>
-  <buttongroup name="buttonGroup_15"/>
-  <buttongroup name="buttonGroup_17"/>
-  <buttongroup name="buttonGroup_16"/>
-  <buttongroup name="buttonGroup_9"/>
-  <buttongroup name="buttonGroup_7"/>
-  <buttongroup name="buttonGroup_13"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_11"/>
-  <buttongroup name="buttonGroup_5"/>
   <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup_18"/>
+  <buttongroup name="buttonGroup_14"/>
+  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_8"/>
   <buttongroup name="buttonGroup_19"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_15"/>
+  <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup_11"/>
+  <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup_16"/>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_18"/>
+  <buttongroup name="buttonGroup_17"/>
  </buttongroups>
 </ui>

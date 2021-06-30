@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file './GUI/Design.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -125,6 +126,7 @@ class Ui_MainWindow(object):
         self.gridLayout_6 = QtWidgets.QGridLayout(self.tab_2)
         self.gridLayout_6.setObjectName("gridLayout_6")
         self.use_converted_iX = QtWidgets.QRadioButton(self.tab_2)
+        self.use_converted_iX.setChecked(True)
         self.use_converted_iX.setObjectName("use_converted_iX")
         self.buttonGroup_10 = QtWidgets.QButtonGroup(MainWindow)
         self.buttonGroup_10.setObjectName("buttonGroup_10")
@@ -142,7 +144,7 @@ class Ui_MainWindow(object):
         self.show_plots.setObjectName("show_plots")
         self.gridLayout_6.addWidget(self.show_plots, 4, 1, 1, 1)
         self.use_current_images = QtWidgets.QRadioButton(self.tab_2)
-        self.use_current_images.setChecked(True)
+        self.use_current_images.setChecked(False)
         self.use_current_images.setObjectName("use_current_images")
         self.buttonGroup_10.addButton(self.use_current_images)
         self.gridLayout_6.addWidget(self.use_current_images, 3, 2, 1, 1)
@@ -635,7 +637,8 @@ class Ui_MainWindow(object):
         self.xChunks_S.setObjectName("xChunks_S")
         self.gridLayout_17.addWidget(self.xChunks_S, 1, 9, 1, 1)
         self.use_GPU_S = QtWidgets.QRadioButton(self.tab_20)
-        self.use_GPU_S.setEnabled(False)
+        self.use_GPU_S.setEnabled(True)
+        self.use_GPU_S.setChecked(True)
         self.use_GPU_S.setObjectName("use_GPU_S")
         self.gridLayout_17.addWidget(self.use_GPU_S, 8, 9, 1, 1)
         self.tabWidget_5.addTab(self.tab_20, "")
@@ -1200,10 +1203,11 @@ class Ui_MainWindow(object):
         self.sim_chunk_y = QtWidgets.QLineEdit(self.tab_15)
         self.sim_chunk_y.setObjectName("sim_chunk_y")
         self.gridLayout_12.addWidget(self.sim_chunk_y, 13, 9, 1, 1)
-        self.radioButton_5 = QtWidgets.QRadioButton(self.tab_15)
-        self.radioButton_5.setEnabled(False)
-        self.radioButton_5.setObjectName("radioButton_5")
-        self.gridLayout_12.addWidget(self.radioButton_5, 1, 6, 1, 1)
+        self.use_GPU_Sim_Th = QtWidgets.QRadioButton(self.tab_15)
+        self.use_GPU_Sim_Th.setEnabled(True)
+        self.use_GPU_Sim_Th.setChecked(True)
+        self.use_GPU_Sim_Th.setObjectName("use_GPU_Sim_Th")
+        self.gridLayout_12.addWidget(self.use_GPU_Sim_Th, 1, 6, 1, 1)
         self.tabWidget.addTab(self.tab_15, "")
         self.gridLayout_11.addWidget(self.tabWidget, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
@@ -1215,7 +1219,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setCurrentIndex(1)
         self.tabWidget_2.setCurrentIndex(5)
         self.tabWidget_4.setCurrentIndex(2)
-        self.tabWidget_5.setCurrentIndex(0)
+        self.tabWidget_5.setCurrentIndex(3)
         self.tabWidget_3.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -1242,7 +1246,7 @@ class Ui_MainWindow(object):
 "Interpolation Algorithm:"))
         self.label_2.setText(_translate("MainWindow", "Input Image Directory:"))
         self.use_i203.setText(_translate("MainWindow", "Use i203 images"))
-        self.iX.setText(_translate("MainWindow", "807"))
+        self.iX.setText(_translate("MainWindow", "100"))
         self.use_i607.setText(_translate("MainWindow", "Use i607 images"))
         self.label_4.setText(_translate("MainWindow", "Choose Image Sizes for Computations:"))
         self.use_iX.setText(_translate("MainWindow", "Use iX images with X:"))
@@ -1256,7 +1260,7 @@ class Ui_MainWindow(object):
 "(if still not converted it will be done now)"))
         self.label_23.setText(_translate("MainWindow", "Settings for Sanity Check Input/Output"))
         self.label_64.setText(_translate("MainWindow", "to"))
-        self.max_rad_G.setText(_translate("MainWindow", "np.sqrt(2)*image_loader.mode"))
+        self.max_rad_G.setText(_translate("MainWindow", "np.sqrt(2)*self.image_loader.mode"))
         self.min_rad_G.setText(_translate("MainWindow", "3"))
         self.label_65.setText(_translate("MainWindow", "Angle Range (pixels):"))
         self.use_exact_grav_G.setText(_translate("MainWindow", "Center exactly in Gravicenter"))
@@ -1369,17 +1373,17 @@ class Ui_MainWindow(object):
         self.label_96.setText(_translate("MainWindow", "xmin:"))
         self.label_90.setText(_translate("MainWindow", "n:"))
         self.label_100.setText(_translate("MainWindow", "Simulate in x Chunks:"))
-        self.yChunks_S.setText(_translate("MainWindow", "500"))
+        self.yChunks_S.setText(_translate("MainWindow", "300"))
         self.label_97.setText(_translate("MainWindow", "xmax:"))
         self.xmax_S.setText(_translate("MainWindow", "15"))
         self.label_95.setText(_translate("MainWindow", "nx=ny:"))
         self.nx_S.setText(_translate("MainWindow", "self.image_loader.mode*2+1"))
         self.xmin_S.setText(_translate("MainWindow", "-15"))
-        self.numK_S.setText(_translate("MainWindow", "500"))
+        self.numK_S.setText(_translate("MainWindow", "400"))
         self.a0_S.setText(_translate("MainWindow", "1.0"))
         self.w0_S.setText(_translate("MainWindow", "1"))
         self.n_S.setText(_translate("MainWindow", "1.5"))
-        self.xChunks_S.setText(_translate("MainWindow", "500"))
+        self.xChunks_S.setText(_translate("MainWindow", "300"))
         self.use_GPU_S.setText(_translate("MainWindow", "Use GPU (Jax)"))
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_20), _translate("MainWindow", "Simulation Settings"))
         self.label_84.setText(_translate("MainWindow", "Rel. Cost Tolerance:"))
@@ -1395,10 +1399,10 @@ class Ui_MainWindow(object):
         self.cost_tol_G_2.setText(_translate("MainWindow", "0"))
         self.label_85.setText(_translate("MainWindow", "Max Iterations:"))
         self.use_exact_grav_G_2.setText(_translate("MainWindow", "Center exactly in Gravicenter"))
-        self.max_rad_G_2.setText(_translate("MainWindow", "np.sqrt(2)*image_loader.mode"))
+        self.max_rad_G_2.setText(_translate("MainWindow", "np.sqrt(2)*self.image_loader.mode"))
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_17), _translate("MainWindow", "G Alg. Options"))
         self.label_70.setText(_translate("MainWindow", "Min phi_CR (rad):"))
-        self.max_R0_S.setText(_translate("MainWindow", "np.sqrt(2)*image_loader.mode"))
+        self.max_R0_S.setText(_translate("MainWindow", "np.sqrt(2)*self.image_loader.mode"))
         self.label_72.setText(_translate("MainWindow", "Min R0 (pix):"))
         self.min_R0_S.setText(_translate("MainWindow", "3"))
         self.label_73.setText(_translate("MainWindow", "Max R0 (pix):"))
@@ -1412,7 +1416,7 @@ class Ui_MainWindow(object):
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_21), _translate("MainWindow", "Search Domain"))
         self.label_7.setText(_translate("MainWindow", "Max Coordinate Desc. cycles:"))
         self.label_76.setText(_translate("MainWindow", "Abs. Cost Tolerance:"))
-        self.abs_cost_tol_SC.setText(_translate("MainWindow", "1e-5"))
+        self.abs_cost_tol_SC.setText(_translate("MainWindow", "1e-11"))
         self.label_80.setText(_translate("MainWindow", "Max points phi (per cycle):"))
         self.max_pt_phi_SC.setText(_translate("MainWindow", "15"))
         self.label_89.setText(_translate("MainWindow", "Initial guess delta phi:"))
@@ -1424,17 +1428,17 @@ class Ui_MainWindow(object):
         self.label_87.setText(_translate("MainWindow", "Initial guess delta R0:"))
         self.initial_guess_delta_R0_SC.setText(_translate("MainWindow", "1"))
         self.label_78.setText(_translate("MainWindow", "Precision* R0_pix:"))
-        self.prec_R0_SC.setText(_translate("MainWindow", "1"))
+        self.prec_R0_SC.setText(_translate("MainWindow", "0.01"))
         self.label_82.setText(_translate("MainWindow", "Max points Z (per cycle):"))
         self.max_pt_Z_SC.setText(_translate("MainWindow", "15"))
         self.label_88.setText(_translate("MainWindow", "Initial guess delta Z:"))
-        self.initial_guess_delta_Z_SC.setText(_translate("MainWindow", "0.1"))
+        self.initial_guess_delta_Z_SC.setText(_translate("MainWindow", "0.01"))
         self.label_79.setText(_translate("MainWindow", "Precision* Z:"))
-        self.prec_Z_SC.setText(_translate("MainWindow", "0.1"))
+        self.prec_Z_SC.setText(_translate("MainWindow", "0.01"))
         self.fibonacci_SC.setText(_translate("MainWindow", "Use Fibonacci Ratio Search"))
         self.quadratic_SC.setText(_translate("MainWindow", "Use Quadratic Fit Search"))
         self.run_SC.setText(_translate("MainWindow", "RUN SC"))
-        self.max_cycles.setText(_translate("MainWindow", "3"))
+        self.max_cycles.setText(_translate("MainWindow", "1"))
         self.radioButton_3.setText(_translate("MainWindow", "Use Gradient Alg. for initial guess"))
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_18), _translate("MainWindow", "SC - Coordinate Descent"))
         self.run_SS.setText(_translate("MainWindow", "RUN SS"))
@@ -1532,8 +1536,10 @@ class Ui_MainWindow(object):
         self.label_66.setText(_translate("MainWindow", "Compute y pixels\n"
 " in Ny chunks:"))
         self.sim_chunk_y.setText(_translate("MainWindow", "40"))
-        self.radioButton_5.setText(_translate("MainWindow", "Use GPU (Jax)"))
+        self.use_GPU_Sim_Th.setText(_translate("MainWindow", "Use GPU (Jax)"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_15), _translate("MainWindow", "Simulate Theoretical Ring"))
+
+
 
 
 if __name__ == "__main__":
@@ -1544,4 +1550,3 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
-

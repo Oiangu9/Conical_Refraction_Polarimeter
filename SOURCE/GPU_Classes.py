@@ -4,6 +4,8 @@ import jax.numpy as jnp
 from scipy.special import j0, j1
 import matplotlib.pyplot as plt
 import cv2
+import os
+os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = 'false'
 
 
 @jax.jit
@@ -27,8 +29,6 @@ def compute_Intensity(B0,B1, in_polrz, sin_phis, cos_phis):
         (B0+B1*cos_phis)*in_polrz[0]+B1*sin_phis*in_polrz[1],
         (B0-B1*cos_phis)*in_polrz[1]+B1*sin_phis*in_polrz[0]
         )), axis=0)**2 # [2, ny, nx, nz]
-
-
 
 
 
@@ -155,8 +155,8 @@ class RingSimulator_Optimizer_GPU():
         self.rs=jnp.expand_dims(jnp.sqrt(self.xs**2+self.ys**2), axis=-1) #[ny,nx,1] Broadcastable to k
         self.phis=jnp.expand_dims(jnp.arctan2(self.ys, self.xs),  axis=-1) #[ny,nx,1]
 
-        self.cos_phis = jnp.cos(self.phis) #[ny,nx,1] Broadcastable to z
-        self.sin_phis = jnp.sin(self.phis) #[ny,nx,1]
+        self.cos_phis = jnp.squeeze(jnp.cos(self.phis)) #[ny,nx]
+        self.sin_phis = jnp.squeeze(jnp.sin(self.phis)) #[ny,nx]
 
         self.chunks_x = jnp.array(list(range(0,self.nx,self.sim_chunk_x))+[self.nx])
         self.chunks_y = jnp.array(list(range(0, self.ny,self.sim_chunk_y))+[self.ny])
@@ -164,8 +164,6 @@ class RingSimulator_Optimizer_GPU():
         self.B0=jnp.zeros((self.ny, self.nx), dtype=jnp.complex64) #[ny, nx]
         self.B1=jnp.zeros((self.ny, self.nx), dtype=jnp.complex64) #[ny, nx]
         self.ks, self.dk = jnp.linspace(start=0, stop=self.max_k, num=self.num_k, endpoint=True, retstep=True)
-
-
 
     def _compute_B0_B1(self, Z, R0):
         # There is a big inefficiency due to the need of computing the j0, j1 sequentially with numpy. Aaand this is the hard part actually!
@@ -182,34 +180,32 @@ class RingSimulator_Optimizer_GPU():
 
     def _plot_Intensity(self, I, output_path, input_polarization, Z, R0):
         input_angle=input_polarization if type(input_polarization) in [int, float] else np.arctan2(input_polarization.real[1], input_polarization.real[0])
-        cv2.imwrite(f"{output_path}/Raw_PolAngle_{input_angle:.15f}_Vector_{input_polarization}_CRAngle_{2*input_angle:.15f}_Z_{Z}_R0_{R0}.png",
-                np.asarray((65535*I[:,:,iz]/jnp.max(I[:,:,iz]))).astype(np.uint16))
+        cv2.imwrite(f"{output_path}/Raw_PolAngle_{input_angle:.15f}_Vector_{input_polarization}_CRAngle_{2*input_angle:.15f}_Z_{z}_R0_{R0}.png",       np.asarray((65535*I/jnp.max(I))).astype(np.uint16))
 
     def compute_CR_ring(self, CR_ring_angle, R0_pixels, Z):
         # If the argument R0 and Z are the same as the last time B0B1 was computed, then do not recomupte them
         if self.last_R0!=R0_pixels or self.last_Z!=Z:
-            self._compute_B0_B1(Z, R0_pixels*self.dx)
             self.last_R0=R0_pixels
             self.last_Z=Z
-        return compute_Intensity(self.B0, self.B1, jnp.array([np.cos(CR_ring_angle/2), np.sin(CR_ring_angle/2)]), self.sin_phis, self.cos_phis)
-
+            self._compute_B0_B1(Z, R0_pixels*self.dx)
+        I=self._compute_D_and_Intensity_Turpin(jnp.array([jnp.cos(CR_ring_angle/2), jnp.sin(CR_ring_angle/2)]))
+        return np.asarray(I/jnp.max(I))
 
     def compute_and_plot_CR_ring(self, CR_ring_angle, R0_pixels, Z, out_path, name):
-        # method 2
-        self.compute_CR_ring(CR_ring_angle, R0_pixels, Z)
-        cv2.imwrite(f"{output_path}/{name}__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}_R0_{R0_pixels*self.dx}.png",
-            np.asarray((65535*self.I/np.max(self.I))).astype(np.uint16))
+        I=self.compute_CR_ring(CR_ring_angle, R0_pixels, Z)
+        cv2.imwrite(f"{out_path}/[{name}]__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}_R0_{R0_pixels*self.dx}.png",
+                (65535*I).astype(np.uint16))
 
 
 
 if __name__ == "__main__":
 
-    import os
     phi_CRs = [-3, -2, np.pi/2, -1, 0, 1, np.pi/2, 2, 3, np.pi]
     #phi_CRs = [-3]
 
+    '''
     print("\n\n\nTesting General Simulator:")
-    simulator=RingSimulator_GPU( n=1.5, w0=1, R0=10, a0=1.0, max_k=50, num_k=300, nx=1215, ny=1215, nz=1, xmin=-15, xmax=15, ymin=-15, ymax=15, zmin=0, zmax=0, sim_chunk_x=600, sim_chunk_y=600)
+    simulator=RingSimulator_GPU( n=1.5, w0=1, R0=7, a0=1.0, max_k=50, num_k=300, nx=200, ny=200, nz=1, xmin=-15, xmax=15, ymin=-15, ymax=15, zmin=0, zmax=0, sim_chunk_x=200, sim_chunk_y=200)
 
     os.makedirs('./Simulated/General/Full/', exist_ok=True)
     os.makedirs('./Simulated/General/Approx/', exist_ok=True)
@@ -219,15 +215,16 @@ if __name__ == "__main__":
         simulator.compute_intensity_Trupin_and_Plot( jnp.array([np.cos(phi_CR/2), np.sin(phi_CR/2)]), './Simulated/General/Full/')
         print("Hard one done!\n")
         simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/General/Approx/')
-    
+    '''
+
     print("\n\n\nTesting Optimizer Simulator:")
-    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=300, nx=1215, ny=1215,  xmin=-15, xmax=15, ymin=-15, ymax=15, sim_chunk_x=200, sim_chunk_y=200)
+    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=500, nx=200, ny=200,  xmin=-15, xmax=15, ymin=-15, ymax=15, sim_chunk_x=200, sim_chunk_y=200)
 
     os.makedirs('./Simulated/Optimizer/Full/', exist_ok=True)
     os.makedirs('./Simulated/Optimizer/Approx/', exist_ok=True)
 
     for phi_CR in phi_CRs:
         print(f"Computed {phi_CR}")
-        simulator.compute_and_plot_CR_ring( phi_CR, 500, 0, './Simulated/Optimizer/Full/', 'FileName')
+        simulator.compute_and_plot_CR_ring( phi_CR, 60, 0, './Simulated/Optimizer/Full/', '')
         print("Hard one done!\n")
         #simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/Optimizer/Approx/')

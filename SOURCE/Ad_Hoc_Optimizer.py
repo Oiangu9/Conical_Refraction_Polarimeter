@@ -159,6 +159,7 @@ class Ad_Hoc_Optimizer:
                                 self.b], dtype=np.float64)
 
         # Evaluate cost function for each angle
+        #print("active_xs",active_xs, "costos", [ self.evaluate_cost(image, angle, *args_for_cost) for angle in active_xs])
         active_points = np.stack((active_xs, [ self.evaluate_cost(image, angle, *args_for_cost) for angle in active_xs])) # [2 (xj,f(xj)),4]
         # if the minium is in the boundary of the interval, make it not be the boundary. we subtract the initial_guess_delta to break the symmetries
         if np.argmin(active_points[1])==0:

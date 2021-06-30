@@ -35,7 +35,7 @@ class Image_Manager:
         images={}
         # We take the images that are valid from the provided paths and convert them to grayscale
         for image_path in path_list:
-            img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+            img = cv2.imread(image_path, cv2.IMREAD_ANYDEPTH)
             if img is not None:
                 images[image_path] = img
                 #np.array(Image.open(image_path))
@@ -210,7 +210,7 @@ class Image_Manager:
 
         images={}
         for image_path in path_list:
-            img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+            img = cv2.imread(image_path, cv2.IMREAD_ANYDEPTH)
             if img is not None:
                 images[image_path] = img
                 #np.array(Image.open(image_path))

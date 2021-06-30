@@ -102,7 +102,7 @@ class RingSimulator():
         self._compute_intensity_Todor( input_polarization_angle)
         self._plot_Intensity(out_path, input_polarization_angle)
 
-def RingSimulator_Optimizer():
+class RingSimulator_Optimizer():
     def __init__(self, n, w0, a0, max_k, num_k, nx, ny, xmin, xmax, ymin, ymax, sim_chunk_x, sim_chunk_y):
         self.n=n
         self.w0=w0
@@ -145,10 +145,10 @@ def RingSimulator_Optimizer():
         return self.a0*np.exp(-k**2/4.0)
 
     def _compute_B0_B1(self, Z, R0):
-        for ix in range(len(chunks_x)-1):
-            for iy in range(len(chunks_y)-1):
+        for ix in range(len(self.chunks_x)-1):
+            for iy in range(len(self.chunks_y)-1):
                 self.B0[ self.chunks_x[ix]:self.chunks_x[ix+1], self.chunks_y[iy]:self.chunks_y[iy+1]] = np.sum( self._gaussian_a(self.ks)*np.exp(-1j*self.ks**2*Z**2/(2*self.n))*np.cos(self.ks*R0/self.w0)*j0(self.ks*self.rs[self.chunks_x[ix]:self.chunks_x[ix+1], self.chunks_y[iy]:self.chunks_y[iy+1]])*self.ks, axis=-1)*self.dk/(2*np.pi) #[ny, nx, 1]
-                self.B1[ self.chunks_x[ix]:self.chunks_x[ix+1], self.chunks_y[iy]:self.chunks_y[iy+1]] = np.sum( self._gaussian_a(ks)*np.exp(-1j*self.ks**2*Z**2/(2*self.n))*np.sin(self.ks*R0/self.w0)*j1(self.ks*self.rs[self.chunks_x[ix]:self.chunks_x[ix+1], self.chunks_y[iy]:self.chunks_y[iy+1]])*self.ks, axis=-1 )*self.dk/(2*np.pi) #[ny, nx, 1]
+                self.B1[ self.chunks_x[ix]:self.chunks_x[ix+1], self.chunks_y[iy]:self.chunks_y[iy+1]] = np.sum( self._gaussian_a(self.ks)*np.exp(-1j*self.ks**2*Z**2/(2*self.n))*np.sin(self.ks*R0/self.w0)*j1(self.ks*self.rs[self.chunks_x[ix]:self.chunks_x[ix+1], self.chunks_y[iy]:self.chunks_y[iy+1]])*self.ks, axis=-1 )*self.dk/(2*np.pi) #[ny, nx, 1]
 
     def _compute_electric_displacements(self, in_polrz):
         self.D = np.stack((
@@ -167,8 +167,8 @@ def RingSimulator_Optimizer():
 
     def compute_CR_ring(self, CR_ring_angle, R0_pixels, Z):
         self.R0=R0_pixels*self.dx
-        self.rho0=R0/self.w0
-        self._compute_B0_B1(Z)
+        self.rho0=self.R0/self.w0
+        self._compute_B0_B1(Z, self.R0)
         self._compute_intensity_and_electric_displacements(np.array([np.cos(CR_ring_angle/2), np.sin(CR_ring_angle/2)]))
         return self.I
 
@@ -178,7 +178,7 @@ def RingSimulator_Optimizer():
             (65535*self.I[:,:]/np.max(self.I[:,:])).astype(np.uint16))
     def compute_and_plot_CR_ring(self, CR_ring_angle, R0_pixels, Z, out_path, name):
         self.compute_CR_ring(CR_ring_angle, R0_pixels, Z)
-        cv2.imwrite(f"{output_path}/{name}__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}.png",
+        cv2.imwrite(f"{output_path}/[{name}]__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}.png",
             (65535*self.I/np.max(self.I)).astype(np.uint16))
 
 
