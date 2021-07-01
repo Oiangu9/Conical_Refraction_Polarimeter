@@ -194,7 +194,7 @@ class RingSimulator_Optimizer_GPU():
     def compute_and_plot_CR_ring(self, CR_ring_angle, R0_pixels, Z, out_path, name):
         I=self.compute_CR_ring(CR_ring_angle, R0_pixels, Z)
         cv2.imwrite(f"{out_path}/[{name}]__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}_R0_{R0_pixels*self.dx}.png",
-                (65535*I).astype(np.uint16))
+                (65534*I).astype(np.uint16))
 
 
 
@@ -203,9 +203,9 @@ if __name__ == "__main__":
     phi_CRs = [-3, -2, np.pi/2, -1, 0, 1, np.pi/2, 2, 3, np.pi]
     #phi_CRs = [-3]
 
-    '''
+
     print("\n\n\nTesting General Simulator:")
-    simulator=RingSimulator_GPU( n=1.5, w0=1, R0=7, a0=1.0, max_k=50, num_k=300, nx=200, ny=200, nz=1, xmin=-15, xmax=15, ymin=-15, ymax=15, zmin=0, zmax=0, sim_chunk_x=200, sim_chunk_y=200)
+    simulator=RingSimulator_GPU( n=1.5, w0=1, R0=6.5, a0=1.0, max_k=50, num_k=500, nx=1215, ny=1215, nz=1, xmin=-15, xmax=15, ymin=-15, ymax=15, zmin=0, zmax=0, sim_chunk_x=600, sim_chunk_y=600)
 
     os.makedirs('./Simulated/General/Full/', exist_ok=True)
     os.makedirs('./Simulated/General/Approx/', exist_ok=True)
@@ -218,13 +218,14 @@ if __name__ == "__main__":
     '''
 
     print("\n\n\nTesting Optimizer Simulator:")
-    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=500, nx=200, ny=200,  xmin=-15, xmax=15, ymin=-15, ymax=15, sim_chunk_x=200, sim_chunk_y=200)
+    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=500, nx=1215, ny=1215,  xmin=-15, xmax=15, ymin=-15, ymax=15, sim_chunk_x=600, sim_chunk_y=600)
 
     os.makedirs('./Simulated/Optimizer/Full/', exist_ok=True)
     os.makedirs('./Simulated/Optimizer/Approx/', exist_ok=True)
 
     for phi_CR in phi_CRs:
         print(f"Computed {phi_CR}")
-        simulator.compute_and_plot_CR_ring( phi_CR, 60, 0, './Simulated/Optimizer/Full/', '')
+        simulator.compute_and_plot_CR_ring( phi_CR, 400, 0, './Simulated/Optimizer/Full/', '')
         print("Hard one done!\n")
         #simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/Optimizer/Approx/')
+    '''
