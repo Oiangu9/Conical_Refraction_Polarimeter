@@ -1256,7 +1256,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setCurrentIndex(2)
         self.tabWidget_2.setCurrentIndex(5)
         self.tabWidget_4.setCurrentIndex(2)
-        self.tabWidget_5.setCurrentIndex(1)
+        self.tabWidget_5.setCurrentIndex(2)
         self.tabWidget_3.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -1439,7 +1439,7 @@ class Ui_MainWindow(object):
         self.max_rad_G_2.setText(_translate("MainWindow", "np.sqrt(2)*self.mode"))
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_17), _translate("MainWindow", "G Alg. Options"))
         self.label_70.setText(_translate("MainWindow", "Min phi_CR (rad):"))
-        self.max_R0_S.setText(_translate("MainWindow", "np.sqrt(2)*self.image_loader.mode"))
+        self.max_R0_S.setText(_translate("MainWindow", "self.image_loader.mode"))
         self.label_72.setText(_translate("MainWindow", "Min R0 (pix):"))
         self.min_R0_S.setText(_translate("MainWindow", "3"))
         self.label_73.setText(_translate("MainWindow", "Max R0 (pix):"))
