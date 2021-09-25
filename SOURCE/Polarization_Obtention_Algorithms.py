@@ -79,20 +79,22 @@ class Polarization_Obtention_Algorithm:
                                 self.reference_precision)
 
 
-    def process_obtained_angles(self):
+    def process_obtained_angles(self, deg_or_rad=0):
         """
         This is a method to take the obtained angles in the conical refraction image relative to the
         width axis and to process them as:
             - Make them relative to the reference image
             - Undo the doubling of the angle for the projection of the refraction ring
         This method assumes that set_reference_angle() has already been executed before.
+        One can choose whether the results should be shown in radian or degrees.
+        0 is radian, 1 is deg.
         """
         self.polarization={}
         self.polarization_precision={}
-
+        conv=1 if not deg_or_rad else 180/np.pi # conversion factor
         for name, angle in self.angles.items():
-            self.polarization_precision[name] = self._round_to_sig(np.max(self.precisions[name]), self.reference_precision)/2.0
-            self.polarization[name]= self._round_to_sig(self.angle_to_pi_pi(angle-self.reference_angle)/2.0, self.polarization_precision[name])
+            self.polarization_precision[name] = self._round_to_sig(np.max(self.precisions[name])*conv, self.reference_precision*conv)/2.0
+            self.polarization[name]= self._round_to_sig(self.angle_to_pi_pi(angle-self.reference_angle)/2.0*conv, self.polarization_precision[name])
 
         # TODO: It should be rounded to the significance of the maximum between the reference precision and the precision obtained for the angle
 

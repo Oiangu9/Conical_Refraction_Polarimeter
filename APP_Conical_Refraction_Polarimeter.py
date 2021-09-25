@@ -376,20 +376,20 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         logging.info(" Running Rotation Algorithm on REFERENCES...")
         self.__execute_rotation_algorithm(rotation_algorithm)
         rotation_algorithm.set_reference_angle(float(self.referenceAngleTest.text()))
-        rotation_algorithm.process_obtained_angles()
+        rotation_algorithm.process_obtained_angles(deg_or_rad=self.last_unit.currentIndex())
         # Show results (and save them if asked by user)
         if self.output_plots.isChecked():
             out=self.output_directory.text()+'/Rotation_Algorithm/RESULTS/'
             os.makedirs( out+'/References/', exist_ok=True)
-            self.reference_loader.plot_rings_and_angles(rotation_algorithm.polarization, rotation_algorithm.polarization_precision, output_path=out+'/References/', show=self.show_plots.isChecked())
+            self.reference_loader.plot_rings_and_angles(rotation_algorithm.polarization, rotation_algorithm.polarization_precision, output_path=out+'/References/', show=self.show_plots.isChecked(), unit=self.last_unit.currentText())
 
         logging.info(" Running Rotation Algorithm on PROBLEM images...")
         rotation_algorithm.reInitialize(self.image_loader)
         self.__execute_rotation_algorithm(rotation_algorithm)
-        rotation_algorithm.process_obtained_angles()
+        rotation_algorithm.process_obtained_angles(deg_or_rad=self.last_unit.currentIndex())
         # Show results (and save them if asked by user)
         if self.output_plots.isChecked():
-            self.image_loader.plot_rings_and_angles(rotation_algorithm.polarization, rotation_algorithm.polarization_precision, output_path=out, show=self.show_plots.isChecked())
+            self.image_loader.plot_rings_and_angles(rotation_algorithm.polarization, rotation_algorithm.polarization_precision, output_path=out, show=self.show_plots.isChecked(), unit=self.last_unit.currentText())
 
 
 
@@ -864,6 +864,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                      image_manager,
                      self.saveLifeOutput.isChecked(),
                      self.output_directory.text(), self.barUpdate_Live,
+                     self.last_unit_live.currentIndex(),
                      int(self.pi_w.text()), int(self.pi_h.text()))
                 self.Picamera_initialized=True
             else:
@@ -872,6 +873,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                      image_manager,
                      self.saveLifeOutput.isChecked(),
                      self.output_directory.text(), self.barUpdate_Live,
+                     self.last_unit_live.currentIndex(),
                      int(self.pi_w.text()), int(self.pi_h.text()))
 
         else:
@@ -880,6 +882,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                  image_manager,
                  self.saveLifeOutput.isChecked(),
                  self.output_directory.text(), self.barUpdate_Live,
+                 self.last_unit_live.currentIndex(),
                  int(self.basler_w.text()), int(self.basler_h.text()),
                  int(self.offsetx.text()), int(self.offsety.text()),
                  int(self.max_buffer_num.text()),

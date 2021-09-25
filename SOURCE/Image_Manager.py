@@ -247,7 +247,7 @@ class Image_Manager:
         # We recompute the gravity centers [N_images, 2 (h,w)]
         self.g_centered = self.compute_intensity_gravity_center(self.centered_ring_images)
 
-    def plot_rings_and_angles(self, pol_angles, precisions, output_path=None, show=True):
+    def plot_rings_and_angles(self, pol_angles, precisions, output_path=None, show=True, unit='rad'):
         """
          Angles is expected to be a dictionary with keys being the image names
         and the values being the measured polarization angles.
@@ -261,7 +261,7 @@ class Image_Manager:
         for im, (name, angle) in enumerate(pol_angles.items()):
             # Note that the image will be permanently modified!
             cv2.putText(self.centered_images_to_plot[im],
-                f"{angle} +-{precisions[name]} rad {angle*180/np.pi} deg", # text to insert
+                f"{angle} +-{precisions[name]} {unit}", # text to insert
                 (10,30), # spot in the image
                 cv2.FONT_HERSHEY_SIMPLEX, # font
                 1, # font scale

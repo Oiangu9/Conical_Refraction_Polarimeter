@@ -9,7 +9,7 @@ import picamera.array
 
 
 class Camera_Controler:
-    def __init__(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar):
+    def __init__(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, deg_or_rad):
         self.angle_algorithm=angle_algorithm
         self.compute_angles_func=compute_angles_func
         self.ref_angle=ref_angle
@@ -25,6 +25,8 @@ class Camera_Controler:
             self.output_path=output_path+"/Life_Take/Sequence/"
             self.reference_path=output_path+"/Life_Take/Reference/"
         self.progressBar=progressBar
+        self.deg_or_rad=deg_or_rad #0 is rad, 1 is deg
+        self.unit='deg' if deg_or_rad else 'rad'
 
     def test_Camera(self):
         pass
@@ -40,8 +42,8 @@ class Pi_Camera(Camera_Controler):
     Raw Bayer Capture
 
     '''
-    def __init__(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, width, height):
-        Camera_Controler.__init__(self,angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar)
+    def __init__(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, deg_or_rad, width, height):
+        Camera_Controler.__init__(self,angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, deg_or_rad)
         self.camera = PiCamera()
         self.camera.resolution = (width, height)
         self.camera.framerate = 15
@@ -51,8 +53,8 @@ class Pi_Camera(Camera_Controler):
         self.images=np.zeros((images_chunk,height, width), dtype=np.uint16)
         self.names=['i' for i in range(images_chunk)]
 
-    def reInitialize(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, width, height):
-        Camera_Controler.__init__(self,angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar)
+    def reInitialize(self, angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, deg_or_rad, width, height):
+        Camera_Controler.__init__(self,angle_algorithm, compute_angles_func, ref_angle, images_chunk, image_manager, save_outputs, output_path, progressBar, deg_or_rad)
         #self.camera = PiCamera() If camera initialized multiple times yields an error
         self.camera.resolution = (width, height)
         self.camera.framerate = 15
@@ -95,9 +97,9 @@ class Pi_Camera(Camera_Controler):
         self.compute_angles_func()
         # Set their average angle as the reference angle given the custom 'zero'
         self.angle_algorithm.set_reference_angle(self.ref_angle)
-        self.angle_algorithm.process_obtained_angles()
+        self.angle_algorithm.process_obtained_angles(self.deg_or_rad)
         # Show results (and save them if asked by user)
-        self.image_manager.plot_rings_and_angles(self.angle_algorithm.polarization, self.angle_algorithm.polarization_precision, output_path=self.reference_path)
+        self.image_manager.plot_rings_and_angles(self.angle_algorithm.polarization, self.angle_algorithm.polarization_precision, output_path=self.reference_path, unit=self.unit)
 
 
     def take_and_process_frames(self, num_frames, save_every):
@@ -125,11 +127,11 @@ class Pi_Camera(Camera_Controler):
             # Get angles
             self.angle_algorithm.reInitialize(self.image_manager)
             self.compute_angles_func()
-            self.angle_algorithm.process_obtained_angles()
+            self.angle_algorithm.process_obtained_angles(self.deg_or_rad)
 
             # Show results (and save them if chunk%outputEvery==0)
             self.image_manager.plot_rings_and_angles(self.angle_algorithm.polarization, self.angle_algorithm.polarization_precision,
-                output_path=None if chunk%save_every!=0 else self.output_path)
+                output_path=None if chunk%save_every!=0 else self.output_path, unit=self.unit)
 
             # Update progressBar
             self.progressBar.emit(100*chunk/total_chunks)
