@@ -247,24 +247,28 @@ class Image_Manager:
         # We recompute the gravity centers [N_images, 2 (h,w)]
         self.g_centered = self.compute_intensity_gravity_center(self.centered_ring_images)
 
-    def plot_rings_and_angles(self, pol_angles, precisions, output_path=None):
+    def plot_rings_and_angles(self, pol_angles, precisions, output_path=None, show=True):
         """
          Angles is expected to be a dictionary with keys being the image names
         and the values being the measured polarization angles.
 
         We could introduce an option to print angles in degrees here.
         """
-        self.centered_images_to_plot=(255*self.centered_ring_images).astype(np.uint8)
+        if self.centered_ring_images.dtype!=np.uint8 and  self.centered_ring_images.dtype!=np.uint16:
+            self.centered_images_to_plot=(255*self.centered_ring_images).astype(np.uint8)
+        else:
+            self.centered_images_to_plot=self.centered_ring_images.copy()
         for im, (name, angle) in enumerate(pol_angles.items()):
             # Note that the image will be permanently modified!
             cv2.putText(self.centered_images_to_plot[im],
-                f"{angle} +-{precisions[name]} rad", # text to insert
-                (10,500), # spot in the image
+                f"{angle} +-{precisions[name]} rad {angle*180/np.pi} deg", # text to insert
+                (10,30), # spot in the image
                 cv2.FONT_HERSHEY_SIMPLEX, # font
                 1, # font scale
                 (255,0,0), # font color,
                 2) # line type
-            self.mainThreadPlotter.emit(self.centered_images_to_plot[im],
-                self.previs_ms, name )
+            if show:
+                self.mainThreadPlotter.emit(self.centered_images_to_plot[im],
+                    self.previs_ms, name )
             if output_path:
                 cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_images_to_plot[im])

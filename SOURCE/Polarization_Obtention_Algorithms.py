@@ -53,6 +53,7 @@ class Polarization_Obtention_Algorithm:
 
     def _round_to_sig(self, x_to_round, reference=None, sig=2):
             reference = x_to_round if reference is None else reference
+            reference = 1e-13 if reference==0 else reference # to avoid log(0)
             return round(x_to_round, sig-int(np.floor(np.log10(abs(reference))))-1)
 
     def save_images(self, images, output_path, names):

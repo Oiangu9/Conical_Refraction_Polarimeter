@@ -126,6 +126,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # Initialize tree view of directories
         self.load_project_structure(self.master_directory+'/DATA/', self.picture_dir_tree)
+        self.load_project_structure(self.master_directory+'/DATA/', self.reference_dir_tree)
 
 
         # Set up logging to use your widget as a handler
@@ -144,7 +145,11 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # when image directory path is changed, the tree should display a new look
         self.image_directory.textChanged.connect(lambda:
             (  self.picture_dir_tree.clear(),
-            self.load_project_structure(self.image_directory.text(), self.picture_dir_tree)))
+            self.load_project_structure(self.image_directory.text(), self.picture_dir_tree),
+            self.reference_dir_tree.clear(),
+            self.load_project_structure(self.image_directory.text(), self.reference_dir_tree)
+            ))
+
 
         # When the user clicks to choose the image or output directory a prompt will show up
         self.change_image_directory.clicked.connect(lambda:
@@ -306,7 +311,9 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         # save the mode chosen by the user
         self.mode = 607 if self.use_i607.isChecked() else 203 if self.use_i203.isChecked() else int(self.iX.text())
 
-        # initialize instance
+        # initialize instance for reference images and for problem images
+        self.reference_loader = Image_Manager(self.mode,
+            self.choose_interpolation_falg(self.interpolation_alg_centering))
         self.image_loader = Image_Manager(self.mode,
             self.choose_interpolation_falg(self.interpolation_alg_centering))
 
@@ -320,14 +327,22 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         Secondary thread stuff for initialize_Angle_Calculator_instance_convert_images function.
         """
-        # import the images
+        # import the reference images
+        ret = self.reference_loader.get_raw_images_to_compute(
+            self.get_selected_file_paths(self.reference_dir_tree, self.image_directory.text()))
+        if ret==1: # no valid images selected
+            return 1
+
+        # import the problem images
         ret = self.image_loader.get_raw_images_to_compute(
             self.get_selected_file_paths(self.picture_dir_tree, self.image_directory.text()))
-        if ret==1: # no valid images elected
+        if ret==1: # no valid images selected
             return 1
         # create directory for outputing the resulting converted images
-        os.makedirs(self.output_directory.text()+f"/i{self.mode}_converted_images/", exist_ok=True)
+        os.makedirs(self.output_directory.text()+f"/i{self.mode}_converted_images/References", exist_ok=True)
         # convert the images
+        self.reference_loader.compute_raw_to_iX(self.output_directory.text()+
+                                                    f"/i{self.mode}_converted_images/References/")
         self.image_loader.compute_raw_to_iX(self.output_directory.text()+
                                                     f"/i{self.mode}_converted_images/")
         self.image_loader_initialized=True
@@ -353,12 +368,34 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             return 1
         logging.info(" Image loader ready!")
         # Initialize instance of Rotation Algorithm calculator
-        rotation_algorithm = Rotation_Algorithm(self.image_loader,
+        rotation_algorithm = Rotation_Algorithm(self.reference_loader,
             eval(self.theta_min_R.text()), eval(self.theta_max_R.text()),
             self.choose_interpolation_falg(self.interpolation_alg_opt),
             float(self.initial_guess_delta_rad.text()), self.use_exact_grav_R.isChecked())
         # Get arguments and run algorithm depending on the chosen stuff
-        logging.info(" Running Rotation Algorithm...")
+        logging.info(" Running Rotation Algorithm on REFERENCES...")
+        self.__execute_rotation_algorithm(rotation_algorithm)
+        rotation_algorithm.set_reference_angle(float(self.referenceAngleTest.text()))
+        rotation_algorithm.process_obtained_angles()
+        # Show results (and save them if asked by user)
+        if self.output_plots.isChecked():
+            out=self.output_directory.text()+'/Rotation_Algorithm/RESULTS/'
+            os.makedirs( out+'/References/', exist_ok=True)
+            self.reference_loader.plot_rings_and_angles(rotation_algorithm.polarization, rotation_algorithm.polarization_precision, output_path=out+'/References/', show=self.show_plots.isChecked())
+
+        logging.info(" Running Rotation Algorithm on PROBLEM images...")
+        rotation_algorithm.reInitialize(self.image_loader)
+        self.__execute_rotation_algorithm(rotation_algorithm)
+        rotation_algorithm.process_obtained_angles()
+        # Show results (and save them if asked by user)
+        if self.output_plots.isChecked():
+            self.image_loader.plot_rings_and_angles(rotation_algorithm.polarization, rotation_algorithm.polarization_precision, output_path=out, show=self.show_plots.isChecked())
+
+
+
+
+
+    def __execute_rotation_algorithm(self, rotation_algorithm):
         if self.brute.isChecked():
             rotation_algorithm.brute_force_search(
                 [float(self.angle_step_1_rad.text()), float(self.angle_step_2_rad.text()),
@@ -550,7 +587,9 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             # make sure there is an instance of image_loader initilized!
             if not self.image_loader_initialized:
                 self.mode = 607 if self.use_i607.isChecked() else 203 if self.use_i203.isChecked() else int(self.iX.text())
-                # initialize instance
+                # initialize instance for reference images and for problem images
+                self.reference_loader = Image_Manager(self.mode,
+                    self.choose_interpolation_falg(self.interpolation_alg_centering))
                 self.image_loader = Image_Manager(self.mode,
                     self.choose_interpolation_falg(self.interpolation_alg_centering))
                 ret = self._initialize_Angle_Calculator_instance_convert_images()
@@ -558,10 +597,15 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                     return 1
         else: # use all the images in the output directory
             self.mode = 607 if self.use_i607.isChecked() else 203 if self.use_i203.isChecked() else int(self.iX.text())
+            # initialize instance for reference images and for problem images
+            self.reference_loader = Image_Manager(self.mode,
+                self.choose_interpolation_falg(self.interpolation_alg_centering))
             self.image_loader = Image_Manager(self.mode,
                 self.choose_interpolation_falg(self.interpolation_alg_centering))
             ret = self.image_loader.import_converted_images(
                 sorted(glob(f"{self.output_directory.text()}/i{self.mode}_converted_images/*")))
+            ret = self.reference_loader.import_converted_images(
+                sorted(glob(f"{self.output_directory.text()}/i{self.mode}_converted_images/References/*")))
             if ret==1:
                 return 1
 

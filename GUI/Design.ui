@@ -54,12 +54,12 @@
        </size>
       </property>
       <property name="plainText">
-       <string>&gt; Choose images to work with
-&gt; Press Convert Selected Images to output them and leave them ready.
-&gt; Choose angle compuation algorithm and run it.
+       <string>&gt; Choose reference images and problem images to compute the polarization angle relative to.
+&gt; Choose the kind of iX conversion and press Convert Selected Images to output them and leave them ready.
+&gt; Choose angle compuation algorithm and run it for test check.
 
-Note that if &quot;Convert Selected Images&quot; is not clicked before running the algorithms, this will be done internally anyway.
-</string>
+Full-screen shortcut: F11
+Quit shortcut: CTRL+Q</string>
       </property>
      </widget>
     </item>
@@ -72,14 +72,57 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
         <string>Choose Output Directory and Input Test Images</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="2">
+        <item row="0" column="0" rowspan="9">
+         <widget class="QTreeWidget" name="reference_dir_tree">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::MultiSelection</enum>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>35</width>
+            <height>35</height>
+           </size>
+          </property>
+          <column>
+           <property name="text">
+            <string notr="true">Images for Reference (average will be used):</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item row="0" column="1" rowspan="9">
+         <widget class="QTreeWidget" name="picture_dir_tree">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::MultiSelection</enum>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>35</width>
+            <height>35</height>
+           </size>
+          </property>
+          <column>
+           <property name="text">
+            <string notr="true">Images for polarization angle tests (relative to reference):</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item row="0" column="2" colspan="2">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Input Image Directory:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2" colspan="2">
          <widget class="QPushButton" name="change_image_directory">
           <property name="text">
            <string>Change Directory</string>
@@ -93,14 +136,14 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
           </property>
          </widget>
         </item>
-        <item row="2" column="2">
+        <item row="2" column="2" colspan="2">
          <widget class="QLabel" name="label_3">
           <property name="text">
            <string>Output Data Directory:</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="2">
+        <item row="3" column="2" colspan="2">
          <widget class="QPushButton" name="change_output_directory">
           <property name="text">
            <string>Change Directory</string>
@@ -117,7 +160,78 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
           </property>
          </widget>
         </item>
-        <item row="8" column="4">
+        <item row="4" column="2" colspan="3">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Choose Image Sizes for Computations:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="2" colspan="2">
+         <widget class="QRadioButton" name="use_iX">
+          <property name="text">
+           <string>Use iX images with X:</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="5" column="4">
+         <widget class="QLineEdit" name="iX">
+          <property name="text">
+           <string>607</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="2" colspan="2">
+         <widget class="QRadioButton" name="use_i607">
+          <property name="text">
+           <string>Use i607 images</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="6" column="4">
+         <widget class="QRadioButton" name="use_i203">
+          <property name="text">
+           <string>Use i203 images</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="7" column="2" colspan="3">
+         <widget class="QPushButton" name="convert_selected_images">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Convert Selected Images</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="2">
+         <widget class="QLabel" name="label_19">
+          <property name="text">
+           <string>Affine Transf.
+Interpol. Alg.:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="3" colspan="2">
          <widget class="QComboBox" name="interpolation_alg_centering">
           <item>
            <property name="text">
@@ -156,102 +270,6 @@ Note that if &quot;Convert Selected Images&quot; is not clicked before running t
           </item>
          </widget>
         </item>
-        <item row="8" column="2">
-         <widget class="QLabel" name="label_19">
-          <property name="text">
-           <string>Affine Transformation
-Interpolation Algorithm:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" rowspan="9" colspan="2">
-         <widget class="QTreeWidget" name="picture_dir_tree">
-          <property name="selectionMode">
-           <enum>QAbstractItemView::MultiSelection</enum>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>35</width>
-            <height>35</height>
-           </size>
-          </property>
-          <column>
-           <property name="text">
-            <string notr="true">Choose one or multiple image files for calibration tests:</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-        <item row="0" column="2" colspan="3">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Input Image Directory:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="4">
-         <widget class="QRadioButton" name="use_i203">
-          <property name="text">
-           <string>Use i203 images</string>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup</string>
-          </attribute>
-         </widget>
-        </item>
-        <item row="5" column="4">
-         <widget class="QLineEdit" name="iX">
-          <property name="text">
-           <string>100</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="2">
-         <widget class="QRadioButton" name="use_i607">
-          <property name="text">
-           <string>Use i607 images</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup</string>
-          </attribute>
-         </widget>
-        </item>
-        <item row="4" column="2" colspan="3">
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>Choose Image Sizes for Computations:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="2">
-         <widget class="QRadioButton" name="use_iX">
-          <property name="text">
-           <string>Use iX images with X:</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup</string>
-          </attribute>
-         </widget>
-        </item>
-        <item row="6" column="3" rowspan="3" colspan="2">
-         <widget class="QPushButton" name="convert_selected_images">
-          <property name="font">
-           <font>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Convert Selected Images</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_2">
@@ -259,18 +277,17 @@ Interpolation Algorithm:</string>
         <string>Algorithm Settings and Test</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_6">
-        <item row="4" column="2">
-         <widget class="QRadioButton" name="use_converted_iX">
+        <item row="4" column="0">
+         <widget class="QPushButton" name="run_full_test">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
-           <string>b) Use Images already converted in the
-format specified in the first tab . They will be searched in &quot;./iX&quot;</string>
+           <string>Run Full Test</string>
           </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_10</string>
-          </attribute>
          </widget>
         </item>
         <item row="3" column="1">
@@ -283,6 +300,28 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
           </property>
           <property name="autoExclusive">
            <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QRadioButton" name="use_current_images">
+          <property name="text">
+           <string>a) Use Selected Images 
+(if still not converted
+ it will be done now)</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_10</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="3" column="4">
+         <widget class="QLineEdit" name="referenceAngleTest">
+          <property name="text">
+           <string>1e-11</string>
           </property>
          </widget>
         </item>
@@ -305,34 +344,7 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
           </property>
          </widget>
         </item>
-        <item row="3" column="2">
-         <widget class="QRadioButton" name="use_current_images">
-          <property name="text">
-           <string>a) Use Selected Images 
-(if still not converted it will be done now)</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup_10</string>
-          </attribute>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_23">
-          <property name="font">
-           <font>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Settings for Sanity Check Input/Output</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" rowspan="2" colspan="4">
+        <item row="0" column="0" rowspan="2" colspan="5">
          <widget class="QTabWidget" name="tabWidget_2">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -347,7 +359,7 @@ format specified in the first tab . They will be searched in &quot;./iX&quot;</s
            </size>
           </property>
           <property name="currentIndex">
-           <number>5</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
@@ -846,7 +858,7 @@ centered image</string>
             <item row="0" column="2" rowspan="9">
              <widget class="QTabWidget" name="tabWidget_4">
               <property name="currentIndex">
-               <number>2</number>
+               <number>1</number>
               </property>
               <widget class="QWidget" name="tab_12">
                <attribute name="title">
@@ -1966,8 +1978,8 @@ R, M Angle (rad):</string>
           </widget>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QPushButton" name="run_full_test">
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_23">
           <property name="font">
            <font>
             <weight>75</weight>
@@ -1975,8 +1987,35 @@ R, M Angle (rad):</string>
            </font>
           </property>
           <property name="text">
-           <string>Run Full Test</string>
+           <string>Settings for Sanity Check Input/Output</string>
           </property>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="QLabel" name="label_106">
+          <property name="font">
+           <font>
+            <italic>true</italic>
+           </font>
+          </property>
+          <property name="text">
+           <string>Set Reference angle 
+for tests (rad):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2" colspan="3">
+         <widget class="QRadioButton" name="use_converted_iX">
+          <property name="text">
+           <string>b) Use Images already converted in the format specified in the first tab. 
+They will be searched in &quot;./iX&quot;. Note the Reference folder inside it.</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup_10</string>
+          </attribute>
          </widget>
         </item>
        </layout>
@@ -2838,24 +2877,24 @@ Jones Vector (note i is 1j).:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_9"/>
-  <buttongroup name="buttonGroup_12"/>
-  <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_5"/>
-  <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup_15"/>
-  <buttongroup name="buttonGroup_7"/>
-  <buttongroup name="buttonGroup_19"/>
-  <buttongroup name="buttonGroup_18"/>
-  <buttongroup name="buttonGroup_14"/>
-  <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup"/>
   <buttongroup name="buttonGroup_11"/>
-  <buttongroup name="buttonGroup_17"/>
-  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_15"/>
+  <buttongroup name="buttonGroup_9"/>
   <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup_8"/>
   <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_12"/>
   <buttongroup name="buttonGroup_16"/>
+  <buttongroup name="buttonGroup_6"/>
+  <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_17"/>
+  <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup_19"/>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_14"/>
+  <buttongroup name="buttonGroup_18"/>
+  <buttongroup name="buttonGroup_4"/>
  </buttongroups>
 </ui>
