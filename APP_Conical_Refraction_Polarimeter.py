@@ -372,30 +372,15 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             eval(self.theta_min_R.text()), eval(self.theta_max_R.text()),
             self.choose_interpolation_falg(self.interpolation_alg_opt),
             float(self.initial_guess_delta_rad.text()), self.use_exact_grav_R.isChecked())
-        # Get arguments and run algorithm depending on the chosen stuff
-        logging.info(" Running Rotation Algorithm on REFERENCES...")
-        self.__execute_rotation_algorithm(rotation_algorithm)
-        rotation_algorithm.set_reference_angle(float(self.referenceAngleTest.text()))
-        rotation_algorithm.process_obtained_angles(deg_or_rad=self.last_unit.currentIndex())
-        # Show results (and save them if asked by user)
-        if self.output_plots.isChecked():
-            out=self.output_directory.text()+'/Rotation_Algorithm/RESULTS/'
-            os.makedirs( out+'/References/', exist_ok=True)
-            self.reference_loader.plot_rings_and_angles(rotation_algorithm.polarization, rotation_algorithm.polarization_precision, output_path=out+'/References/', show=self.show_plots.isChecked(), unit=self.last_unit.currentText())
-
-        logging.info(" Running Rotation Algorithm on PROBLEM images...")
-        rotation_algorithm.reInitialize(self.image_loader)
-        self.__execute_rotation_algorithm(rotation_algorithm)
-        rotation_algorithm.process_obtained_angles(deg_or_rad=self.last_unit.currentIndex())
-        # Show results (and save them if asked by user)
-        if self.output_plots.isChecked():
-            self.image_loader.plot_rings_and_angles(rotation_algorithm.polarization, rotation_algorithm.polarization_precision, output_path=out, show=self.show_plots.isChecked(), unit=self.last_unit.currentText())
-
-
-
+        self._run_angle_algorithm_and_reference_stuff(rotation_algorithm, self.__execute_rotation_algorithm, "Rotation")
 
 
     def __execute_rotation_algorithm(self, rotation_algorithm):
+        """
+        The proper execution of the rotation algorithm, this is abstracted
+        since it must be called two times: one for the reference images and
+        once for the problem images.
+        """
         if self.brute.isChecked():
             rotation_algorithm.brute_force_search(
                 [float(self.angle_step_1_rad.text()), float(self.angle_step_2_rad.text()),
@@ -420,6 +405,34 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             rotation_algorithm.save_result_plots_fibonacci_or_quadratic(self.output_directory.text())
 
+
+    def _run_angle_algorithm_and_reference_stuff( self, angle_algorithm, __func_execute_algorithm, name):
+        """
+        This is a function that has been abstracted to avoid code repetition.
+        It just handles the refernce and problem image angle computation and
+        correct processing of the results
+        """
+        # Get arguments and run algorithm depending on the chosen stuff
+        logging.info(" Running "+name+" Algorithm on REFERENCES...")
+        __func_execute_algorithm(angle_algorithm)
+        angle_algorithm.set_reference_angle(float(self.referenceAngleTest.text()))
+        angle_algorithm.process_obtained_angles(deg_or_rad=self.last_unit.currentIndex())
+        # Show results (and save them if asked by user)
+        if self.output_plots.isChecked():
+            out=self.output_directory.text()+'/'+name+'_Algorithm/RESULTS/'
+            os.makedirs( out+'/References/', exist_ok=True)
+            self.reference_loader.plot_rings_and_angles(angle_algorithm.polarization, angle_algorithm.polarization_precision, output_path=out+'/References/', show=self.show_plots.isChecked(), unit=self.last_unit.currentText())
+
+        logging.info(" Running "+name+" Algorithm on PROBLEM images...")
+        angle_algorithm.reInitialize(self.image_loader)
+        __func_execute_algorithm(angle_algorithm)
+        angle_algorithm.process_obtained_angles(deg_or_rad=self.last_unit.currentIndex())
+        # Show results (and save them if asked by user)
+        if self.output_plots.isChecked():
+            self.image_loader.plot_rings_and_angles(angle_algorithm.polarization, angle_algorithm.polarization_precision, output_path=out, show=self.show_plots.isChecked(), unit=self.last_unit.currentText())
+        self.image_loader_initialized=False
+
+
     def execute_mirror_algorithm(self):
         """
         Executes the mirror flip algorithm according to the requirements of the user.
@@ -442,10 +455,13 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
         logging.info(" Image loader ready!")
         # Initialize instance of Rotation Algorithm calculator
         method="bin" if self.use_binning_M.isChecked() else "mask" if self.use_masking_M.isChecked() else "aff"
-        mirror_algorithm = Mirror_Flip_Algorithm(self.image_loader,
+        mirror_algorithm = Mirror_Flip_Algorithm(self.reference_loader,
             eval(self.theta_min_M.text()), eval(self.theta_max_M.text()),
             self.choose_interpolation_falg(self.interpolation_alg_opt),
             float(self.initial_guess_delta_rad.text()), method, self.left_vs_right_M.isChecked(), self.use_exact_grav_M.isChecked())
+        self._run_angle_algorithm_and_reference_stuff(mirror_algorithm, self.__execute_mirror_algorithm, "Mirror")
+
+    def __execute_mirror_algorithm(self, mirror_algorithm):
         # Get arguments and run algorithm depending on the chosen stuff
         logging.info(" Running Mirror Flip Algorithm...")
         if self.brute.isChecked():
@@ -493,10 +509,13 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             return 1
         logging.info(" Image loader ready!")
         # Initialize instance of Rotation Algorithm calculator
-        gradient_algorithm = Gradient_Algorithm(self.image_loader,
+        gradient_algorithm = Gradient_Algorithm(self.reference_loader,
             eval(self.min_rad_G.text()), eval(self.max_rad_G.text()),
             float(self.initial_guess_delta_pix.text()),
             self.use_exact_grav_G.isChecked())
+        self._run_angle_algorithm_and_reference_stuff(gradient_algorithm, self.__execute_gradient_algorithm, "Gradient")
+
+    def __execute_gradient_algorithm(self, gradient_algorithm):
         # Get arguments and run algorithm depending on the chosen stuff
         logging.info(" Running Gradient Algorithm...")
         if self.brute.isChecked():
@@ -546,8 +565,11 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             return 1
         logging.info(" Image loader ready!")
         # Initialize instance of Rotation Algorithm calculator
-        histogram_algorithm = Radial_Histogram_Algorithm(self.image_loader,
+        histogram_algorithm = Radial_Histogram_Algorithm(self.reference_loader,
             self.use_exact_grav_H.isChecked())
+        self._run_angle_algorithm_and_reference_stuff(histogram_algorithm, self.__execute_histogram_algorithm, "Histogram")
+
+    def __execute_histogram_algorithm(self, histogram_algorithm):
         # Get arguments and run algorithm depending on the chosen stuff
         logging.info(" Running Histogram Algorithm...")
         if self.use_raw_idx_mask_H.isChecked():
@@ -636,7 +658,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             return 1
         logging.info(" Image loader ready!")
         # Initialize instance of Simulation Coordinate descent Algorithm calculator
-        simulator_cd_algorithm = Simulation_Coordinate_Descent_Algorithm(self.image_loader,
+        simulator_cd_algorithm = Simulation_Coordinate_Descent_Algorithm(self.reference_loader,
             int(self.max_cycles.text()), None, None,
             eval(self.min_phi_S.text()), eval(self.max_phi_S.text()),
             eval(self.min_R0_S.text()), eval(self.max_R0_S.text()),
@@ -653,7 +675,9 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
             max_radi_G=eval(self.max_rad_G_2.text()),
             use_exact_gravicenter_G=self.use_exact_grav_G_2.isChecked(),
             initial_guess_delta_G=float(self.initial_guess_G_2.text()))
+        self._run_angle_algorithm_and_reference_stuff(simulator_cd_algorithm, self.__execute_simulation_coordinate_descent_algorithm, "Simulation_Coordinate_Descent")
 
+    def __execute_simulation_coordinate_descent_algorithm(self, simulator_cd_algorithm):
         # Get arguments and run algorithm depending on the chosen stuff
         logging.info(" Running Simulation Coordinate Descent Algorithm...")
         if self.fibonacci_SC.isChecked():
