@@ -205,7 +205,8 @@ class RingSimulator_Optimizer_GPU():
 if __name__ == "__main__":
 
     #phi_CRs = [-3, -2, np.pi/2, -1, 0, 1, np.pi/2, 2, 3, np.pi]
-    phi_CRs = [-3]
+    #phi_CRs = [-2.3932]
+    phi_CRs=[2.977385307179586]
 
     '''
     print("\n\n\nTesting General Simulator:")
@@ -219,20 +220,20 @@ if __name__ == "__main__":
     os.makedirs('./Simulated/General/Approx/', exist_ok=True)
 
     for phi_CR in phi_CRs:
-        print(f"Computed {phi_CR}")
+        print(f"Computing {phi_CR}")
         simulator.compute_intensity_Trupin_and_Plot( jnp.array([np.cos(phi_CR/2), np.sin(phi_CR/2)]), './Simulated/General/Full/')
         print("Hard one done!\n")
         simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/General/Approx/')
     '''
 
     print("\n\n\nTesting Optimizer Simulator:")
-    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=900, nx=1215, sim_chunk_x=607, sim_chunk_y=1215)
+    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=1200, nx=1215, sim_chunk_x=607, sim_chunk_y=607)
 
     os.makedirs('./Simulated/Optimizer/Full/', exist_ok=True)
     os.makedirs('./Simulated/Optimizer/Approx/', exist_ok=True)
 
     for phi_CR in phi_CRs:
-        print(f"Computed {phi_CR}")
-        simulator.compute_and_plot_CR_ring( phi_CR, 400, 0, 20.5, './Simulated/Optimizer/Full/', '')
+        print(f"Computing {phi_CR}")
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=237.79, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/', name='')
         print("Hard one done!\n")
         #simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/Optimizer/Approx/')

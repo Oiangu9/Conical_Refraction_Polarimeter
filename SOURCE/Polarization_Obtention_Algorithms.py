@@ -54,7 +54,6 @@ class Polarization_Obtention_Algorithm:
     def _round_to_sig(self, x_to_round, reference=None, sig=2):
             reference = x_to_round if reference is None else reference
             reference = 1e-13 if reference==0 else reference # to avoid log(0)
-            print(reference, x_to_round, np.floor(np.log10(abs(reference))))
             return round(x_to_round, sig-int(np.floor(np.log10(abs(reference))))-1)
 
     def save_images(self, images, output_path, names):
@@ -523,6 +522,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
                 ax.grid(True)
             fig.suptitle(f"Polarization angle=Polarization Angle={self.angles[name]}+-{self.precisions[name][f'Stage_{len(axes)-1}']} rad")
             plt.savefig(f"{output_path}/Mirror_Algorithm/{name}.png")
+            self.precisions[name]=self.precisions[name][f'Stage_{stage}']
 
 
 class Gradient_Algorithm(Polarization_Obtention_Algorithm):
@@ -741,6 +741,7 @@ class Gradient_Algorithm(Polarization_Obtention_Algorithm):
                 self.optimals[name][f'Stage_{len(axes)-2}'], axes[-1],
                 f"Polarization Angle {self.angles[name]} rad" )
             plt.savefig(f"{output_path}/Gradient_Algorithm/{name}.png")
+            self.precisions[name]=self.precisions[name][f'Stage_{stage}']
 
     def save_result_plots_fibonacci_or_quadratic(self, output_path):
         os.makedirs(f"{output_path}/Gradient_Algorithm/", exist_ok=True)
@@ -1043,6 +1044,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
                 ax.grid(True)
             fig.suptitle(f"Polarization angle=Polarization Angle={self.angles[name]}+-{self.precisions[name][f'Stage_{len(axes)-1}']/2} rad")
             plt.savefig(f"{output_path}/Rotation_Algorithm/{name}.png")
+            self.precisions[name]=self.precisions[name][f'Stage_{stage}']
 
 
 class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
@@ -1315,14 +1317,21 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
                 )
 
                 # Optimize Z
-                self.Z_optimizer.a=-2*np.sqrt(1/3)*R0_mag_best
-                self.Z_optimizer.b=-self.Z_optimizer.a
-                (time_Z, self.Z_points[name][cycle], Z_best, Z_optimum,
-                    _)=self.Z_optimizer.fibonacci_ratio_search(
-                        precision_Z, maximum_points_Z, cost_tol,
-                        self.images_normFloat[im],
-                        (phi_CR_best, R0_pix_best, R0_mag_best), self.Z_best[name][-1]
-                    )
+                if maximum_points_Z!=0:
+                    self.Z_optimizer.a=-2*np.sqrt(1/3)*R0_mag_best
+                    self.Z_optimizer.b=-self.Z_optimizer.a
+                    (time_Z, self.Z_points[name][cycle], Z_best, Z_optimum,
+                        _)=self.Z_optimizer.fibonacci_ratio_search(
+                            precision_Z, maximum_points_Z, cost_tol,
+                            self.images_normFloat[im],
+                            (phi_CR_best, R0_pix_best, R0_mag_best), self.Z_best[name][-1]
+                        )
+                else: # dont optimize z
+                    time_Z=0
+                    Z_best=0
+                    Z_optimum=0
+                    self.Z_points[name][cycle]=np.array([[0,0,0]])
+
 
                 self.times[name][cycle]=time_rad+time_ang+time_Z+time_R0_mag
                 self.R0_pix_best[name].append(R0_pix_best)
@@ -1394,14 +1403,20 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
                 )
 
                 # Optimize Z
-                self.Z_optimizer.a=-2*np.sqrt(1/3)*R0_pix_best*self.simulator.dx
-                self.Z_optimizer.b=-self.Z_optimizer.a
-                (time_Z, self.Z_points[name][cycle], Z_best, Z_optimum,
-                    _)=self.Z_optimizer.quadratic_fit_search(
-                        precision_Z, maximum_points_Z, cost_tol,
-                        self.images_normFloat[im],
-                        (phi_CR_best, R0_pix_best, R0_mag_best), self.Z_best[name][-1]
-                    )
+                if maximum_points_Z!=0:
+                    self.Z_optimizer.a=-2*np.sqrt(1/3)*R0_pix_best*self.simulator.dx
+                    self.Z_optimizer.b=-self.Z_optimizer.a
+                    (time_Z, self.Z_points[name][cycle], Z_best, Z_optimum,
+                        _)=self.Z_optimizer.quadratic_fit_search(
+                            precision_Z, maximum_points_Z, cost_tol,
+                            self.images_normFloat[im],
+                            (phi_CR_best, R0_pix_best, R0_mag_best), self.Z_best[name][-1]
+                        )
+                else: # dont optimize z
+                    time_Z=0
+                    Z_best=0
+                    Z_optimum=0
+                    self.Z_points[name][cycle]=np.array([[0,0,0]])
 
                 self.times[name][cycle]=time_rad+time_ang+time_Z+time_R0_mag
                 self.R0_pix_best[name].append(R0_pix_best)
