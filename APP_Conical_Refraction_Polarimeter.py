@@ -993,7 +993,7 @@ class Polarization_by_Conical_Refraction(QtWidgets.QMainWindow, Ui_MainWindow):
                 if type(alg.times[key]) is dict: # to treat brute force output stages
                     benchu['Time'].append(sum(list(alg.times[key].values())))
                     benchu['Found Optimal'].append(alg.optimals[key]['Stage_2'])
-                    benchu['Optimal Precision'].append(alg.precisions[key]['Stage_2'])
+                    benchu['Optimal Precision'].append(alg.precisions[key])
                 else:
                     benchu['Time'].append(alg.times[key])
                     benchu['Optimal Precision'].append(alg.precisions[key])

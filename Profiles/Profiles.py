@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import imageio
 
 
-main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/Profiles/Polarizer/"
+main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/Profiles/test3/"
 
 path_dict={}
 for (dirpath, dirnames, filenames) in os.walk(main_path):
@@ -58,7 +58,7 @@ for dirpath, filenames in path_dict.items():
             ax = fig.add_subplot(224, projection='3d')
             X,Y = np.meshgrid(np.arange(len(prof_x)),np.arange(len(prof_y)))
             im=images[filename].transpose()
-            fig.suptitle(f"Intesity Profiles for Image {filename}")
+            fig.suptitle(f"Intesity Profiles for Image\n{filename}")
             files_for_gif=[]
             cbax=fig.add_axes([0.54,0.05,0.4,0.01])
             fig.colorbar(cm, ax=axes[0,0], cax=cbax, orientation='horizontal')
@@ -73,7 +73,7 @@ for dirpath, filenames in path_dict.items():
                 ax.set_ylabel('Z')
                 #ax.set_ylim(-10, 8)
                 ax.set_zlabel('Intensity')
-                ax.set_zlim(-20, np.max(im))
+                ax.set_zlim(-0.078*np.max(im), np.max(im))
                 ax.set_title("Image intensity 3D plot")
                 ax.view_init(10, theta)
                 ax.get_proj = lambda: np.dot(Axes3D.get_proj(ax), np.diag([1.3, 1.3, 1.3, 1]))

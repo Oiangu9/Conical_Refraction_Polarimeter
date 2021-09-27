@@ -197,8 +197,8 @@ class RingSimulator_Optimizer_GPU():
 
     def compute_and_plot_CR_ring(self, CR_ring_angle, R0_pixels, Z, R0, out_path, name):
         I=self.compute_CR_ring(CR_ring_angle, R0_pixels, Z, R0)
-        cv2.imwrite(f"{out_path}/[{name}]__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}_R0_{R0}_L_{(self.nx-1)/2.0/R0_pixels}.png",
-                (65534*I).astype(np.uint16))
+        cv2.imwrite(f"{out_path}/[{name}]__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}_R0_{R0}_R0_pix_{R0_pixels}.png",
+                (65534*I).astype(np.uint16)) # L=(self.nx-1)/2.0/R0_pixels
 
 
 
@@ -206,7 +206,7 @@ if __name__ == "__main__":
 
     #phi_CRs = [-3, -2, np.pi/2, -1, 0, 1, np.pi/2, 2, 3, np.pi]
     #phi_CRs = [-2.3932]
-    phi_CRs=[2.977385307179586]
+    phi_CRs=[-2.3932,  2.977317734726711] # such that 2*26.146deg is their difference
 
     '''
     print("\n\n\nTesting General Simulator:")
@@ -227,13 +227,34 @@ if __name__ == "__main__":
     '''
 
     print("\n\n\nTesting Optimizer Simulator:")
-    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=1200, nx=1215, sim_chunk_x=607, sim_chunk_y=607)
+    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=1200, nx=1101, sim_chunk_x=550, sim_chunk_y=550)
 
-    os.makedirs('./Simulated/Optimizer/Full/', exist_ok=True)
+    os.makedirs('./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution', exist_ok=True)
     os.makedirs('./Simulated/Optimizer/Approx/', exist_ok=True)
 
     for phi_CR in phi_CRs:
         print(f"Computing {phi_CR}")
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=237.79, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/', name='')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=237.79, Z=0, R0=30.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Very_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=237.79, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=180.7, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Small_Radious_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=120.7, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Very_Small_Radious_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=237.7, Z=0, R0=15.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Thick_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=237.7, Z=0, R0=10.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Very_Thick_Width_')
+        print("Hard one done!\n")
+        #simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/Optimizer/Approx/')
+
+    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=1200, nx=2202, sim_chunk_x=550, sim_chunk_y=550)
+
+    os.makedirs('./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', exist_ok=True)
+    os.makedirs('./Simulated/Optimizer/Approx/', exist_ok=True)
+
+    for phi_CR in phi_CRs:
+        print(f"Computing {phi_CR}")
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=475.58, Z=0, R0=30.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Big_Radious_Very_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=475.58, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Big_Radious_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=361.4, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Small_Radious_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=241.4, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Very_Small_Radious_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=475.58, Z=0, R0=15.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Big_Radious_Thick_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=475.58, Z=0, R0=10.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Big_Radious_Very_Thick_Width_')
         print("Hard one done!\n")
         #simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/Optimizer/Approx/')

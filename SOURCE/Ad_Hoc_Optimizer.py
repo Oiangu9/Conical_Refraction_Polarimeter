@@ -161,15 +161,25 @@ class Ad_Hoc_Optimizer:
         # Evaluate cost function for each angle
         #print("active_xs",active_xs, "costos", [ self.evaluate_cost(image, angle, *args_for_cost) for angle in active_xs])
         active_points = np.stack((active_xs, [ self.evaluate_cost(image, angle, *args_for_cost) for angle in active_xs])) # [2 (xj,f(xj)),4]
-        # if the minium is in the boundary of the interval, make it not be the boundary. we subtract the initial_guess_delta to break the symmetries
-        if np.argmin(active_points[1])==0:
-            active_points[0, 3] -= 3*(self.b-self.a)/2+self.initial_guess_delta
-            active_points[1,3] = self.evaluate_cost(image, active_points[0, 3], *args_for_cost)
-        elif np.argmin(active_points[1])==3:
-            active_points[0, 0] += 3*(self.b-self.a)/2+self.initial_guess_delta
-            active_points[1,0] = self.evaluate_cost(image, active_points[0,0], *args_for_cost)
+        # if the minium is in the boundary of the interval, make it not be the boundary. we make the interval slightly wider by 10% of the original interval and a little random factor to prevent strange symmetries
+        patience=10 # try first moving the inside candidates -> make it a tunable parameter!!
+        while(np.argmin(active_points[1])==0 or np.argmin(active_points[1])==3):
+            if patience>0:# random gittering for the inside points without getting outside the boundaries
+                active_points[0, 1] += (2*np.random.randint(0,2)-1)*np.random.rand(1)[0]*min(active_points[0, 1]-self.a, self.b-active_points[0, 1])*0.9 # add/subtract randomly a random factor of the distance from the point to the closest boundary
+                active_points[0,2] += (2*np.random.randint(0,2)-1)*np.random.rand(1)[0]*min(active_points[0, 2]-self.a, self.b-active_points[0, 2])*0.9 # the 0.91 is to avoid the point to fall on the boundary if the randmo gittering takes value 1
+                active_points[1,1] = self.evaluate_cost(image, active_points[0, 1], *args_for_cost)
+                active_points[1,2] = self.evaluate_cost(image, active_points[0, 2], *args_for_cost)
 
-        # order the four pairs of points by their support position
+                patience-=1
+            else: # make the boundaries themselves bigger - note this is not the preferred approach but might be compulsory for some algorithms
+                if np.argmin(active_points[1])==0:
+                    active_points[0, 0] -= (0.25*(self.b-self.a)+self.initial_guess_delta*np.random.rand(1)[0])
+                    active_points[1,0] = self.evaluate_cost(image, active_points[0, 0], *args_for_cost)
+                if np.argmin(active_points[1])==3:
+                    active_points[0, 3] += (0.25*(self.b-self.a)+self.initial_guess_delta*np.random.rand(1)[0])
+                    active_points[1,3] = self.evaluate_cost(image, active_points[0,3], *args_for_cost)
+
+        # order the four pairs of points by their support position (not anymore! they should laready be ordered!) active_points[:, np.argsort(active_points[0])]
         return active_points[:, np.argsort(active_points[0])]
 
     def quadratic_fit_search(self, precision, max_iterations, cost_tol, image, args_for_cost, initial_guess=None):

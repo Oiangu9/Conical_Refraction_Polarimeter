@@ -337,7 +337,7 @@ Interpol. Alg.:</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>5</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
@@ -836,7 +836,7 @@ centered image</string>
             <item row="0" column="2" rowspan="9">
              <widget class="QTabWidget" name="tabWidget_4">
               <property name="currentIndex">
-               <number>1</number>
+               <number>2</number>
               </property>
               <widget class="QWidget" name="tab_12">
                <attribute name="title">
@@ -994,14 +994,14 @@ Precision:</string>
                 <item row="1" column="1">
                  <widget class="QLineEdit" name="precision_quad_pix">
                   <property name="text">
-                   <string>1</string>
+                   <string>0.001</string>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="2">
                  <widget class="QLineEdit" name="precision_quad_rad">
                   <property name="text">
-                   <string>0.0001</string>
+                   <string>0.000001</string>
                   </property>
                  </widget>
                 </item>
@@ -1071,14 +1071,14 @@ Precision:</string>
                 <item row="1" column="1" colspan="2">
                  <widget class="QLineEdit" name="precision_fib_pix">
                   <property name="text">
-                   <string>1</string>
+                   <string>0.001</string>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="3">
                  <widget class="QLineEdit" name="precision_fib_rad">
                   <property name="text">
-                   <string>0.0001</string>
+                   <string>0.000001</string>
                   </property>
                  </widget>
                 </item>
@@ -2094,7 +2094,7 @@ for tests (rad):</string>
         <item row="3" column="3">
          <widget class="QLineEdit" name="referenceAngleTest">
           <property name="text">
-           <string>1e-11</string>
+           <string>1e-12</string>
           </property>
          </widget>
         </item>
@@ -2991,24 +2991,24 @@ Jones Vector (note i is 1j).:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_12"/>
-  <buttongroup name="buttonGroup_16"/>
-  <buttongroup name="buttonGroup_8"/>
-  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_9"/>
+  <buttongroup name="buttonGroup_15"/>
   <buttongroup name="buttonGroup_17"/>
-  <buttongroup name="buttonGroup_18"/>
-  <buttongroup name="buttonGroup_3"/>
-  <buttongroup name="buttonGroup_14"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_12"/>
+  <buttongroup name="buttonGroup_8"/>
+  <buttongroup name="buttonGroup_19"/>
   <buttongroup name="buttonGroup_4"/>
   <buttongroup name="buttonGroup_5"/>
-  <buttongroup name="buttonGroup_15"/>
-  <buttongroup name="buttonGroup_10"/>
-  <buttongroup name="buttonGroup_19"/>
-  <buttongroup name="buttonGroup_7"/>
-  <buttongroup name="buttonGroup_9"/>
-  <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup_14"/>
+  <buttongroup name="buttonGroup_16"/>
+  <buttongroup name="buttonGroup_6"/>
   <buttongroup name="buttonGroup_11"/>
+  <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_18"/>
+  <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup_7"/>
+  <buttongroup name="buttonGroup_3"/>
  </buttongroups>
 </ui>

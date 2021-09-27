@@ -260,12 +260,13 @@ class Image_Manager:
             self.centered_images_to_plot=self.centered_ring_images.copy()
         for im, (name, angle) in enumerate(pol_angles.items()):
             # Note that the image will be permanently modified!
+            maxI=np.max(self.centered_images_to_plot[im])
             cv2.putText(self.centered_images_to_plot[im],
                 f"{angle} +-{precisions[name]} {unit}", # text to insert
                 (10,30), # spot in the image
                 cv2.FONT_HERSHEY_SIMPLEX, # font
                 1, # font scale
-                (255,0,0), # font color,
+                (int(maxI),0,0), # font color,
                 2) # line type
             if show:
                 self.mainThreadPlotter.emit(self.centered_images_to_plot[im],

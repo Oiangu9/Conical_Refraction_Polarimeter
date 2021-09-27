@@ -1,0 +1,49 @@
+,Image Name,Algorithm,Time,Found Optimal,Optimal Precision,Found Polarization,Ground Truth Polarization,True Precision,Correct Decimals
+9,imgNeg,G - Brute Force,0.079,243.3,5.0,-0.10515750924334823,,,0
+21,imgNeg,G - Fibonacci Ratio,0.05,242.3,1.6,-0.10531471896852637,,,0
+33,imgNeg,G - Quadratic Fit,0.025,242.6,8.3,-0.10539714875704694,,,0
+81,imgNeg,H - Binning Histogram,0.072,,0.005,-0.1583,,,0
+165,imgNeg,M - Brute Force - Affine,0.258,2.8835,0.005,-0.12904632679489647,,,0
+129,imgNeg,M - Brute Force- Binning,0.123,2.8885,0.005,-0.12654632679489652,,,0
+93,imgNeg,M - Brute Force- Masking,0.23399999999999999,2.8885,0.005,-0.12654632679489652,,,0
+177,imgNeg,M - Fibonacci Ratio - Affine,0.095,-0.2629999999999999,0.026,-0.13149999999999995,,,0
+141,imgNeg,M - Fibonacci Ratio- Binning,0.047,-0.2629999999999999,0.026,-0.13149999999999995,,,0
+105,imgNeg,M - Fibonacci Ratio- Masking,0.085,-0.2629999999999999,0.026,-0.13149999999999995,,,0
+189,imgNeg,M - Quadratic Fit - Affine,0.082,-0.2605700000000004,0.00064,-0.1302850000000002,,,0
+153,imgNeg,M - Quadratic Fit- Binning,0.039,-0.2526999999999999,0.0019,-0.12634999999999996,,,0
+117,imgNeg,M - Quadratic Fit- Masking,0.073,-0.2526999999999999,0.0019,-0.12634999999999996,,,0
+45,imgNeg,R - Brute Force,0.517,-0.5256999999999996,0.005,-0.1314249999999999,,,0
+57,imgNeg,R - Fibonacci Ratio,0.068,-0.5278999999999998,0.0095,-0.13197499999999995,,,0
+69,imgNeg,R - Quadratic Fit,0.059,-0.5271999999999997,0.0014,-0.13179999999999992,,,0
+10,imgPos,G - Brute Force,0.078,233.3,5.0,0.22035177088862226,,,0
+22,imgPos,G - Fibonacci Ratio,0.049,234.1,4.5,0.22046510692892646,,,0
+34,imgPos,G - Quadratic Fit,0.025,233.4,4.8,0.2202682699110021,,,0
+82,imgPos,H - Binning Histogram,0.072,,0.005,0.2317,,,0
+166,imgPos,M - Brute Force - Affine,0.411,0.4805,0.005,0.24025,,,0
+130,imgPos,M - Brute Force- Binning,0.20199999999999999,0.4555,0.005,0.22775,,,0
+94,imgPos,M - Brute Force- Masking,0.369,0.4555,0.005,0.22775,,,0
+178,imgPos,M - Fibonacci Ratio - Affine,0.095,0.496,0.044,0.248,,,0
+142,imgPos,M - Fibonacci Ratio- Binning,0.047,0.459,0.027,0.2295,,,0
+106,imgPos,M - Fibonacci Ratio- Masking,0.085,0.459,0.027,0.2295,,,0
+190,imgPos,M - Quadratic Fit - Affine,0.087,0.4789,0.0039,0.23945,,,0
+154,imgPos,M - Quadratic Fit- Binning,0.042,0.454,0.0087,0.227,,,0
+118,imgPos,M - Quadratic Fit- Masking,0.078,0.454,0.0087,0.227,,,0
+46,imgPos,R - Brute Force,0.45,0.9593,0.005,0.239825,,,0
+58,imgPos,R - Fibonacci Ratio,0.071,0.9552,0.0078,0.2388,,,0
+70,imgPos,R - Quadratic Fit,0.068,0.95969,0.00085,0.2399225,,,0
+11,imgRef,G - Brute Force,0.077,243.3,5.0,0.02640027605912352,,,0
+23,imgRef,G - Fibonacci Ratio,0.05,241.4,0.67,0.026231776171589064,,,0
+35,imgRef,G - Quadratic Fit,0.025,242.0,1.5,0.026346988585329537,,,0
+83,imgRef,H - Binning Histogram,0.073,,0.005,0.0017,,,0
+167,imgRef,M - Brute Force - Affine,0.432,0.0385,0.005,0.01925,,,0
+131,imgRef,M - Brute Force- Binning,0.20299999999999999,0.0285,0.005,0.01425,,,0
+95,imgRef,M - Brute Force- Masking,0.386,0.0285,0.005,0.01425,,,0
+179,imgRef,M - Fibonacci Ratio - Affine,0.092,0.0375,0.0067,0.01875,,,0
+143,imgRef,M - Fibonacci Ratio- Binning,0.044,0.0278,0.0036,0.0139,,,0
+107,imgRef,M - Fibonacci Ratio- Masking,0.08,0.0278,0.0036,0.0139,,,0
+191,imgRef,M - Quadratic Fit - Affine,0.073,0.03957,0.0005,0.019785,,,0
+155,imgRef,M - Quadratic Fit- Binning,0.036,0.0299,0.0015,0.01495,,,0
+119,imgRef,M - Quadratic Fit- Masking,0.068,0.0299,0.0015,0.01495,,,0
+47,imgRef,R - Brute Force,0.478,0.0713,0.005,0.017825,,,0
+59,imgRef,R - Fibonacci Ratio,0.056,0.0679,0.0043,0.016975,,,0
+71,imgRef,R - Quadratic Fit,0.05,0.0744,0.0019,0.0186,,,0
