@@ -1,0 +1,31 @@
+UTUKURI
+-------
+
+Hello,
+
+ 
+
+Please check the pictures at: https://www.dropbox.com/sh/z8xpwl4bbzeyj9c/AABPnr0J3rN4Q_MMCz2R_Aoaa?dl=0
+
+ 
+
+They are also recorded with 589nm/ 10nm but have a better S/N. They still show some off centre behavior also, we are working on.
+
+ 
+
+I’d be advised if you could analyze and provide your opinion on their quality and accuracy
+
+ 
+
+Full ring: no polarizer
+Polarized: with a polarizer before the LED
+X plate: rings taken with +26.146 degrees of rotation
+ 
+
+ 
+
+Thanking you,
+
+Kumar Utukuri
+
+

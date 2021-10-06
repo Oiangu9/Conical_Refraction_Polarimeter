@@ -7,8 +7,9 @@ from mpl_toolkits.mplot3d import Axes3D
 import imageio
 
 
-main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/Profiles/test3/"
-
+main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/DATA/EXPERIMENTAL/Utukuri_et_al/2__28_09_2021/Some_i607/Profiles/2"
+#main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/DATA/EXPERIMENTAL/Utukuri_et_al/3__29_09_2021/i607/Profiles"
+#main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/DATA/EXPERIMENTAL/Utukuri_et_al/4__01_10_2021/Profiles"
 path_dict={}
 for (dirpath, dirnames, filenames) in os.walk(main_path):
     path_dict[dirpath]=filenames
@@ -62,7 +63,7 @@ for dirpath, filenames in path_dict.items():
             files_for_gif=[]
             cbax=fig.add_axes([0.54,0.05,0.4,0.01])
             fig.colorbar(cm, ax=axes[0,0], cax=cbax, orientation='horizontal')
-            for theta in np.linspace(0, 360, 50):
+            for theta in np.linspace(0, 360, 40):
                 ax.clear()
                 ax.plot_surface(X, Y, im, rcount=len(prof_y), ccount=len(prof_x), cmap='viridis') # rstride=1, cstride=1, linewidth=0
                 cset = ax.contourf(X, Y, im, 2, zdir='z', offset=-20, cmap='viridis', alpha=0.5)

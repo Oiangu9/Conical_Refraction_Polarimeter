@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import imageio
 
 
-main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/Profiles/X_plate/"
+main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/DATA/EXPERIMENTAL/Utukuri_et_al/3__29_09_2021/i607"
 
 path_dict={}
 for (dirpath, dirnames, filenames) in os.walk(main_path):
@@ -27,9 +27,8 @@ for dirpath, filenames in path_dict.items():
             else:
                 logging.warning(f" Unable to import image {dirpath+'/'+filename}")
         else:
-            print(filenames)
             filenames.pop(i)
-            print(filenames)
+
 if len(images.values())==0:
     # Then no valid images were introduced!
     logging.error(" No valid images were selected!")
@@ -44,20 +43,20 @@ for dirpath, filenames in path_dict.items():
             print(dirpath+frame)
             img = cv2.imread(dirpath+'/'+frame, cv2.IMREAD_ANYDEPTH)
             average_image=average_image+(img.astype(np.float64))/len(filenames)
-        cv2.imwrite(f"{dirpath}/AVERAGE.png", average_image)
+        cv2.imwrite(f"{dirpath}/AVERAGE_{dirpath.split('/')[-1]}.png", average_image)
 
 
 
 # transition gif generator
 for dirpath, filenames in path_dict.items():
         if len(filenames)>0:
-            with imageio.get_writer(f"{dirpath}/TRANSITION_X_plate.gif", mode='I') as writer:
+            with imageio.get_writer(f"{dirpath}/TRANSITION_{dirpath.split('/')[-1]}.gif", mode='I') as writer:
                 total_image=imageio.imread(dirpath+'/'+filenames[0])*0.00001
                 for frame in filenames:
 
 
                     #im=(im+imageio.imread(dirpath+frame)/10).astype(np.uint8)
-                    im=imageio.imread(dirpath+'/'+frame)
+                    im=imageio.imread(dirpath+'/'+frame)*5
                     #print(np.max(im))
                     #writer.append_data(im)
                     #writer.append_data(im)
