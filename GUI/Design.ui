@@ -72,7 +72,7 @@ Quit shortcut: CTRL+Q</string>
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -337,7 +337,7 @@ Interpol. Alg.:</string>
            </size>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>5</number>
           </property>
           <widget class="QWidget" name="tab_3">
            <attribute name="title">
@@ -1303,14 +1303,7 @@ R, M Angle (rad):</string>
                    <bool>false</bool>
                   </property>
                   <property name="text">
-                   <string>L*R0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0" rowspan="3">
-                 <widget class="QLabel" name="label_91">
-                  <property name="text">
-                   <string>w0:</string>
+                   <string>(nx-1)/2</string>
                   </property>
                  </widget>
                 </item>
@@ -1320,7 +1313,7 @@ R, M Angle (rad):</string>
                    <bool>false</bool>
                   </property>
                   <property name="text">
-                   <string>-L*R0</string>
+                   <string>-(nx-1)/2</string>
                   </property>
                  </widget>
                 </item>
@@ -1400,7 +1393,7 @@ R, M Angle (rad):</string>
                    <bool>false</bool>
                   </property>
                   <property name="text">
-                   <string>L*R0</string>
+                   <string>(nx-1)/2</string>
                   </property>
                  </widget>
                 </item>
@@ -1432,13 +1425,6 @@ R, M Angle (rad):</string>
                  <widget class="QLineEdit" name="a0_S">
                   <property name="text">
                    <string>1.0</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="3" rowspan="2">
-                 <widget class="QLineEdit" name="w0_S">
-                  <property name="text">
-                   <string>1</string>
                   </property>
                  </widget>
                 </item>
@@ -1475,7 +1461,7 @@ R, M Angle (rad):</string>
                    <bool>false</bool>
                   </property>
                   <property name="text">
-                   <string>-L*R0</string>
+                   <string>-(nx-1)/2</string>
                   </property>
                  </widget>
                 </item>
@@ -1643,7 +1629,7 @@ R, M Angle (rad):</string>
                 <item row="3" column="0" colspan="2">
                  <widget class="QLabel" name="label_72">
                   <property name="text">
-                   <string>Min R0 pix (pix):</string>
+                   <string>Min R0 (pix):</string>
                   </property>
                  </widget>
                 </item>
@@ -1660,7 +1646,7 @@ R, M Angle (rad):</string>
                 <item row="4" column="0" colspan="2">
                  <widget class="QLabel" name="label_73">
                   <property name="text">
-                   <string>Max R0 pix (pix):</string>
+                   <string>Max R0 (pix):</string>
                   </property>
                  </widget>
                 </item>
@@ -1735,34 +1721,34 @@ R, M Angle (rad):</string>
                 <item row="3" column="3">
                  <widget class="QLabel" name="label_109">
                   <property name="text">
-                   <string>Min R0 mag. (a.u):</string>
+                   <string>Min w0 (pix):</string>
                   </property>
                  </widget>
                 </item>
                 <item row="4" column="3">
                  <widget class="QLabel" name="label_110">
                   <property name="text">
-                   <string>Max R0 mag. (a.u):</string>
+                   <string>Max w0 (pix):</string>
                   </property>
                  </widget>
                 </item>
                 <item row="3" column="5">
-                 <widget class="QLineEdit" name="min_R0_mag_S">
+                 <widget class="QLineEdit" name="min_w0_S">
                   <property name="enabled">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                   <property name="text">
-                   <string>1.5</string>
+                   <string>3</string>
                   </property>
                  </widget>
                 </item>
                 <item row="4" column="5">
-                 <widget class="QLineEdit" name="max_R0_mag_S">
+                 <widget class="QLineEdit" name="max_w0_S">
                   <property name="enabled">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                   <property name="text">
-                   <string>35.0</string>
+                   <string>self.image_loader.mode/4</string>
                   </property>
                  </widget>
                 </item>
@@ -1860,7 +1846,7 @@ cycles:</string>
                 <item row="2" column="6">
                  <widget class="QLabel" name="label_87">
                   <property name="text">
-                   <string>Initial guess delta R0 pix:</string>
+                   <string>Initial guess delta R0,w0 pix:</string>
                   </property>
                  </widget>
                 </item>
@@ -1874,7 +1860,7 @@ cycles:</string>
                 <item row="3" column="6">
                  <widget class="QLabel" name="label_88">
                   <property name="text">
-                   <string>Initial guess delta Z, R0 mag:</string>
+                   <string>Initial guess delta Z:</string>
                   </property>
                  </widget>
                 </item>
@@ -1926,7 +1912,7 @@ cycles:</string>
                  </widget>
                 </item>
                 <item row="3" column="2">
-                 <widget class="QLineEdit" name="prec_R0_mag_SC">
+                 <widget class="QLineEdit" name="prec_w0_SC">
                   <property name="text">
                    <string>0.01</string>
                   </property>
@@ -1949,7 +1935,7 @@ cycles:</string>
                 <item row="3" column="0">
                  <widget class="QLabel" name="label_111">
                   <property name="text">
-                   <string>Precision* R0_mag:</string>
+                   <string>Precision* w0_pix:</string>
                   </property>
                  </widget>
                 </item>
@@ -1984,12 +1970,12 @@ cycles:</string>
                 <item row="3" column="3">
                  <widget class="QLabel" name="label_112">
                   <property name="text">
-                   <string>Max points R0 mag (cycle):</string>
+                   <string>Max points w0 pix (cycle):</string>
                   </property>
                  </widget>
                 </item>
                 <item row="3" column="5">
-                 <widget class="QLineEdit" name="max_pt_R0_mag_SC">
+                 <widget class="QLineEdit" name="max_pt_w0_SC">
                   <property name="text">
                    <string>15</string>
                   </property>
@@ -2991,24 +2977,24 @@ Jones Vector (note i is 1j).:</string>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_11"/>
   <buttongroup name="buttonGroup_9"/>
-  <buttongroup name="buttonGroup_15"/>
-  <buttongroup name="buttonGroup_17"/>
-  <buttongroup name="buttonGroup_2"/>
+  <buttongroup name="buttonGroup_7"/>
   <buttongroup name="buttonGroup_12"/>
-  <buttongroup name="buttonGroup_8"/>
+  <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup_18"/>
+  <buttongroup name="buttonGroup_17"/>
   <buttongroup name="buttonGroup_19"/>
+  <buttongroup name="buttonGroup_6"/>
   <buttongroup name="buttonGroup_4"/>
-  <buttongroup name="buttonGroup_5"/>
+  <buttongroup name="buttonGroup_8"/>
+  <buttongroup name="buttonGroup_10"/>
+  <buttongroup name="buttonGroup_13"/>
+  <buttongroup name="buttonGroup_15"/>
   <buttongroup name="buttonGroup_14"/>
   <buttongroup name="buttonGroup_16"/>
-  <buttongroup name="buttonGroup_6"/>
-  <buttongroup name="buttonGroup_11"/>
+  <buttongroup name="buttonGroup_5"/>
   <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_18"/>
-  <buttongroup name="buttonGroup_13"/>
-  <buttongroup name="buttonGroup_7"/>
-  <buttongroup name="buttonGroup_3"/>
+  <buttongroup name="buttonGroup_2"/>
  </buttongroups>
 </ui>

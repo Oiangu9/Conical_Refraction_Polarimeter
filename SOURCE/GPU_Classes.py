@@ -128,24 +128,23 @@ class RingSimulator_Optimizer_GPU():
     # de R0 y de z (No del ángulo, así que en las linear optimizations es interesante saber esto!)
     # pasa que si queremos optimizar tambien el grosor del anillo, hara falta multiplicar por un
     # factor diferente los puntos xs, rs etc
-    def __init__(self, n, w0, a0, max_k, num_k, nx, sim_chunk_x, sim_chunk_y):
+    def __init__(self, n, a0, max_k, num_k, nx, sim_chunk_x, sim_chunk_y):
         self.n=n
-        self.w0=w0
         self.a0=a0
         self.max_k=max_k
         self.num_k=num_k
         self.nx=nx
         self.ny=nx
-        self.xmin=-1
-        self.xmax=1
-        self.ymin=-1
-        self.ymax=1
+        self.xmin=-(nx-1)/2
+        self.xmax=(nx-1)/2
+        self.ymin=-(nx-1)/2
+        self.ymax=(nx-1)/2
         self.sim_chunk_x=sim_chunk_x
         self.sim_chunk_y=sim_chunk_y
         self.dx=(self.xmax-self.xmin)/(nx-1)
         self.last_R0_pixels=None
         self.last_Z=None
-        self.last_R0=None
+        self.last_w0_pixels=None
         self._prepare_grid()
 
     #@jax.partial(jax.jit, static_argnums=(0,))
@@ -168,36 +167,36 @@ class RingSimulator_Optimizer_GPU():
         self.B1=jnp.zeros((self.ny, self.nx), dtype=jnp.complex64) #[ny, nx]
         self.ks, self.dk = jnp.linspace(start=0, stop=self.max_k, num=self.num_k, endpoint=True, retstep=True)
 
-    def _compute_B0_B1(self, Z, R0, L):
+    def _compute_B0_B1(self, Z, R0, w0):
         # There is a big inefficiency due to the need of computing the j0, j1 sequentially with numpy. Aaand this is the hard part actually!
         for ix in range(len(self.chunks_x)-1):
             for iy in range(len(self.chunks_y)-1):
-                rs_block=R0*L*self.rs[self.chunks_x[ix]:self.chunks_x[ix+1], self.chunks_y[iy]:self.chunks_y[iy+1]]
+                rs_block=(1/w0)*self.rs[self.chunks_x[ix]:self.chunks_x[ix+1], self.chunks_y[iy]:self.chunks_y[iy+1]]
                 self.B0=self.B0.at[ self.chunks_x[ix]:self.chunks_x[ix+1], self.chunks_y[iy]:self.chunks_y[iy+1]].set(
-                compute_B0_block( self.n, self.a0, R0/self.w0, rs_block, self.ks, Z, self.dk, jax.device_put(j0(self.ks*rs_block))  ))#[ny, nx, 1]
+                compute_B0_block( self.n, self.a0, R0/w0, rs_block, self.ks, Z, self.dk, jax.device_put(j0(self.ks*rs_block))  ))#[ny, nx, 1]
                 self.B1=self.B1.at[ self.chunks_x[ix]:self.chunks_x[ix+1], self.chunks_y[iy]:self.chunks_y[iy+1]].set(
-                compute_B1_block( self.n, self.a0, R0/self.w0, rs_block, self.ks, Z, self.dk, jax.device_put(j1(self.ks*rs_block))  ))  #[ny, nx, 1]
+                compute_B1_block( self.n, self.a0, R0/w0, rs_block, self.ks, Z, self.dk, jax.device_put(j1(self.ks*rs_block))  ))  #[ny, nx, 1]
 
     def _compute_D_and_Intensity_Turpin(self, in_polrz): # This is rather very fast
         return compute_Intensity(self.B0, self.B1, in_polrz, self.sin_phis, self.cos_phis)
 
-    def _plot_Intensity(self, I, output_path, input_polarization, Z, R0):
+    def _plot_Intensity(self, I, output_path, input_polarization, Z, R0, w0):
         input_angle=input_polarization if type(input_polarization) in [int, float] else np.arctan2(input_polarization.real[1], input_polarization.real[0])
-        cv2.imwrite(f"{output_path}/Raw_PolAngle_{input_angle:.15f}_Vector_{input_polarization}_CRAngle_{2*input_angle:.15f}_Z_{z}_R0_{R0}.png",       np.asarray((65535*I/jnp.max(I))).astype(np.uint16))
+        cv2.imwrite(f"{output_path}/Raw_PolAngle_{input_angle:.15f}_Vector_{input_polarization}_CRAngle_{2*input_angle:.15f}_Z_{z}_R0_{R0}_w0_{w0}.png",       np.asarray((65535*I/jnp.max(I))).astype(np.uint16))
 
-    def compute_CR_ring(self, CR_ring_angle, R0_pixels, Z, R0):
+    def compute_CR_ring(self, CR_ring_angle, R0_pixels, Z, w0_pixels):
         # If the argument R0, L and Z are the same as the last time B0B1 was computed, then do not recomupte them
-        if self.last_R0_pixels!=R0_pixels or self.last_Z!=Z or self.last_R0!=R0:
+        if self.last_R0_pixels!=R0_pixels or self.last_Z!=Z or self.last_w0_pixels!=w0_pixels:
             self.last_R0_pixels=R0_pixels
+            self.last_w0_pixels=w0_pixels
             self.last_Z=Z
-            self.last_R0=R0
-            self._compute_B0_B1(Z, R0, L=(self.nx-1)/2.0/R0_pixels)
+            self._compute_B0_B1(Z, R0_pixels, w0_pixels)
         I=self._compute_D_and_Intensity_Turpin(jnp.array([jnp.cos(CR_ring_angle/2), jnp.sin(CR_ring_angle/2)]))
         return np.asarray(I/jnp.max(I))
 
-    def compute_and_plot_CR_ring(self, CR_ring_angle, R0_pixels, Z, R0, out_path, name):
-        I=self.compute_CR_ring(CR_ring_angle, R0_pixels, Z, R0)
-        cv2.imwrite(f"{out_path}/[{name}]__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}_R0_{R0}_R0_pix_{R0_pixels}.png",
+    def compute_and_plot_CR_ring(self, CR_ring_angle, R0_pixels, Z, w0_pixels, out_path, name):
+        I=self.compute_CR_ring(CR_ring_angle, R0_pixels, Z, w0_pixels)
+        cv2.imwrite(f"{out_path}/[{name}]__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}_w0_pix_{w0_pixels}_R0_pix_{R0_pixels}.png",
                 (65534*I).astype(np.uint16)) # L=(self.nx-1)/2.0/R0_pixels
 
 
@@ -227,34 +226,18 @@ if __name__ == "__main__":
     '''
 
     print("\n\n\nTesting Optimizer Simulator:")
-    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=1200, nx=1101, sim_chunk_x=550, sim_chunk_y=550)
+    simulator=RingSimulator_Optimizer_GPU( n=1.5, a0=1.0, max_k=50, num_k=1200, nx=550, sim_chunk_x=550, sim_chunk_y=550)
 
     os.makedirs('./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution', exist_ok=True)
     os.makedirs('./Simulated/Optimizer/Approx/', exist_ok=True)
 
     for phi_CR in phi_CRs:
         print(f"Computing {phi_CR}")
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=237.79, Z=0, R0=30.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Very_Thin_Width_')
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=237.79, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Thin_Width_')
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=180.7, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Small_Radious_Thin_Width_')
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=120.7, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Very_Small_Radious_Thin_Width_')
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=237.7, Z=0, R0=15.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Thick_Width_')
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=237.7, Z=0, R0=10.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Very_Thick_Width_')
-        print("Hard one done!\n")
-        #simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/Optimizer/Approx/')
-
-    simulator=RingSimulator_Optimizer_GPU( n=1.5, w0=1, a0=1.0, max_k=50, num_k=1200, nx=2202, sim_chunk_x=550, sim_chunk_y=550)
-
-    os.makedirs('./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', exist_ok=True)
-    os.makedirs('./Simulated/Optimizer/Approx/', exist_ok=True)
-
-    for phi_CR in phi_CRs:
-        print(f"Computing {phi_CR}")
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=475.58, Z=0, R0=30.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Big_Radious_Very_Thin_Width_')
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=475.58, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Big_Radious_Thin_Width_')
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=361.4, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Small_Radious_Thin_Width_')
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=241.4, Z=0, R0=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Very_Small_Radious_Thin_Width_')
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=475.58, Z=0, R0=15.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Big_Radious_Thick_Width_')
-        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=475.58, Z=0, R0=10.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/2202_Resolution/', name='Big_Radious_Very_Thick_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=137.79, Z=0, w0_pixels=30.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Very_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=137.79, Z=0, w0_pixels=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=80.7, Z=0, w0_pixels=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Small_Radious_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=20.7, Z=0, w0_pixels=23.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Very_Small_Radious_Thin_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=137.7, Z=0, w0_pixels=15.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Thick_Width_')
+        simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=137.7, Z=0, w0_pixels=10.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Very_Thick_Width_')
         print("Hard one done!\n")
         #simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/Optimizer/Approx/')

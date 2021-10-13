@@ -1062,7 +1062,7 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
 
     USE FLOAT NORMALIZED IMAGES FOR EVERYTHING! ONLY AFTER EVERYTHING DO THE CAST BACK TO UINT!
     """
-    def __init__(self, image_loader, coordinate_descent_cycles, min_Z, max_Z, min_phi, max_phi, min_radi, max_radi, min_R0_mag, max_R0_mag, initial_guess_delta_R0, initial_guess_delta_rad, initial_guess_delta_Z, n, w0, a0, max_k, num_k, nx, xChunk, yChunk, gpu, min_radi_G=None, max_radi_G=None, use_exact_gravicenter_G=None, initial_guess_delta_G=None):
+    def __init__(self, image_loader, coordinate_descent_cycles, min_Z, max_Z, min_phi, max_phi, min_radi, max_radi, min_w0, max_w0, initial_guess_delta_R0, initial_guess_delta_rad, initial_guess_delta_Z, n, a0, max_k, num_k, nx, xChunk, yChunk, gpu, min_radi_G=None, max_radi_G=None, use_exact_gravicenter_G=None, initial_guess_delta_G=None):
         Polarization_Obtention_Algorithm.__init__(self, image_loader, use_exact_gravicenter_G)
         self.cycles=coordinate_descent_cycles
         self.min_Z=min_Z
@@ -1071,8 +1071,8 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
         self.max_phi=max_phi
         self.min_radi=min_radi
         self.max_radi=max_radi
-        self.min_R0_mag=min_R0_mag
-        self.max_R0_mag=max_R0_mag
+        self.min_w0=min_w0
+        self.max_w0=max_w0
         self.min_radi_G=min_radi_G
         self.max_radi_G=max_radi_G
         self.initial_guess_delta_rad=initial_guess_delta_rad
@@ -1083,9 +1083,9 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
         self.images_normFloat = image_loader.centered_ring_images.astype(np.float64)/np.expand_dims(np.amax(image_loader.centered_ring_images, axis=(1,2)), (1,2))
 
         if gpu:
-            self.simulator=RingSimulator_Optimizer_GPU(n=n, w0=w0, a0=a0, max_k=max_k, num_k=num_k, nx=nx, sim_chunk_x=xChunk, sim_chunk_y=yChunk)
+            self.simulator=RingSimulator_Optimizer_GPU(n=n, a0=a0, max_k=max_k, num_k=num_k, nx=nx, sim_chunk_x=xChunk, sim_chunk_y=yChunk)
         else:
-            self.simulator=RingSimulator_Optimizer(n=n, w0=w0, a0=a0, max_k=max_k, num_k=num_k, nx=nx, sim_chunk_x=xChunk, sim_chunk_y=yChunk)
+            self.simulator=RingSimulator_Optimizer(n=n, a0=a0, max_k=max_k, num_k=num_k, nx=nx, sim_chunk_x=xChunk, sim_chunk_y=yChunk)
         if use_exact_gravicenter_G is not None:
             self.algorithm_G = Gradient_Algorithm(image_loader, min_radi_G, max_radi_G, initial_guess_delta_G, use_exact_gravicenter_G)
         else:
@@ -1093,23 +1093,23 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
 
         self.angle_optimizer=Ad_Hoc_Optimizer(min_phi, max_phi, initial_guess_delta_rad, self.evaluate_simulation_phi)
         self.radious_optimizer=Ad_Hoc_Optimizer(min_radi, max_radi, initial_guess_delta_R0, self.evaluate_simulation_R0)
-        self.R0_mag_optimizer=Ad_Hoc_Optimizer(min_R0_mag, max_R0_mag, initial_guess_delta_Z, self.evaluate_simulation_R0_mag)
+        self.w0_optimizer=Ad_Hoc_Optimizer(min_w0, max_w0, initial_guess_delta_R0, self.evaluate_simulation_w0)
         self.Z_optimizer=Ad_Hoc_Optimizer(min_Z, max_Z, initial_guess_delta_Z, self.evaluate_simulation_Z)
 
         self.times={}
         self.radious_points={}
-        self.R0_mag_points={}
+        self.w0_points={}
         self.Z_points={}
         self.phi_points={}
         # use the results from the gradient algorithm to initialize the best triplet
         self.R0_pix_best={}
-        self.R0_mag_best={}
+        self.w0_best={}
         self.Z_best={}
         self.phi_CR_best={}
         self.last_cycle=coordinate_descent_cycles
 
         self.best_radii={}
-        self.best_R0_mags={}
+        self.best_w0s={}
         self.best_zs={}
         self.best_angles={}
         self.simulations_required={}
@@ -1125,18 +1125,18 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
 
         self.times={}
         self.radious_points={}
-        self.R0_mag_points={}
+        self.w0_points={}
         self.Z_points={}
         self.phi_points={}
         # use the results from the gradient algorithm to initialize the best triplet
         self.R0_pix_best={}
-        self.R0_mag_best={}
+        self.w0_best={}
         self.Z_best={}
         self.phi_CR_best={}
         self.last_cycle=self.cycles
 
         self.best_radii={}
-        self.best_R0_mags={}
+        self.best_w0s={}
         self.best_zs={}
         self.best_angles={}
         self.simulations_required={}
@@ -1243,38 +1243,38 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
 
 
 
-    def evaluate_simulation_phi(self, exp_image, angle, R0_pix_best, Z_best, R0_mag_best):
-        I=self.compute_raw_to_centered_iX(self.simulator.compute_CR_ring(angle, R0_pix_best, Z_best, R0_mag_best))
-        cv2.imwrite(f"ev_phi_phi_{angle}_R0_pix_{R0_pix_best}_Z_{Z_best}_R0_mag_{R0_mag_best}.png", (65535*np.abs(exp_image-I)).astype(np.uint16))
+    def evaluate_simulation_phi(self, exp_image, angle, R0_pix_best, Z_best, w0_best):
+        I=self.compute_raw_to_centered_iX(self.simulator.compute_CR_ring(angle, R0_pix_best, Z_best, w0_best))
+        cv2.imwrite(f"ev_phi_phi_{angle}_R0_pix_{R0_pix_best}_Z_{Z_best}_w0_pix_{w0_best}.png", (65535*np.abs(exp_image-I)).astype(np.uint16))
         return np.log(np.sum(np.abs(exp_image-I))+abs(np.sum(exp_image)-np.sum(I))**3)
         #return -SSIM(exp_image, I)
 
-    def evaluate_simulation_R0(self, exp_image, R0_pix, angle_best, Z_best, R0_mag_best):
+    def evaluate_simulation_R0(self, exp_image, R0_pix, angle_best, Z_best, w0_best):
         I=self.compute_raw_to_centered_iX(
-            self.simulator.compute_CR_ring(angle_best, R0_pix, Z_best, R0_mag_best))
+            self.simulator.compute_CR_ring(angle_best, R0_pix, Z_best, w0_best))
         #print(exp_image.max(), I.max(), exp_image.mean(), I.mean())
-        cv2.imwrite(f"ev_R0_pix_phi_{angle_best}_R0_pix_{R0_pix}_Z_{Z_best}_R0_mag_{R0_mag_best}.png", (65535*np.abs(exp_image-I)).astype(np.uint16))
+        cv2.imwrite(f"ev_R0_pix_phi_{angle_best}_R0_pix_{R0_pix}_Z_{Z_best}_w0_pix_{w0_best}.png", (65535*np.abs(exp_image-I)).astype(np.uint16))
         #cv2.imwrite(f"ev_R0_{angle_best}_{R0_pix}_{Z_best}.png", (255*self.compute_raw_to_centered_iX(
         #    self.simulator.compute_CR_ring(angle_best, R0_pix, Z_best))).astype(exp_image.dtype))
         return np.log(np.sum(np.abs(exp_image-I))+abs(np.sum(exp_image)-np.sum(I))**3)
         #return -SSIM(exp_image, I)
 
-    def evaluate_simulation_Z(self, exp_image, Z, angle_best, R0_pix_best, R0_mag_best):
+    def evaluate_simulation_Z(self, exp_image, Z, angle_best, R0_pix_best, w0_best):
         I=self.compute_raw_to_centered_iX(
-            self.simulator.compute_CR_ring(angle_best, R0_pix_best, Z, R0_mag_best))
+            self.simulator.compute_CR_ring(angle_best, R0_pix_best, Z, w0_best))
         return np.log(np.sum(np.abs(exp_image-I))+abs(np.sum(exp_image)-np.sum(I))**3)
         #return -SSIM(exp_image, I)
 
-    def evaluate_simulation_R0_mag(self, exp_image, R0_mag, angle_best, R0_pix_best, Z_best):
+    def evaluate_simulation_w0(self, exp_image, w0, angle_best, R0_pix_best, Z_best):
         I=self.compute_raw_to_centered_iX(
-            self.simulator.compute_CR_ring(angle_best, R0_pix_best, Z_best, R0_mag))
-        cv2.imwrite(f"ev_R0_mag_phi_{angle_best}_R0_pix_{R0_pix_best}_Z_{Z_best}_R0_mag_{R0_mag}.png", (65535*np.abs(exp_image-I)).astype(np.uint16))
+            self.simulator.compute_CR_ring(angle_best, R0_pix_best, Z_best, w0))
+        cv2.imwrite(f"ev_w0_phi_{angle_best}_R0_pix_{R0_pix_best}_Z_{Z_best}_w0_pix_{w0}.png", (65535*np.abs(exp_image-I)).astype(np.uint16))
         return np.log(np.sum(np.abs(exp_image-I))+abs(np.sum(exp_image)-np.sum(I))**3)
         #return -SSIM(exp_image, I)
 
 
     def fibonacci_ratio_search(self, precision_pix, maximum_points_R0, precision_phi,
-        maximum_points_phi, precision_Z, maximum_points_Z,  precision_R0_mag, maximum_points_R0_mag, cost_tol, precision_G,
+        maximum_points_phi, precision_Z, maximum_points_Z,  precision_w0, maximum_points_w0, cost_tol, precision_G,
         maximum_points_G, cost_tol_G):
         # We first find an estimation for R0 and phiCR using the gradient algorithm
         self.algorithm_G.fibonacci_ratio_search(precision_G, maximum_points_G, cost_tol_G)
@@ -1284,21 +1284,21 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
             self.times[name]={}
             self.radious_points[name]={}
             self.Z_points[name]={}
-            self.R0_mag_points[name]={}
+            self.w0_points[name]={}
             self.phi_points[name]={}
             # use the results from the gradient algorithm to initialize the best triplet
             self.R0_pix_best[name]=[1.65*abs(self.algorithm_G.optimals[f'Fibonacci_Search_{name}'])]
             self.Z_best[name]=[0.0]
-            self.R0_mag_best[name]=[10.0]
+            self.w0_best[name]=[10.0]
             self.phi_CR_best[name]=[self.algorithm_G.angles[f'Fibonacci_Search_{name}']]
             simulations=0
             for cycle in range(self.cycles):
                 # Optimize Radious magnitude - the width of the croissant
-                (time_R0_mag, self.R0_mag_points[name][cycle], R0_mag_best, R0_mag_optimum,
-                 _)=self.R0_mag_optimizer.fibonacci_ratio_search(
-                    precision_R0_mag, maximum_points_R0_mag, cost_tol,
+                (time_w0, self.w0_points[name][cycle], w0_best, w0_optimum,
+                 _)=self.w0_optimizer.fibonacci_ratio_search(
+                    precision_w0, maximum_points_w0, cost_tol,
                     self.images_normFloat[im],
-                    (self.phi_CR_best[name][-1], self.R0_pix_best[name][-1], self.Z_best[name][-1]), self.R0_mag_best[name][-1]
+                    (self.phi_CR_best[name][-1], self.R0_pix_best[name][-1], self.Z_best[name][-1]), self.w0_best[name][-1]
                 )
 
                 # Optimize Radious
@@ -1306,25 +1306,25 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
                  _)=self.radious_optimizer.fibonacci_ratio_search(
                     precision_pix, maximum_points_R0, cost_tol,
                     self.images_normFloat[im],
-                    (self.phi_CR_best[name][-1], self.Z_best[name][-1], R0_mag_best), self.R0_pix_best[name][-1]
+                    (self.phi_CR_best[name][-1], self.Z_best[name][-1], w0_best), self.R0_pix_best[name][-1]
                 )
 
                 # Optimize Angle
                 (time_ang, self.phi_points[name][cycle], phi_CR_best, phi_optimum, _)=self.angle_optimizer.fibonacci_ratio_search(
                     precision_phi, maximum_points_phi, cost_tol,
                     self.images_normFloat[im],
-                    (R0_pix_best, self.Z_best[name][-1], R0_mag_best), self.phi_CR_best[name][-1]
+                    (R0_pix_best, self.Z_best[name][-1], w0_best), self.phi_CR_best[name][-1]
                 )
 
                 # Optimize Z
                 if maximum_points_Z!=0:
-                    self.Z_optimizer.a=-2*np.sqrt(1/3)*R0_mag_best
+                    self.Z_optimizer.a=-2*np.sqrt(1/3)*w0_best
                     self.Z_optimizer.b=-self.Z_optimizer.a
                     (time_Z, self.Z_points[name][cycle], Z_best, Z_optimum,
                         _)=self.Z_optimizer.fibonacci_ratio_search(
                             precision_Z, maximum_points_Z, cost_tol,
                             self.images_normFloat[im],
-                            (phi_CR_best, R0_pix_best, R0_mag_best), self.Z_best[name][-1]
+                            (phi_CR_best, R0_pix_best, w0_best), self.Z_best[name][-1]
                         )
                 else: # dont optimize z
                     time_Z=0
@@ -1333,26 +1333,26 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
                     self.Z_points[name][cycle]=np.array([[0,0,0]])
 
 
-                self.times[name][cycle]=time_rad+time_ang+time_Z+time_R0_mag
+                self.times[name][cycle]=time_rad+time_ang+time_Z+time_w0
                 self.R0_pix_best[name].append(R0_pix_best)
                 self.phi_CR_best[name].append(phi_CR_best)
-                self.R0_mag_best[name].append(R0_mag_best)
+                self.w0_best[name].append(w0_best)
                 self.Z_best[name].append(Z_best)
 
-                simulations+=len(self.phi_points[name][cycle])+len(self.radious_points[name][cycle])+len(self.Z_points[name][cycle])+len(self.R0_mag_points[name][cycle])
+                simulations+=len(self.phi_points[name][cycle])+len(self.radious_points[name][cycle])+len(self.Z_points[name][cycle])+len(self.w0_points[name][cycle])
 
                 # check if convergence criterion is met
                 if((abs(Z_optimum-phi_optimum)<cost_tol and
                         abs(phi_optimum-radi_optimum)<cost_tol and
-                            abs(radi_optimum-R0_mag_optimum)<cost_tol)
+                            abs(radi_optimum-w0_optimum)<cost_tol)
                         or (abs(self.R0_pix_best[name][-2]-R0_pix_best)<precision_pix and
                         abs(self.phi_CR_best[name][-2]-phi_CR_best)<precision_phi and
                         abs(self.Z_best[name][-2]-Z_best)<precision_Z) and
-                        abs(self.R0_mag_best[name][-2]-R0_mag_best<precision_R0_mag)):
+                        abs(self.w0_best[name][-2]-w0_best<precision_w0)):
                     self.last_cycle=cycle+1
                     break
             self.best_radii[name]=R0_pix_best
-            self.best_R0_mags[name]=R0_mag_best
+            self.best_w0s[name]=w0_best
             self.best_zs[name]=Z_best
             self.best_angles[name]=self.angle_to_pi_pi(phi_CR_best)
             self.simulations_required[name]=simulations
@@ -1360,7 +1360,7 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
 
 
     def quadratic_fit_search(self, precision_pix, maximum_points_R0, precision_phi,
-        maximum_points_phi, precision_Z, maximum_points_Z, precision_R0_mag, maximum_points_R0_mag, cost_tol, precision_G,
+        maximum_points_phi, precision_Z, maximum_points_Z, precision_w0, maximum_points_w0, cost_tol, precision_G,
         maximum_points_G, cost_tol_G):
         # We first find an estimation for R0 and phiCR using the gradient algorithm
         self.algorithm_G.quadratic_fit_search(precision_G, maximum_points_G, cost_tol_G)
@@ -1371,20 +1371,20 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
             self.radious_points[name]={}
             self.Z_points[name]={}
             self.phi_points[name]={}
-            self.R0_mag_points[name]={}
+            self.w0_points[name]={}
             # use the results from the gradient algorithm to initialize the best triplet
             self.R0_pix_best[name]=[1.65*abs(self.algorithm_G.optimals[f'Quadratic_Search_{name}'])]
             self.Z_best[name]=[0.0]
-            self.R0_mag_best[name]=[10.0]
+            self.w0_best[name]=[10.0]
             self.phi_CR_best[name]=[self.algorithm_G.angles[f'Quadratic_Search_{name}']]
             simulations=0
             for cycle in range(self.cycles):
                 # Optimize Radious magnitude - the width of the croissant
-                (time_R0_mag, self.R0_mag_points[name][cycle], R0_mag_best, R0_mag_optimum,
-                 _)=self.R0_mag_optimizer.fibonacci_ratio_search(
-                    precision_R0_mag, maximum_points_R0_mag, cost_tol,
+                (time_w0, self.w0_points[name][cycle], w0_best, w0_optimum,
+                 _)=self.w0_optimizer.fibonacci_ratio_search(
+                    precision_w0, maximum_points_w0, cost_tol,
                     self.images_normFloat[im],
-                    (self.phi_CR_best[name][-1], self.R0_pix_best[name][-1], self.Z_best[name][-1]), self.R0_mag_best[name][-1]
+                    (self.phi_CR_best[name][-1], self.R0_pix_best[name][-1], self.Z_best[name][-1]), self.w0_best[name][-1]
                 )
 
                 # Optimize Radious
@@ -1392,14 +1392,14 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
                  _)=self.radious_optimizer.quadratic_fit_search(
                     precision_pix, maximum_points_R0, cost_tol,
                     self.images_normFloat[im],
-                    (self.phi_CR_best[name][-1], self.Z_best[name][-1], R0_mag_best), self.R0_pix_best[name][-1]
+                    (self.phi_CR_best[name][-1], self.Z_best[name][-1], w0_best), self.R0_pix_best[name][-1]
                 )
 
                 # Optimize Angle
                 (time_ang, self.phi_points[name][cycle], phi_CR_best, phi_optimum, _)=self.angle_optimizer.quadratic_fit_search(
                     precision_phi, maximum_points_phi, cost_tol,
                     self.images_normFloat[im],
-                    (R0_pix_best, self.Z_best[name][-1], R0_mag_best), self.phi_CR_best[name][-1]
+                    (R0_pix_best, self.Z_best[name][-1], w0_best), self.phi_CR_best[name][-1]
                 )
 
                 # Optimize Z
@@ -1410,7 +1410,7 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
                         _)=self.Z_optimizer.quadratic_fit_search(
                             precision_Z, maximum_points_Z, cost_tol,
                             self.images_normFloat[im],
-                            (phi_CR_best, R0_pix_best, R0_mag_best), self.Z_best[name][-1]
+                            (phi_CR_best, R0_pix_best, w0_best), self.Z_best[name][-1]
                         )
                 else: # dont optimize z
                     time_Z=0
@@ -1418,26 +1418,26 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
                     Z_optimum=0
                     self.Z_points[name][cycle]=np.array([[0,0,0]])
 
-                self.times[name][cycle]=time_rad+time_ang+time_Z+time_R0_mag
+                self.times[name][cycle]=time_rad+time_ang+time_Z+time_w0
                 self.R0_pix_best[name].append(R0_pix_best)
-                self.R0_mag_best[name].append(R0_mag_best)
+                self.w0_best[name].append(w0_best)
                 self.phi_CR_best[name].append(phi_CR_best)
                 self.Z_best[name].append(Z_best)
 
-                simulations+=len(self.phi_points[name][cycle])+len(self.radious_points[name][cycle])+len(self.Z_points[name][cycle])+len(self.R0_mag_points[name][cycle])
+                simulations+=len(self.phi_points[name][cycle])+len(self.radious_points[name][cycle])+len(self.Z_points[name][cycle])+len(self.w0_points[name][cycle])
 
                 # check if convergence criterion is met
                 if((abs(Z_optimum-phi_optimum)<cost_tol and
                         abs(phi_optimum-radi_optimum)<cost_tol and
-                            abs(radi_optimum-R0_mag_optimum)<cost_tol)
+                            abs(radi_optimum-w0_optimum)<cost_tol)
                         or (abs(self.R0_pix_best[name][-2]-R0_pix_best)<precision_pix and
                         abs(self.phi_CR_best[name][-2]-phi_CR_best)<precision_phi and
                         abs(self.Z_best[name][-2]-Z_best)<precision_Z) and
-                        abs(self.R0_mag_best[name][-2]-R0_mag_best<precision_R0_mag)):
+                        abs(self.w0_best[name][-2]-w0_best<precision_w0)):
                     self.last_cycle=cycle+1
                     break
             self.best_radii[name]=R0_pix_best
-            self.best_R0_mags[name]=R0_mag_best
+            self.best_w0s[name]=w0_best
             self.best_zs[name]=Z_best
             self.best_angles[name]=self.angle_to_pi_pi(phi_CR_best)
             self.simulations_required[name]=simulations
@@ -1454,29 +1454,29 @@ class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
             if self.last_cycle==1:
                 axes=np.expand_dims(axes,0)
             for cycle in range(self.last_cycle):
-                axes[cycle, 0].plot(self.R0_mag_points[name][cycle][:,0], self.R0_mag_points[name][cycle][:,1], 'o', label=f'R0 magnitude descent fixing phiCR={self.phi_CR_best[name][cycle]}; R0 pix={self.R0_pix_best[name][cycle]}; Z={self.Z_best[name][cycle]}')
-                axes[cycle, 1].plot(self.radious_points[name][cycle][:,0], self.radious_points[name][cycle][:,1], 'o', label=f'R0 pixels descent fixing R0 mag ={self.R0_mag_best[name][cycle+1]}; phiCR={self.phi_CR_best[name][cycle]}; Z={self.Z_best[name][cycle]}')
-                axes[cycle, 2].plot(self.phi_points[name][cycle][:,0], self.phi_points[name][cycle][:,1], 'o', label=f'phiCR descent fixing R0 mag ={self.R0_mag_best[name][cycle+1]}; R0 pix={self.R0_pix_best[name][cycle+1]}; Z={self.Z_best[name][cycle]}')
-                axes[cycle, 3].plot(self.Z_points[name][cycle][:,0], self.Z_points[name][cycle][:,1], 'o', label=f'Z descent fixing R0 mag ={self.R0_mag_best[name][cycle+1]}; R0 pix={self.R0_pix_best[name][cycle+1]}; phiCR={self.phi_CR_best[name][cycle+1]}')
+                axes[cycle, 0].plot(self.w0_points[name][cycle][:,0], self.w0_points[name][cycle][:,1], 'o', label=f'w0 pixels descent fixing phiCR={self.phi_CR_best[name][cycle]}; R0 pix={self.R0_pix_best[name][cycle]}; Z={self.Z_best[name][cycle]}')
+                axes[cycle, 1].plot(self.radious_points[name][cycle][:,0], self.radious_points[name][cycle][:,1], 'o', label=f'R0 pixels descent fixing w0 pix ={self.w0_best[name][cycle+1]}; phiCR={self.phi_CR_best[name][cycle]}; Z={self.Z_best[name][cycle]}')
+                axes[cycle, 2].plot(self.phi_points[name][cycle][:,0], self.phi_points[name][cycle][:,1], 'o', label=f'phiCR descent fixing w0 pix ={self.w0_best[name][cycle+1]}; R0 pix={self.R0_pix_best[name][cycle+1]}; Z={self.Z_best[name][cycle]}')
+                axes[cycle, 3].plot(self.Z_points[name][cycle][:,0], self.Z_points[name][cycle][:,1], 'o', label=f'Z descent fixing w0 pix ={self.w0_best[name][cycle+1]}; R0 pix={self.R0_pix_best[name][cycle+1]}; phiCR={self.phi_CR_best[name][cycle+1]}')
 
-                axes[cycle, 0].set_xlabel("R0 (magnitude)")
+                axes[cycle, 0].set_xlabel("w0 (pixels)")
                 axes[cycle, 1].set_xlabel("R0 (pixels)")
                 axes[cycle, 2].set_xlabel("phi_CR (rad)")
                 axes[cycle, 3].set_xlabel("Z (w0-s)")
-                axes[cycle, 0].set_title(f"Best of cycle={self.R0_mag_best[name][cycle+1]}\n Computed points={len(self.R0_mag_points[name][cycle])}")
+                axes[cycle, 0].set_title(f"Best of cycle={self.w0_best[name][cycle+1]}\n Computed points={len(self.w0_points[name][cycle])}")
                 axes[cycle, 1].set_title(f"Best of cycle={self.R0_pix_best[name][cycle+1]}\n Computed points={len(self.radious_points[name][cycle])}")
                 axes[cycle, 2].set_title(f"Best of cycle={self.phi_CR_best[name][cycle+1]}\n Computed points={len(self.phi_points[name][cycle])}")
                 axes[cycle, 3].set_title(f"Best of cycle={self.Z_best[name][cycle+1]}\n Computed points={len(self.Z_points[name][cycle])}")
 
                 for i in range(4):
-                    axes[cycle, i].set_ylabel("sum(abs(simulated_image(phiCR, R0_pix, R0_mag, Z)-exp_image))")
+                    axes[cycle, i].set_ylabel("sum(abs(simulated_image(phiCR, R0_pix, w0_pix, Z)-exp_image))")
                     axes[cycle, i].grid(True)
                     axes[cycle, i].legend()
 
-                fig.suptitle(f"{meth_name}  {name}\nBest triplet: phiCR={self.best_angles[name]}rad; R0_pix={self.best_radii[name]}pix; R0_mag={self.best_R0_mags[name]}(a.u); Z={self.best_zs[name]}w0")
+                fig.suptitle(f"{meth_name}  {name}\nBest triplet: phiCR={self.best_angles[name]}rad; R0_pix={self.best_radii[name]}pix; w0={self.best_w0s[name]}(pix); Z={self.best_zs[name]}w0")
             plt.savefig(f"{out_path}/Simulation_Coordinate_Descent_Algorithm/{meth_name}__{name}.png")
             fig.clf()
-            I=(65533*self.compute_raw_to_centered_iX(self.simulator.compute_CR_ring(CR_ring_angle=self.best_angles[name], R0_pixels=self.best_radii[name], Z=self.best_zs[name], R0=self.best_R0_mags[name]))).astype(np.uint16)
-            cv2.imwrite(f"{out_path}/Simulation_Coordinate_Descent_Algorithm/L_Exp_[{name}]__R_Simul_PolAngle_{self.best_angles[name]/2:.15f}_CRAngle_{self.best_angles[name]:.15f}_Z_{self.best_zs[name]}_R0_pix_{self.best_radii[name]}_R0_mag_{self.best_R0_mags[name]}.png",
+            I=(65533*self.compute_raw_to_centered_iX(self.simulator.compute_CR_ring(CR_ring_angle=self.best_angles[name], R0_pixels=self.best_radii[name], Z=self.best_zs[name], w0_pixels=self.best_w0s[name]))).astype(np.uint16)
+            cv2.imwrite(f"{out_path}/Simulation_Coordinate_Descent_Algorithm/L_Exp_[{name}]__R_Simul_PolAngle_{self.best_angles[name]/2:.15f}_CRAngle_{self.best_angles[name]:.15f}_Z_{self.best_zs[name]}_R0_pix_{self.best_radii[name]}_w0_pix_{self.best_w0s[name]}.png",
                 np.concatenate((I, self.image_loader.centered_ring_images[k,:,:]),axis=1))
             #self.simulator.compute_and_plot_CR_ring( CR_ring_angle=self.best_angles[name], R0_pixels=self.best_radii[name], Z=self.best_zs[name], out_path=f"{out_path}/Simulation_Coordinate_Descent/", name=name)
