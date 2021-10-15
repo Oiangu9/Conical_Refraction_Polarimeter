@@ -197,7 +197,7 @@ class RingSimulator_Optimizer_GPU():
     def compute_and_plot_CR_ring(self, CR_ring_angle, R0_pixels, Z, w0_pixels, out_path, name):
         I=self.compute_CR_ring(CR_ring_angle, R0_pixels, Z, w0_pixels)
         cv2.imwrite(f"{out_path}/[{name}]__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}_w0_pix_{w0_pixels}_R0_pix_{R0_pixels}.png",
-                (65534*I).astype(np.uint16)) # L=(self.nx-1)/2.0/R0_pixels
+                (6553*I).astype(np.uint16)) 
 
 
 
