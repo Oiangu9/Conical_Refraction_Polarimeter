@@ -3,8 +3,12 @@ import matplotlib.pyplot as plt
 import cv2
 from time import time
 import os
-from SOURCE.Ad_Hoc_Optimizer import Ad_Hoc_Optimizer
-from SOURCE.Theoretical_Ring_Simulator import *
+try:
+    from SOURCE.Ad_Hoc_Optimizer import Ad_Hoc_Optimizer
+    from SOURCE.Theoretical_Ring_Simulator import *
+except: # to allow importing from a file executed in source directory
+    from Ad_Hoc_Optimizer import Ad_Hoc_Optimizer
+    from Theoretical_Ring_Simulator import *
 try:
     from SOURCE.GPU_Classes import *
 except:
