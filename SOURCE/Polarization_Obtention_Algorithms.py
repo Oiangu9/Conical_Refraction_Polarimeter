@@ -269,7 +269,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
 
         """
         Polarization_Obtention_Algorithm.__init__(self,image_loader, use_exact_gravicenter)
-        self.images_float = image_loader.centered_ring_images.astype(np.float32)
+        self.images_float = image_loader.centered_ring_images.astype(np.float64)
         self.interpolation_flag = interpolation_flag
         self.min_angle = min_angle
         self.max_angle = max_angle
@@ -302,7 +302,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
 
     def reInitialize(self, image_loader):
         Polarization_Obtention_Algorithm.reInitialize(self, image_loader)
-        self.images_float = image_loader.centered_ring_images.astype(np.float32)
+        self.images_float = image_loader.centered_ring_images.astype(np.float64)
         self.computed_points={}
         self.optimums={}
         self.optimals={}
@@ -320,7 +320,7 @@ class Mirror_Flip_Algorithm(Polarization_Obtention_Algorithm):
         """
         a=np.cos(2*angle)
         b=np.sin(2*angle)
-        mirror_mat=np.float32([[a, b, center[1]*(1-a)-center[0]*b],
+        mirror_mat=np.float64([[a, b, center[1]*(1-a)-center[0]*b],
                              [b, -a, center[0]*(1+a)-center[1]*b]])
         return cv2.warpAffine(image_array, mirror_mat, image_array.shape, flags=self.interpolation_flag).astype(image_array.dtype)
 
@@ -820,7 +820,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
         self.cols=np.broadcast_to( np.arange(self.mode*2+1), (self.mode*2+1,self.mode*2+1)) #[h,w]
         self.optimizer = Ad_Hoc_Optimizer(min_angle, max_angle, initial_guess_delta, self.evaluate_image_rotation)
         if initialize_it:
-            self.images_float = image_loader.centered_ring_images.astype(np.float32)
+            self.images_float = image_loader.centered_ring_images.astype(np.float64)
             if use_exact_gravicenter:
                 self.grav=self.original_images.g_centered #[N_images, 2(h,w)]
                 # custom mirror flip the images about the line through gravicenter
@@ -838,7 +838,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
     def reInitialize(self, image_loader):
         Polarization_Obtention_Algorithm.reInitialize(self, image_loader)
         self.original_images = image_loader
-        self.images_float = image_loader.centered_ring_images.astype(np.float32)
+        self.images_float = image_loader.centered_ring_images.astype(np.float64)
         self.computed_points={}
         self.optimums={}
         self.optimals={}
@@ -861,7 +861,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
 
     def horizontal_mirror_flip_crossing(self, image_array, h_point):
         # h_point is expected to be point in height such that the flip is made on w
-        mirror_mat = np.float32([[1,0,0],[0,-1,2*h_point]]) # apparently 3rd row of affine transformation is redundant for the warAffine function
+        mirror_mat = np.float64([[1,0,0],[0,-1,2*h_point]]) # apparently 3rd row of affine transformation is redundant for the warAffine function
         return cv2.warpAffine( image_array, mirror_mat, image_array.shape,
                               flags=self.interpolation_flag).astype(image_array.dtype)
     # Perhaps after affine transformation image should be left in float type instead of
@@ -873,7 +873,7 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
         """
         a=np.cos(angle)
         b=np.sin(angle)
-        rot_mat=np.float32([[a, b, center[1]*(1-a)-center[0]*b],
+        rot_mat=np.float64([[a, b, center[1]*(1-a)-center[0]*b],
                              [-b, a, center[1]*b+center[0]*(1-a)]])
         return cv2.warpAffine(image_array, rot_mat, image_array.shape, flags=self.interpolation_flag).astype(image_array.dtype)
 

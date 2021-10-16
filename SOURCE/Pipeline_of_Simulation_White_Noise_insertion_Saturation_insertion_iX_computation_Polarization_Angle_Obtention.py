@@ -3,6 +3,8 @@ from GPU_Classes import *
 import numpy as np
 import json
 import cv2
+import pandas as pd
+
 
 if __name__ == '__main__':
     # PARAMETER SETTINGS ##############################################
@@ -10,9 +12,11 @@ if __name__ == '__main__':
     ##################################################################
     # 0. GENERAL SETTINGS #############################################
     ################################################################
-    experiment_name="USING_INTERPOLATION_IN_iX" # "NOT_USING_INTERPOLATION_IN_iX"
+    experiment_name="USING_INTERPOLATION_IN_iX" # "NOT_USING_INTERPOLATION_IN_iX" # "RECENTERING_AVERAGE_IMAGE_TO_iX_USING_INTERPOLATION" # "RECENTERING_AVERAGE_IMAGE_TO_iX_NOT_USING_INTERPOLATION"
     randomization_seed=666
     image_depth=8 # or 16 bit per pixel
+    use_interpolation=True
+    recenter_average_image=False
 
     # 1. SIMULATION ####################################################
     # Define the PARAMETERS #########################################
@@ -51,12 +55,24 @@ if __name__ == '__main__':
     # 4. GRAVICENTER iX #################################################
     X=int(resolution_side_nx*1.2/2)
     interpolation_flags={"CUBIC":cv2.INTER_CUBIC, "LANCZOS":cv2.INTER_LANCZOS4}# "LINEAR":cv2.INTER_LINEAR, "AREA":cv2.INTER_AREA, "NEAREST":cv2.INTER_NEAREST}
+    if use_interpolation is False:
+        interpolation_flags={"NONE":None}
 
     # 5. POLARIZATION RELATIVE ANGLES ###################################
     # Mirror with affine interpolation & Rotation Algorithms will be employed
     # Each using both Fibonacci and Quadratic Fit Search
     # Results will be gathered in a table and outputed as an excel csv
-
+    theta_min_Rot=-np.pi
+    theta_max_Rot=np.pi
+    theta_min_Mir=0
+    theta_max_Mir=np.pi
+    initial_guess_delta_rad=0.1
+    use_exact_gravicenter=True
+    precision_quadratic=1e-5
+    max_it_quadratic=100
+    cost_tolerance_quadratic=1e-12
+    precision_fibonacci=1e-5
+    max_points_fibonacci=100
 
     # 6. OUTPUT RESULTS INTO A LATEX? INTO AN EXCEL WITH IMAGES (GIFS) WOULD BE FANTASTIC
 
@@ -157,7 +173,7 @@ if __name__ == '__main__':
              np.dot(intensity_in_w, np.arange(image.shape[1]))/total_intensity)
             ) )
 
-    def compute_raw_to_centered_iX(image, X, interpolation_flag):
+    def compute_raw_to_centered_iX(image, X, interpolation_flag=None):
 
         g_raw = compute_intensity_gravity_center(image)
         # crop the iamges with size (X+1+X)^2 leaving the gravity center in
@@ -187,21 +203,22 @@ if __name__ == '__main__':
                                         padding_lower[1]:padding_upper[1] or None ] = \
                       image[lower_bound[0]:upper_bound[0],
                                           lower_bound[1]:upper_bound[1]]
-        """
-        # We compute the center of gravity of the cropped images, if everything was made allright
-        # they should get just centered in the central pixels number X+1 (index X)
-        g_centered = compute_intensity_gravity_center(centered_image)
+        if interpolation_flag==None:
+            return centered_image
+        else:
+            # We compute the center of gravity of the cropped images, if everything was made allright
+            # they should get just centered in the central pixels number X+1 (index X)
+            g_centered = compute_intensity_gravity_center(centered_image)
 
-        # We now compute a floating translation of the image so that the gravicenter is exactly
-        # centered at pixel (607.5, 607.5) (exact center of the image in pixel coordinates staring
-        # form (0,0) and having size (607*2+1)x2), instead of being centered at the beginning of
-        # around pixel (607,607) as is now
-        translate_vectors = X+0.5-g_centered #[ 2(h,w)]
-        T = np.float64([[1,0, translate_vectors[1]], [0,1, translate_vectors[0]]])
-        return cv2.warpAffine( centered_image, T, (X*2+1, X*2+1),
-                    flags=interpolation_flag) # interpolation method
-        """
-        return centered_image
+            # We now compute a floating translation of the image so that the gravicenter is exactly
+            # centered at pixel (607.5, 607.5) (exact center of the image in pixel coordinates staring
+            # form (0,0) and having size (607*2+1)x2), instead of being centered at the beginning of
+            # around pixel (607,607) as is now
+            translate_vectors = X+0.5-g_centered #[ 2(h,w)]
+            T = np.float64([[1,0, translate_vectors[1]], [0,1, translate_vectors[0]]])
+            return cv2.warpAffine( centered_image, T, (X*2+1, X*2+1),
+                        flags=interpolation_flag) # interpolation method
+
 
     for turn in ['reference', 'problem']:
         for saturation_path in image_paths['saturation'][turn]:
@@ -225,7 +242,7 @@ if __name__ == '__main__':
         for simulation_path in image_paths['simulation'][turn]:
             for saturation in saturations_at_relative_intesities:
                 for sigma in noise_sigmas:
-                    for interpolation_name in interpolation_flags.keys():
+                    for interpolation_name, interpolation_flag in interpolation_flags.items():
                         average_image=np.zeros( (2*X+1,2*X+1), dtype=np.float64)
                         for empirical_copy in range(number_of_samples_per_sigma[turn]):
                             image_path=f"sigma_{sigma}_take_{empirical_copy}_{simulation_path.split('/')[-1]}"
@@ -233,7 +250,10 @@ if __name__ == '__main__':
                             next_image=cv2.imread(f"{iX_noisy_saturated_take_path}/{iX_noisy_saturated_take_path.split('/')[-1]}.png", cv2.IMREAD_ANYDEPTH)
                             average_image += next_image.astype(np.float64)
                         average_image = average_image/number_of_samples_per_sigma[turn]
-                        image_path=f"interpol_{interpolation_name}_iX_{X}_satur_{saturation}_sigma_{sigma}_{simulation_path.split('/')[-1]}"
+                        # in theory, the average image should readily be centered in the gravicenter but we can force it to be so:
+                        if recenter_average_image:
+                            average_image = compute_raw_to_centered_iX(average_image, X, interpolation_flag)
+                        image_path=f"recenter_{recenter_average_image}_interpol_{interpolation_name}_iX_{X}_satur_{saturation}_sigma_{sigma}_{simulation_path.split('/')[-1]}"
                         save_path=f"{simulation_path}/WHITE_NOISES/AVERAGES/{image_path}"
                         os.makedirs(save_path, exist_ok=True)
                         cv2.imwrite( f"{save_path}/{save_path.split('/')[-1]}.png",
@@ -252,27 +272,82 @@ if __name__ == '__main__':
     # Mock Image Loader
     # Computar el angulo de cada uno en un dataframe donde una de las entradas sea results y haya un result per fibo qfs y per rotation y mirror affine. Y luego procesar en un 7º paso estos angulos para obtener los angulos relativos etc y perhaps hacer tablucha con ground truth menos el resulting delta angle medido por el algoritmo
     image_loader = Image_Manager(mode=X, interpolation_flag=None)
-    for simulation_path in image_paths['simulation'][turn]:
-        for saturation in saturations_at_relative_intesities:
-            for sigma in noise_sigmas:
-                for interpolation_name in interpolation_flags.keys():
-                    average_image=np.zeros( (2*X+1,2*X+1), dtype=np.float64)
-                    for empirical_copy in range(number_of_samples_per_sigma[turn]):
-                        image_path=f"sigma_{sigma}_take_{empirical_copy}_{simulation_path.split('/')[-1]}"
-                        iX_noisy_saturated_take_path=f"{simulation_path}/WHITE_NOISES/{image_path}/SATURATION/satur_{saturation}_{image_path}/interpol_{interpolation_name}_iX_{X}_satur_{saturation}_{image_path}"
-                        next_image=cv2.imread(f"{iX_noisy_saturated_take_path}/{iX_noisy_saturated_take_path.split('/')[-1]}.png", cv2.IMREAD_ANYDEPTH)
-
     # Define the ROTATION ALGORITHM
-    rotation_algorithm = Rotation_Algorithm(self.image_loader,
-        eval(self.theta_min_R.text()), eval(self.theta_max_R.text()),
-        self.choose_interpolation_falg(self.interpolation_alg_opt),
-        float(self.initial_guess_delta_rad.text()), self.use_exact_grav_R.isChecked())
+    rotation_algorithm = Rotation_Algorithm(image_loader,
+        theta_min_Rot, theta_max_Rot, None,
+        initial_guess_delta_rad, use_exact_gravicenter, initialize_it=False)
 
     # Define the Affine Mirror algorithm
-    mirror_algorithm = Mirror_Flip_Algorithm(self.image_loader,
-        eval(self.theta_min_M.text()), eval(self.theta_max_M.text()),
-        self.choose_interpolation_falg(self.interpolation_alg_opt),
-        float(self.initial_guess_delta_rad.text()), method, self.left_vs_right_M.isChecked(), self.use_exact_grav_M.isChecked())
+    mirror_algorithm = Mirror_Flip_Algorithm(image_loader,
+        theta_min_Mir, theta_max_Mir, None,
+        initial_guess_delta_rad, method="aff", left_vs_right=True, use_exact_gravicenter=use_exact_gravicenter, initialize_it=False)
+    # A dictionary to gather all the resulting angles for each image
+    individual_image_results = {'is_reference':[], 'Image_Name':[], 'theoretical_phiCR':[], 'R0':[], 'w_0':[], 'sigma_WN':[], 'relative_saturation':[], 'noise_take':[], 'averaged_before_or_after':[], 'interpolation':[], 'polarization_method':[], '1d_optimization':[], 'found_phiCR':[], 'predicted_opt_precision':[] }
+    def to_result_dict(result_dict, im_names, alg, alg_name, opt_name, is_reference):
+        for key, name in zip(alg.times.keys(), images):
+            result_dict['is_reference']=is_reference
+            result_dict['Iamge_Name'].append(name)
+            result_dict['theoretical_phiCR'].append(float(name.split("phiCR_")[1].split("_")[0]))
+            result_dict['R0'].append(name.split("R0_")[1].split("_")[0])
+            result_dict['w0'].append(name.split("w0_")[1].split("_")[0])
+            result_dict['sigma_WN'].append(name.split("sigma_")[1].split("_")[0])
+            result_dict['relative_saturation'].append(name.split("satur_")[1].split("_")[0])
+            try:
+                result_dict['noise_take'].append(name.split("take_")[1].split("_")[0])
+                result_dict['averaged_before_or_after'].append("A")
+            except:
+                result_dict['noise_take'].append("Average") # in case it is an average
+                result_dict['averaged_before_or_after'].append("B")
+            result_dict['interpolation'].append(name.split("interpol_")[1].split("_")[0])
+            result_dict['polarization_method'].append(alg_name)
+            result_dict['1d_optimization'].append(opt_name)
+            result_dict['found_phiCR'].append(alg.angles[key])
+            result_dict['predicted_opt_precision'].append(alg.precisions[key])
+
+
+    for turn in ['reference', 'problem']:
+        for simulation_path in image_paths['simulation'][turn]:
+            for saturation in saturations_at_relative_intesities:
+                for sigma in noise_sigmas:
+                    for interpolation_name, interpolation_flag in interpolation_flags.items():
+                        image_container=np.zeros( (number_of_samples_per_sigma[turn]+1, 2*X+1, 2*X+1), dtype=np.float64)
+                        image_names=[]
+                        # charge the different noise takes
+                        for empirical_copy in range(number_of_samples_per_sigma[turn]):
+                            image_path=f"sigma_{sigma}_take_{empirical_copy}_{simulation_path.split('/')[-1]}"
+                            iX_noisy_saturated_take_path=f"{simulation_path}/WHITE_NOISES/{image_path}/SATURATION/satur_{saturation}_{image_path}/interpol_{interpolation_name}_iX_{X}_satur_{saturation}_{image_path}"
+                            next_image=cv2.imread(f"{iX_noisy_saturated_take_path}/{iX_noisy_saturated_take_path.split('/')[-1]}.png", cv2.IMREAD_ANYDEPTH)
+                            image_container[empirical_copy]=next_image.astype(np.float64)
+                            image_names.append(iX_noisy_saturated_take_path.split('/')[-1])
+                        # charge the average image
+                        average_image_path=f"{simulation_path}/WHITE_NOISES/AVERAGES/recenter_{recenter_average_image}_interpol_{interpolation_name}_iX_{X}_satur_{saturation}_sigma_{sigma}_{simulation_path.split('/')[-1]}"
+                        next_image=cv2.imread( f"{average_image_path}/{average_image_path.split('\')[-1]}.png", cv2.IMREAD_ANYDEPTH)
+                        image_container[number_of_samples_per_sigma[turn]+1]=next_image.astype(np.float64)
+                        image_names.append(average_image_path.split('\')[-1])
+                        # charge the image loader:
+                        image_loader.import_converted_images_as_array(image_container, image_names)
+                        # Execute the Rotation and Mirror Algorithms:
+                        # ROTATION ######
+                        # the interpolation algorithm used in case we disbale its usage for the iX image obtention will be the Lanczos one
+                        rotation_algorithm.interpolation_flag=interpolation_flag if interpolation_flag is not None else cv2.INTER_LANCZOS4
+                        rotation_algorithm.reInitialize(image_loader)
+                        rotation_algorithm.quadratic_fit_search(precision_quadratic, max_it_quadratic, cost_tolerance_quadratic)
+                        to_result_dict(individual_image_results, image_names, rotation_algorithm, "Rotation", "Quadratic", True if turn=="reference" else False)
+                        rotation_algorithm.reInitialize(image_loader)
+                        rotation_algorithm.fibonacci_ratio_search(precision_fibonacci, max_points_fibonacci, cost_tolerance_fibonacci)
+                        to_result_dict(individual_image_results, image_names, rotation_algorithm, "Rotation", "Fibonacci", True if turn=="reference" else False)
+
+                        # MIRROR #######
+                        mirror_algorithm.interpolation_flag=interpolation_flag if interpolation_flag is not None else cv2.INTER_LANCZOS4
+                        mirror_algorithm.reInitialize(image_loader)
+                        mirror_algorithm.quadratic_fit_search(precision_quadratic, max_it_quadratic, cost_tolerance_quadratic)
+                        to_result_dict(individual_image_results, image_names, rotation_algorithm, "Mirror", "Quadratic", True if turn=="reference" else False)
+                        mirror_algorithm.reInitialize(image_loader)
+                        mirror_algorithm.fibonacci_ratio_search(precision_fibonacci, max_points_fibonacci, cost_tolerance_fibonacci)
+                        to_result_dict(individual_image_results, image_names, rotation_algorithm, "Mirror", "Fibonacci", True if turn=="reference" else False)
+
+
+
 
     # Get arguments and run algorithm depending on the chosen stuff
     rotation_algorithm.fibonacci_ratio_search(
