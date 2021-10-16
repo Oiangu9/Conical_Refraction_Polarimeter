@@ -372,13 +372,20 @@ if __name__ == '__main__':
     def num_of_zeros(n): # To count the number of zero decimals before non-zeros
         s = '{:.16f}'.format(n).split('.')[1]
         return len(s) - len(s.lstrip('0'))
+    cwd = os.getcwd() # working directory
+    def make_hyperlink(image_name, is_image_average): # for inserting direct link to image paths
+        if is_image_average:
+            url= f"./SIMULATIONS/nx_{image_name.split('nx_')[-1]}/WHITE_NOISES/AVERAGES/{image_name}/{image_name}.png"
+        else:
+            url = f"./SIMULATIONS/nx_{image_name.split('nx_')[-1]}/WHITE_NOISES/sigma_{image_name.split('sigma_')[-1]}/SATURATION/satur_{image_name.split('satur_')[-1]}/interpol_{image_name.split('interpol_')[-1]}/interpol_{image_name.split('interpol_')[-1]}.png"
+        return f"=HYPERLINK(\"{url}\", \"link\")"
 
     conv=1 if deg_or_rad=="rad" else 180/np.pi # conversion factor
 
     try:
         final_results = json.load(open(f"./OUTPUT/PIPELINE/{experiment_name}/FINAL_RESULTS_{experiment_name}.json"))
     except:
-        final_results = { 'R0':[],'w0':[],'th_phiCR_ref':[],'th_phiCR_prob':[],'sigma_WN':[],'noisy_copies_ref':[], 'noisy_copies_prob':[], 'relative_saturation':[], 'interpolation':[], 'averaged_images_or_angles':[], 'mirror_fibo':[], 'mirror_quad':[], 'rotation_fibo':[], 'rotation_quad':[], 'min_abs_theoretical_error':[], 'best_correct_decimals':[], 'best_algorithm':[] }
+        final_results = { 'R0':[],'w0':[],'th_phiCR_ref':[],'th_phiCR_prob':[],'sigma_WN':[],'noisy_copies_ref':[], 'noisy_copies_prob':[], 'relative_saturation':[], 'interpolation':[], 'averaged_images_or_angles':[], 'min_abs_theoretical_error':[], 'best_correct_decimals':[], 'best_algorithm':[], 'ref_im_link':[], 'prob_im_link':[], 'mirror_fibo':[], 'mirror_quad':[], 'rotation_fibo':[], 'rotation_quad':[] }
 
     # def to_final_dict_results(result_dict, raw_result_dict):
     # we will use a pandas dataframe for it is easier to manipulate
@@ -389,67 +396,76 @@ if __name__ == '__main__':
     for ref_group_tuple, reference_df in raw_results[raw_results["is_reference"]==True].groupby(["R0", "w0", "theoretical_phiCR", "sigma_WN", 'relative_saturation', 'averaged_before_or_after', 'interpolation']):
         # we will avoid experiments crossing sigma, saturation, interpolation and average before or after
         for prob_group_tuple, problem_df in raw_results[(raw_results["is_reference"]==False) & (raw_results["R0"]==ref_group_tuple[0]) & (raw_results["w0"]==ref_group_tuple[1]) & (raw_results["sigma_WN"]==ref_group_tuple[3]) & (raw_results["relative_saturation"]==ref_group_tuple[4]) & (raw_results["interpolation"]==ref_group_tuple[6]) & (raw_results["averaged_before_or_after"]==ref_group_tuple[5])].groupby(["R0", "w0", "theoretical_phiCR" ,"sigma_WN", 'relative_saturation', 'averaged_before_or_after', 'interpolation']):
+
             # the only difference between the prob_group_tuple and the ref one will be the phiCR -> the only degree we allow to be crossed in the experiments is that one.
             # if we are interested in some other crossing, just erase the restriction -> And do not forget to put it in the output table as a separate column per ref or pb
-            print(prob_group_tuple)
             if ref_group_tuple[5]=='B': # averaged_before_or_after==B -> talking about the average images
                 assert(reference_df.shape[0]==4)
                 assert(problem_df.shape[0]==4)
-                final_results["R0"].append(ref_group_tuple[0])
-                final_results["w0"].append(ref_group_tuple[1])
-                final_results["th_phiCR_ref"].append(ref_group_tuple[2])
-                final_results["th_phiCR_prob"].append(prob_group_tuple[2])
-                final_results["sigma_WN"].append(ref_group_tuple[3])
-                final_results["noisy_copies_ref"].append(number_of_samples_per_sigma["reference"])
-                final_results["noisy_copies_prob"].append(number_of_samples_per_sigma["problem"])
-                final_results["relative_saturation"].append(ref_group_tuple[4])
-                final_results["interpolation"].append(ref_group_tuple[6])
-                final_results["averaged_images_or_angles"].append("images") # before is image, after is angles
+            else:
+                assert(reference_df.shape[0]==4*number_of_samples_per_sigma["reference"])
+                assert(problem_df.shape[0]==4*number_of_samples_per_sigma["problem"])
 
+            final_results["R0"].append(ref_group_tuple[0])
+            final_results["w0"].append(ref_group_tuple[1])
+            final_results["th_phiCR_ref"].append(ref_group_tuple[2])
+            final_results["th_phiCR_prob"].append(prob_group_tuple[2])
+            final_results["sigma_WN"].append(ref_group_tuple[3])
+            final_results["noisy_copies_ref"].append(number_of_samples_per_sigma["reference"])
+            final_results["noisy_copies_prob"].append(number_of_samples_per_sigma["problem"])
+            final_results["relative_saturation"].append(ref_group_tuple[4])
+            final_results["interpolation"].append(ref_group_tuple[6])
+
+            if ref_group_tuple[5]=='B':
+                final_results["averaged_images_or_angles"].append("images") # before is image, after is angles
                 final_results["mirror_fibo"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Mirror") & (reference_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0])*conv)
                 final_results["mirror_quad"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Mirror") & (reference_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0])*conv)
                 final_results["rotation_fibo"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Rotation") & (problem_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Rotation") & (reference_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0])*conv)
                 final_results["rotation_quad"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Rotation") & (problem_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Rotation") & (reference_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0])*conv)
 
-                ground_truth_relative_angle=angle_to_pi_pi(final_results["th_phiCR_prob"][-1]-final_results["th_phiCR_ref"][-1])
-                theoretical_errors=np.abs(np.array([ final_results["mirror_fibo"][-1], final_results["mirror_quad"][-1],  final_results["rotation_fibo"][-1], final_results["rotation_quad"][-1]])-ground_truth_relative_angle )
-                final_results["min_abs_theoretical_error"].append( theoretical_errors.min()  )
-                final_results['best_correct_decimals'].append( num_of_zeros(theoretical_errors.min()) )
-                final_results["best_algorithm"].append( ["mirror_fib", "mirror_quad", "rotation_fib", "rotation_quad"][theoretical_errors.argmin()] )
-                #final_results["ref_im_path"].append()
-                #final_results["prob_im_path"].append()
-
-            else: # talking about each noise take individually
-                assert(reference_df.shape[0]==4*number_of_samples_per_sigma["reference"])
-                assert(problem_df.shape[0]==4*number_of_samples_per_sigma["problem"])
-
-                final_results["R0"].append(ref_group_tuple[0])
-                final_results["w0"].append(ref_group_tuple[1])
-                final_results["th_phiCR_ref"].append(ref_group_tuple[2])
-                final_results["th_phiCR_prob"].append(prob_group_tuple[2])
-                final_results["sigma_WN"].append(ref_group_tuple[3])
-                final_results["noisy_copies_ref"].append(number_of_samples_per_sigma["reference"])
-                final_results["noisy_copies_prob"].append(number_of_samples_per_sigma["problem"])
-                final_results["relative_saturation"].append(ref_group_tuple[4])
-                final_results["interpolation"].append(ref_group_tuple[6])
+            else:
                 final_results["averaged_images_or_angles"].append("angles") # before is image, after is angles
-                assert(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Fibonacci")].shape[0]==number_of_samples_per_sigma["problem"])
-                print("0")
                 final_results["mirror_fibo"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].mean()-reference_df[(reference_df["polarization_method"]=="Mirror") & (reference_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].mean())*conv)
-                print("1")
                 final_results["mirror_quad"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Quadratic")]["found_phiCR"].mean()-reference_df[(reference_df["polarization_method"]=="Mirror") & (reference_df["optimization_1d"]=="Quadratic")]["found_phiCR"].mean())*conv)
-                print("2")
                 final_results["rotation_fibo"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Rotation") & (problem_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].mean()-reference_df[(reference_df["polarization_method"]=="Rotation") & (reference_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].mean())*conv)
-                print("3")
                 final_results["rotation_quad"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Rotation") & (problem_df["optimization_1d"]=="Quadratic")]["found_phiCR"].mean()-reference_df[(reference_df["polarization_method"]=="Rotation") & (reference_df["optimization_1d"]=="Quadratic")]["found_phiCR"].mean())*conv)
-                print("4")
-                ground_truth_relative_angle=angle_to_pi_pi(final_results["th_phiCR_prob"][-1]-final_results["th_phiCR_ref"][-1])
-                theoretical_errors=np.abs(np.array([ final_results["mirror_fibo"][-1], final_results["mirror_quad"][-1],  final_results["rotation_fibo"][-1], final_results["rotation_quad"][-1]])-ground_truth_relative_angle )
-                final_results["min_abs_theoretical_error"].append( theoretical_errors.min()  )
-                final_results['best_correct_decimals'].append( num_of_zeros(theoretical_errors.min()) )
-                final_results["best_algorithm"].append( ["mirror_fib", "mirror_quad", "rotation_fib", "rotation_quad"][theoretical_errors.argmin()] )
+
+
+            ground_truth_relative_angle=angle_to_pi_pi(final_results["th_phiCR_prob"][-1]-final_results["th_phiCR_ref"][-1])
+            theoretical_errors=np.abs(np.array([ final_results["mirror_fibo"][-1], final_results["mirror_quad"][-1],  final_results["rotation_fibo"][-1], final_results["rotation_quad"][-1]])-ground_truth_relative_angle )
+            final_results["min_abs_theoretical_error"].append( theoretical_errors.min()  )
+            final_results['best_correct_decimals'].append( num_of_zeros(theoretical_errors.min()) )
+            final_results["best_algorithm"].append( ["mirror_fib", "mirror_quad", "rotation_fib", "rotation_quad"][theoretical_errors.argmin()] )
+            final_results["ref_im_link"].append(make_hyperlink(reference_df["Image_Name"].iloc[0], is_image_average=(ref_group_tuple[5]=='B')))
+            final_results["prob_im_link"].append(make_hyperlink(problem_df["Image_Name"].iloc[0], is_image_average=(ref_group_tuple[5]=='B')))
+
+
 
     json.dump(final_results, open( f"./OUTPUT/PIPELINE/{experiment_name}/FINAL_RESULTS_{experiment_name}.json", "w"))
     print("7. Final Results Computed!\n")
 
     # 8. OUTPUT RESULTS INTO AN EXCEL WITH IMAGES (GIFS) ################
+    from styleframe import StyleFrame
+
+    final_results_df = pd.DataFrame.from_dict(final_results)
+
+    writer = StyleFrame.ExcelWriter(f"./OUTPUT/PIPELINE/{experiment_name}/EXCEL_FINAL_RESULTS_{experiment_name}.xlsx")
+
+    # Convert the dataframe to an XlsxWriter Excel object.
+    StyleFrame.A_FACTOR=10
+    StyleFrame.P_FACTOR=0.9
+    StyleFrame(final_results_df.sort_values(by=['min_abs_theoretical_error'])).set_row_height(1,50).to_excel(writer, best_fit=list(final_results_df.columns)[:13]+list(final_results_df.columns)[15:], sheet_name='Experiment Results by Min Error', index=False,  float_format="%.12f")
+    StyleFrame(final_results_df.sort_values(by=['R0','w0','th_phiCR_ref','th_phiCR_prob','min_abs_theoretical_error','sigma_WN', 'relative_saturation', 'interpolation'], ascending=False)).set_row_height(1,50).to_excel(writer, best_fit=list(final_results_df.columns)[:13]+list(final_results_df.columns)[15:], sheet_name='Experiment Results by Properties', index=False,  float_format="%.12f")
+    StyleFrame(raw_results).set_row_height(1,50).to_excel(writer, best_fit=list(raw_results.columns), sheet_name='Raw Results per Image', index=False,  float_format="%.12f")
+    # Close the Pandas Excel writer and output the Excel file.
+    writer.save()
+
+    #import xlsxwriter as xl
+    #excel_file = xlsxwriter.Workbook(f"./OUTPUT/PIPELINE/{experiment_name}/EXCEL_FINAL_RESULTS_{experiment_name}.xlsx")
+
+    #raw_results = pd.DataFrame.from_dict(individual_image_results)
+    #worksheet1 = excel_file.add_worksheet("Experiment Results")
+
+
+    #worksheet2 = excel_file.add_worksheet("Raw Results per Image")
+    #for row in range(raw_results.shape[0]):
