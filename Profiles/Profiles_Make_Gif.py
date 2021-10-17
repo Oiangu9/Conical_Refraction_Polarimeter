@@ -57,7 +57,7 @@ for dirpath, filenames in path_dict.items():
             axes[0,1].grid(True)
             axes[1,1].set_visible(False)
             ax = fig.add_subplot(224, projection='3d')
-            X,Y = np.meshgrid(np.arange(len(prof_y)),np.arange(len(prof_x)))
+            X,Y = np.meshgrid(np.arange(len(prof_x)),np.arange(len(prof_y)))
             im=images[filename].transpose()
             fig.suptitle(f"Intesity Profiles for Image\n{filename}")
             files_for_gif=[]
@@ -71,7 +71,7 @@ for dirpath, filenames in path_dict.items():
                 cset = ax.contourf(X, Y, im, 1, zdir='y', offset=0, cmap='viridis')
                 ax.set_xlabel('Y')
                 #ax.set_xlim(-8, 8)
-                ax.set_ylabel('X')
+                ax.set_ylabel('Z')
                 #ax.set_ylim(-10, 8)
                 ax.set_zlabel('Intensity')
                 ax.set_zlim(-0.078*np.max(im), np.max(im))

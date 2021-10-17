@@ -7,8 +7,8 @@ import numpy as np
 import json
 import cv2
 import pandas as pd
-
-
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 if __name__ == '__main__':
     # PARAMETER SETTINGS ##############################################
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     ##################################################################
     # 0. GENERAL SETTINGS #############################################
     ################################################################
-    experiment_name="using_interpolation_in_iX" # "NOT_USING_INTERPOLATION_IN_iX" # "RECENTERING_AVERAGE_IMAGE_TO_iX_USING_INTERPOLATION" # "RECENTERING_AVERAGE_IMAGE_TO_iX_NOT_USING_INTERPOLATION"
+    experiment_name="nx540_using_interpolation_not_recentering_average" # "NOT_USING_INTERPOLATION_IN_iX" # "RECENTERING_AVERAGE_IMAGE_TO_iX_USING_INTERPOLATION" # "RECENTERING_AVERAGE_IMAGE_TO_iX_NOT_USING_INTERPOLATION" # los 4 con 540 y los 4 con el doble de resolucion y ver que sacamos de los resultados - note that this means only two simulation rounds are necessary
     randomization_seed=666
     image_depth=8 # or 16 bit per pixel
     use_interpolation=True
@@ -25,9 +25,9 @@ if __name__ == '__main__':
     # 1. SIMULATION ####################################################
     # Define the PARAMETERS #########################################
     # Ring parameters to test (each will be a different simulation)
-    reference_theoretical_phiCR=[1,-2]
-    reference_R0_s=[25,30]
-    reference_w0_s=[5,10]
+    reference_theoretical_phiCR=[1]
+    reference_R0_s=[200,100] # in pxels
+    reference_w0_s=[40,20,10]
 
     problem_theoretical_phiCRs=[2,-3]
     problem_R0_s=reference_R0_s
@@ -37,28 +37,29 @@ if __name__ == '__main__':
     R0_s={'reference':reference_R0_s, 'problem':problem_R0_s}
     w0_s={'reference':reference_w0_s, 'problem':problem_w0_s}
 
-    resolution_side_nx=100 # generated images will be resolution_side x resolution_side
+    resolution_side_nx=540 # generated images will be resolution_side x resolution_side
     # Other parameters
     max_k=50
     num_k=1200
-    sim_chunk_ax=210
+    sim_chunk_ax=540
 
     # 2. WHITE NOISE ####################################################
     # Define the PARAMETERS #########################################
-    number_of_samples_per_sigma={'reference':2, 'problem':2} # they will be simulated once but different noises will be inserted
+    number_of_samples_per_sigma={'reference':3, 'problem':3} # they will be simulated once but different noises will be inserted
 
-    noise_sigmas=[10,5,0] # same white noise for reference and problem linked pairs will be used
+    noise_sigmas=[5,2,0] # same white noise for reference and problem linked pairs will be used
     #noise_sigmas_reference=[] # the standard deviation of the gaussian noise in each pixel
     #noise_sigmas_problem=[] # in principle the noise in the reference and the problem should be the same
 
     # 3. SATURATION ####################################################
-    saturations_at_relative_intesities=[0.75,1] # capping will be performed at different relative intensities
+    saturations_at_relative_intesities=[0.70,1] # capping will be performed at different relative intensities
     # the profile will be multiplied by a factor and then capped (not capped directlty, since that
     # would not replicate the experimental capping)
 
-    # 4. GRAVICENTER iX #################################################
+    # 4. GRAVICENTER iX and PROFILES ######################################
     X=int(resolution_side_nx*1.2/2)
     interpolation_flags={"CUBIC":cv2.INTER_CUBIC, "LANCZOS":cv2.INTER_LANCZOS4}# "LINEAR":cv2.INTER_LINEAR, "AREA":cv2.INTER_AREA, "NEAREST":cv2.INTER_NEAREST}
+    plot_3d_finnes=0.5 # value that should go in (0,1]. 1 means all the pixels will be ploted in the 3d plot, 0.5 only half of them
     if use_interpolation is False:
         interpolation_flags={"NONE":None}
 
@@ -83,11 +84,13 @@ if __name__ == '__main__':
     deg_or_rad="rad" # for the final outputs
 
     experiment_name=f"{experiment_name}_nx_{resolution_side_nx}_iX_{X}_angles_{deg_or_rad}"
-    # PARAMETER SETTINGS ##############################################
-    ###################################################################
     ##################################################################
-    # 0. GENERAL SETTINGS #############################################
-    ################################################################
+    ##################################################################
+
+    # PIPELINE EXECUTION!!! ##########################################
+    ##################################################################
+    # 0. GENERAL SETTINGS ############################################
+    ##################################################################
     os.makedirs(f'./OUTPUT/PIPELINE/{experiment_name}/SIMULATIONS/', exist_ok=True)
 
     im_type=np.uint16 if image_depth==16 else np.uint8
@@ -246,7 +249,95 @@ if __name__ == '__main__':
         image_paths['iX_averaged']={'reference':[], 'problem':[]}
     print("4. iX images computed!\n")
 
-    # 5. COMPUTE AVERAGE IMAGES FROM EACH SATURATED IMAGE SERIES OF THE SAME NOISE ############
+    # 5. COMPUTE AVERAGE IMAGES FROM EACH SATURATED IMAGE SERIES OF THE SAME NOISE and #######
+    #    compute PROFILES FOR THEM ###########################################################
+    def initialize_plot_blit(sample_image):
+        fig = plt.figure(figsize=(2*6, 2*6))
+        axes=fig.subplots(2,2)
+
+        cm=axes[0, 0].imshow(sample_image, cmap='viridis', animated=True)
+        axes[0,0].grid(True)
+
+        prof_x=np.sum(sample_image, axis=0)
+        prof_y=np.sum(sample_image, axis=1)
+        scat1, = axes[0,1].plot([], 'o', markersize=2, label=f'Intensity profile in y', animated=True)
+        axes[0,1].set_ylim((0,len(prof_y)))
+        axes[0,1].set_xlim(0,1.2*prof_y.max())
+        axes[0,1].invert_yaxis()
+        scat2, = axes[1,0].plot([],'o', markersize=2, label=f'Intensity profile in y', animated=True)
+        axes[1,0].set_xlim((0,len(prof_x)))
+        axes[1,0].set_ylim(0,1.2*prof_x.max())
+
+        axes[1,0].invert_yaxis()
+        axes[0,0].set_xlabel("x (pixels)")
+        #axes[0,0].set_ylabel("y (pixels)")
+        axes[0,1].set_xlabel("Cummulative Intensity")
+        axes[0,1].set_ylabel("y (pixels)")
+        axes[1,0].set_ylabel("Cummulative Intensity")
+        axes[1,0].set_xlabel("x (pixels)")
+        axes[1,0].grid(True)
+        axes[0,1].grid(True)
+        axes[1,1].set_visible(False)
+        ax = fig.add_subplot(224, projection='3d')
+        X,Y = np.meshgrid(np.arange(len(prof_y)),np.arange(len(prof_x)))
+        #fig.suptitle(f"Intesity Profiles for Image\n{output_full_path.split('/')[-1]}")
+        cbax=fig.add_axes([0.54,0.05,0.4,0.01])
+        fig.colorbar(cm, ax=axes[0,0], cax=cbax, orientation='horizontal')
+        #for theta in np.linspace(0, 360, 40):
+        #ax.clear()
+        plot3d=ax.plot_surface(X, Y, np.array([[0]]), rcount=int(len(prof_y)*plot_3d_finnes), ccount=int(len(prof_x)*plot_3d_finnes), cmap='viridis', animated=True) # rstride=1, cstride=1, linewidth=0
+        ax.set_xlabel('Y')
+        ax.set_ylabel('X')
+        ax.set_zlabel('Intensity')
+        ax.set_zlim(-0.078*np.max(sample_image), np.max(sample_image))
+        ax.set_title("Image intensity 3D plot")
+        theta=25
+        phi=30
+        ax.view_init(phi, theta)
+        ax.get_proj = lambda: np.dot(Axes3D.get_proj(ax), np.diag([1.3, 1.3, 1.3, 1]))
+
+        # cache the background
+        axbackground1 = fig.canvas.copy_from_bbox(axes[0,0].bbox)
+        axbackground2 = fig.canvas.copy_from_bbox(axes[0,1].bbox)
+        axbackground3 = fig.canvas.copy_from_bbox(axes[1,0].bbox)
+        axbackground4 = fig.canvas.copy_from_bbox(ax.bbox)
+        axbackgrounds=[axbackground1, axbackground2, axbackground3, axbackground4]
+        #fig.canvas.draw()
+        plt.savefig(f"./OUTPUT/PIPELINE/{experiment_name}/Background.png")
+        print(f"BACKGROUND")
+        return fig, cm, scat1, scat2, plot3d, axes, ax, axbackgrounds, X,Y
+
+    def compute_profiles(image, output_full_path, fig, cm, scat1, scat2, plot3d, axes, ax, axbackgrounds,X,Y):
+        prof_x=np.sum(image, axis=0)
+        prof_y=np.sum(image, axis=1)
+        # set the new data
+        cm.set_data(image)
+        scat1.set_data(prof_y,np.arange(len(prof_y)))
+        scat2.set_data(np.arange(len(prof_x)), prof_x)
+        #plot3d.set_zdata(image)
+        ax.clear()
+        ax.plot_surface(X, Y, image.T, rcount=int(len(prof_y)*plot_3d_finnes), ccount=int(len(prof_x)*plot_3d_finnes), cmap='viridis')
+        # restore the background
+        for i in range(4):
+            fig.canvas.restore_region(axbackgrounds[i])
+        # redraw the points
+        axes[0,0].draw_artist(cm)
+        axes[0,1].draw_artist(scat1)
+        axes[1,0].draw_artist(scat2)
+        ax.draw_artist(plot3d)
+        # fill in the axes rectangle
+        fig.canvas.blit(axes[0,0].bbox)
+        fig.canvas.blit(axes[0,1].bbox)
+        fig.canvas.blit(axes[1,0].bbox)
+        fig.canvas.blit(ax.bbox)
+
+        fig.suptitle(f"Intesity Profiles for Image\n{output_full_path.split('/')[-1]}")
+        fig.savefig(output_full_path)
+        #fig.canvas.flush_events()
+        #files_for_gif.append(f"{dirpath}/temp/PROFILES_theta_{theta}_{filename}")
+        print(f"ploted {output_full_path}")
+
+    profile_plot_initialized=False
     for turn in ['reference', 'problem']:
         for simulation_path in image_paths['simulation'][turn]:
             for saturation in saturations_at_relative_intesities:
@@ -258,6 +349,12 @@ if __name__ == '__main__':
                             iX_noisy_saturated_take_path=f"{simulation_path}/WHITE_NOISES/{image_path}/SATURATION/satur_{saturation}_{image_path}/interpol_{interpolation_name}_iX_{X}_satur_{saturation}_{image_path}"
                             next_image=cv2.imread(f"{iX_noisy_saturated_take_path}/{iX_noisy_saturated_take_path.split('/')[-1]}.png", cv2.IMREAD_ANYDEPTH)
                             average_image += next_image.astype(np.float64)
+                            # compute the profile
+                            if empirical_copy==0:
+                                if profile_plot_initialized==False:
+                                    fig, cm, scat1, scat2, plot3d, axes, ax, axbackgrounds,Xg,Y = initialize_plot_blit(next_image)
+                                    profile_plot_initialized=True
+                                compute_profiles(next_image, f"{iX_noisy_saturated_take_path}/PROFILES_{iX_noisy_saturated_take_path.split('/')[-1]}.png", fig, cm, scat1, scat2, plot3d, axes, ax, axbackgrounds,Xg,Y)
                         average_image = average_image/number_of_samples_per_sigma[turn]
                         # in theory, the average image should readily be centered in the gravicenter but we can force it to be so:
                         if recenter_average_image:
@@ -265,8 +362,10 @@ if __name__ == '__main__':
                         image_path=f"recenter_{recenter_average_image}_interpol_{interpolation_name}_iX_{X}_satur_{saturation}_sigma_{sigma}_{simulation_path.split('/')[-1]}"
                         save_path=f"{simulation_path}/WHITE_NOISES/AVERAGES/{image_path}"
                         os.makedirs(save_path, exist_ok=True)
-                        cv2.imwrite( f"{save_path}/{save_path.split('/')[-1]}.png",
-                            (max_intensity*(average_image/np.max(average_image))).astype(im_type))
+                        average_image=(max_intensity*(average_image/np.max(average_image))).astype(im_type)
+                        cv2.imwrite( f"{save_path}/{save_path.split('/')[-1]}.png", average_image)
+                        # compute the profiles
+                        compute_profiles(average_image, f"{save_path}/PROFILES_{save_path.split('/')[-1]}.png", fig, cm, scat1, scat2, plot3d, axes, ax, axbackgrounds,Xg,Y)
                         image_paths['iX_averaged'][turn].append(save_path)
                         json.dump(image_paths, open( f"./OUTPUT/PIPELINE/{experiment_name}/STRUCTURE_{experiment_name}.json", "w"))
 
@@ -375,9 +474,9 @@ if __name__ == '__main__':
     cwd = os.getcwd() # working directory
     def make_hyperlink(image_name, is_image_average): # for inserting direct link to image paths
         if is_image_average:
-            url= f"./SIMULATIONS/nx_{image_name.split('nx_')[-1]}/WHITE_NOISES/AVERAGES/{image_name}/{image_name}.png"
+            url= f"./SIMULATIONS/nx_{image_name.split('nx_')[-1]}/WHITE_NOISES/AVERAGES/{image_name}/PROFILES_{image_name}.png"
         else:
-            url = f"./SIMULATIONS/nx_{image_name.split('nx_')[-1]}/WHITE_NOISES/sigma_{image_name.split('sigma_')[-1]}/SATURATION/satur_{image_name.split('satur_')[-1]}/interpol_{image_name.split('interpol_')[-1]}/interpol_{image_name.split('interpol_')[-1]}.png"
+            url = f"./SIMULATIONS/nx_{image_name.split('nx_')[-1]}/WHITE_NOISES/sigma_{image_name.split('sigma_')[-1]}/SATURATION/satur_{image_name.split('satur_')[-1]}/interpol_{image_name.split('interpol_')[-1]}/PROFILES_interpol_{image_name.split('interpol_')[-1]}.png"
         return f"=HYPERLINK(\"{url}\", \"link\")"
 
     conv=1 if deg_or_rad=="rad" else 180/np.pi # conversion factor
