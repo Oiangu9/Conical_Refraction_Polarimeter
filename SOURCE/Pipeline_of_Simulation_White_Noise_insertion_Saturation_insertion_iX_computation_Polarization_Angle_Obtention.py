@@ -16,18 +16,18 @@ if __name__ == '__main__':
     ##################################################################
     # 0. GENERAL SETTINGS #############################################
     ################################################################
-    experiment_name="nx540_using_interpolation_not_recentering_average" # "NOT_USING_INTERPOLATION_IN_iX" # "RECENTERING_AVERAGE_IMAGE_TO_iX_USING_INTERPOLATION" # "RECENTERING_AVERAGE_IMAGE_TO_iX_NOT_USING_INTERPOLATION" # los 4 con 540 y los 4 con el doble de resolucion y ver que sacamos de los resultados - note that this means only two simulation rounds are necessary
+    experiment_name="nx540_no_interpolation_in_iX_yes_recentering_average" # "NOT_USING_INTERPOLATION_IN_iX" # "RECENTERING_AVERAGE_IMAGE_TO_iX_USING_INTERPOLATION" # "RECENTERING_AVERAGE_IMAGE_TO_iX_NOT_USING_INTERPOLATION" # los 4 con 540 y los 4 con el doble de resolucion y ver que sacamos de los resultados - note that this means only two simulation rounds are necessary
     randomization_seed=666
     image_depth=8 # or 16 bit per pixel
-    use_interpolation=True
-    recenter_average_image=False
+    use_interpolation=False
+    recenter_average_image=True
 
     # 1. SIMULATION ####################################################
     # Define the PARAMETERS #########################################
     # Ring parameters to test (each will be a different simulation)
     reference_theoretical_phiCR=[1]
     reference_R0_s=[200,100] # in pxels
-    reference_w0_s=[40,20,10]
+    reference_w0_s=[40,15,5]
 
     problem_theoretical_phiCRs=[2,-3]
     problem_R0_s=reference_R0_s
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # would not replicate the experimental capping)
 
     # 4. GRAVICENTER iX and PROFILES ######################################
-    X=int(resolution_side_nx*1.2/2)
+    X=int(resolution_side_nx*1.4/2)
     interpolation_flags={"CUBIC":cv2.INTER_CUBIC, "LANCZOS":cv2.INTER_LANCZOS4}# "LINEAR":cv2.INTER_LINEAR, "AREA":cv2.INTER_AREA, "NEAREST":cv2.INTER_NEAREST}
     plot_3d_finnes=0.5 # value that should go in (0,1]. 1 means all the pixels will be ploted in the 3d plot, 0.5 only half of them
     if use_interpolation is False:
@@ -371,6 +371,8 @@ if __name__ == '__main__':
 
     if image_paths['stage']==4:
         image_paths['stage']=5
+        json.dump(image_paths, open( f"./OUTPUT/PIPELINE/{experiment_name}/STRUCTURE_{experiment_name}.json", "w"))
+
     print("5. Averge Images Computed!\n")
 
     # 6. POLARIZATION RELATIVE ANGLES ###################################
