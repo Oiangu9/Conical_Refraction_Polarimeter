@@ -27,7 +27,7 @@ if __name__ == '__main__':
     # Ring parameters to test (each will be a different simulation)
     reference_theoretical_phiCR=np.linspace(0,2*np.pi-0.1,40)
     reference_R0_s=[167] # in pxels
-    rho_0s=np.array([2,4,6,7,9,11,13,15,17,20])
+    rho_0s=np.array([2,3,4,5,6,7,9,11,14,20])
     reference_w0_s=167/rho_0s
 
 
@@ -45,23 +45,9 @@ if __name__ == '__main__':
     num_k=1200
     sim_chunk_ax=540
 
-    # 2. WHITE NOISE ####################################################
-    # Define the PARAMETERS #########################################
-    number_of_samples_per_sigma={'reference':1, 'problem':1} # they will be simulated once but different noises will be inserted
-
-    noise_sigmas=[0] # same white noise for reference and problem linked pairs will be used
-    #noise_sigmas_reference=[] # the standard deviation of the gaussian noise in each pixel
-    #noise_sigmas_problem=[] # in principle the noise in the reference and the problem should be the same
-
-    # 3. SATURATION ####################################################
-    saturations_at_relative_intesities=[1] # capping will be performed at different relative intensities
-    # the profile will be multiplied by a factor and then capped (not capped directlty, since that
-    # would not replicate the experimental capping)
-
     # 4. GRAVICENTER iX and PROFILES ######################################
     X=int(resolution_side_nx*1.4/2)
     interpolation_flags={"CUBIC":cv2.INTER_CUBIC, "LANCZOS":cv2.INTER_LANCZOS4}# "LINEAR":cv2.INTER_LINEAR, "AREA":cv2.INTER_AREA, "NEAREST":cv2.INTER_NEAREST}
-    plot_3d_finnes=0.5 # value that should go in (0,1]. 1 means all the pixels will be ploted in the 3d plot, 0.5 only half of them
     if use_interpolation is False:
         interpolation_flags={"NONE":None}
 
@@ -83,7 +69,7 @@ if __name__ == '__main__':
     cost_tolerance_fibonacci=1e-12
 
     # 6. OUTPUT RESULTS INTO A LATEX? INTO AN EXCEL WITH IMAGES (GIFS) WOULD BE FANTASTIC
-    deg_or_rad="rad" # for the final outputs
+    deg_or_rad="deg" # for the final outputs
 
     experiment_name=f"{experiment_name}_nx_{resolution_side_nx}_iX_{X}_angles_{deg_or_rad}"
     ##################################################################
@@ -107,7 +93,7 @@ if __name__ == '__main__':
 
     # 1. SIMULATION ####################################################
     simulator=RingSimulator_Optimizer_GPU( n=1.5, a0=1.0, max_k=max_k, num_k=num_k, nx=resolution_side_nx, sim_chunk_x=sim_chunk_ax, sim_chunk_y=sim_chunk_ax)
-
+    i=1
     for turn in ['reference', 'problem']:
         for phi_CR in phiCR_s[turn]:
             for R0 in R0_s[turn]:
@@ -120,11 +106,13 @@ if __name__ == '__main__':
                         image_paths['simulation'][turn].append(path)
                         # we save the progess (in order to be able to quit and resume)
                         json.dump(image_paths, open( f"./OUTPUT/PIPELINE/{experiment_name}/STRUCTURE_{experiment_name}.json", "w"))
+                        print(f"{i}-th Simulated")
+                        i+=1
     if image_paths['stage']==0:
         image_paths['stage']=1
         image_paths['noise']={'reference':[], 'problem':[]}
     print("1. Simulations Finished!\n")
-
+    '''
     # 2. WHITE NOISE ####################################################
     # we take each image and apply the required procedure to each of them
     for turn in ['reference', 'problem']:
@@ -161,7 +149,8 @@ if __name__ == '__main__':
                     image_paths['saturation'][turn].append(path)
                     # we save the progess (in order to be able to quit and resume)
                     json.dump(image_paths, open( f"./OUTPUT/PIPELINE/{experiment_name}/STRUCTURE_{experiment_name}.json", "w"))
-    if image_paths['stage']==2:
+    '''
+    if image_paths['stage']<=2:
         image_paths['stage']=3
         image_paths['iX']={'reference':[], 'problem':[]}
     print("3. Saturated Images Computed!\n")
@@ -234,7 +223,7 @@ if __name__ == '__main__':
 
 
     for turn in ['reference', 'problem']:
-        for saturation_path in image_paths['saturation'][turn]:
+        for saturation_path in image_paths['simulation'][turn]:
             for interpolation_name, interpolation_flag in interpolation_flags.items():
                 image = cv2.imread(saturation_path+'/'+saturation_path.split('/')[-1]+'.png', cv2.IMREAD_ANYDEPTH)
                 path=f"{saturation_path}/interpol_{interpolation_name}_iX_{X}_{saturation_path.split('/')[-1]}"
@@ -250,7 +239,7 @@ if __name__ == '__main__':
         image_paths['stage']=4
         image_paths['iX_averaged']={'reference':[], 'problem':[]}
     print("4. iX images computed!\n")
-
+    '''
     # 5. COMPUTE AVERAGE IMAGES FROM EACH SATURATED IMAGE SERIES OF THE SAME NOISE and #######
     #    compute PROFILES FOR THEM ###########################################################
     def initialize_plot_blit(sample_image):
@@ -357,6 +346,7 @@ if __name__ == '__main__':
                                     fig, cm, scat1, scat2, plot3d, axes, ax, axbackgrounds,Xg,Y = initialize_plot_blit(next_image)
                                     profile_plot_initialized=True
                                 compute_profiles(next_image, f"{iX_noisy_saturated_take_path}/PROFILES_{iX_noisy_saturated_take_path.split('/')[-1]}.png", fig, cm, scat1, scat2, plot3d, axes, ax, axbackgrounds,Xg,Y)
+
                         average_image = average_image/number_of_samples_per_sigma[turn]
                         # in theory, the average image should readily be centered in the gravicenter but we can force it to be so:
                         if recenter_average_image:
@@ -370,8 +360,8 @@ if __name__ == '__main__':
                         compute_profiles(average_image, f"{save_path}/PROFILES_{save_path.split('/')[-1]}.png", fig, cm, scat1, scat2, plot3d, axes, ax, axbackgrounds,Xg,Y)
                         image_paths['iX_averaged'][turn].append(save_path)
                         json.dump(image_paths, open( f"./OUTPUT/PIPELINE/{experiment_name}/STRUCTURE_{experiment_name}.json", "w"))
-
-    if image_paths['stage']==4:
+    '''
+    if image_paths['stage']<=4:
         image_paths['stage']=5
         json.dump(image_paths, open( f"./OUTPUT/PIPELINE/{experiment_name}/STRUCTURE_{experiment_name}.json", "w"))
 
@@ -397,7 +387,7 @@ if __name__ == '__main__':
     try:
         individual_image_results = json.load(open(f"./OUTPUT/PIPELINE/{experiment_name}/RAW_RESULTS_{experiment_name}.json"))
     except:
-        individual_image_results = {'is_reference':[], 'Image_Name':[], 'theoretical_phiCR':[], 'R0':[], 'w0':[], 'sigma_WN':[], 'relative_saturation':[], 'noise_take':[], 'averaged_before_or_after':[], 'interpolation':[], 'polarization_method':[], 'optimization_1d':[], 'found_phiCR':[], 'predicted_opt_precision':[] }
+        individual_image_results = {'is_reference':[], 'Image_Name':[], 'theoretical_phiCR':[], 'R0':[], 'w0':[], 'rho0':[], 'interpolation':[], 'polarization_method':[], 'optimization_1d':[], 'found_phiCR':[], 'predicted_opt_precision':[] }
 
     def to_result_dict(result_dict, im_names, alg, alg_name, opt_name, is_reference):
         for key, name in zip(alg.times.keys(), im_names):
@@ -406,14 +396,7 @@ if __name__ == '__main__':
             result_dict['theoretical_phiCR'].append(float(name.split("phiCR_")[1].split("_")[0]))
             result_dict['R0'].append(name.split("R0_")[1].split("_")[0])
             result_dict['w0'].append(name.split("w0_")[1].split("_")[0])
-            result_dict['sigma_WN'].append(name.split("sigma_")[1].split("_")[0])
-            result_dict['relative_saturation'].append(name.split("satur_")[1].split("_")[0])
-            try:
-                result_dict['noise_take'].append(name.split("take_")[1].split("_")[0])
-                result_dict['averaged_before_or_after'].append("A")
-            except:
-                result_dict['noise_take'].append(-1) # in case it is an average
-                result_dict['averaged_before_or_after'].append("B")
+            result_dict['rho0'].append(float(result_dict['R0'][-1])/float(result_dict['w0'][-1]))
             result_dict['interpolation'].append(name.split("interpol_")[1].split("_")[0])
             result_dict['polarization_method'].append(alg_name)
             result_dict['optimization_1d'].append(opt_name)
@@ -423,52 +406,44 @@ if __name__ == '__main__':
 
     for turn in ['reference', 'problem']:
         for simulation_path in image_paths['simulation'][turn]:
-            for saturation in saturations_at_relative_intesities:
-                for sigma in noise_sigmas:
-                    for interpolation_name, interpolation_flag in interpolation_flags.items():
-                        image_container=np.zeros( (number_of_samples_per_sigma[turn]+1, 2*X+1, 2*X+1), dtype=np.float64)
-                        image_names=[]
-                        # charge the different noise takes
-                        for empirical_copy in range(number_of_samples_per_sigma[turn]):
-                            image_path=f"sigma_{sigma}_take_{empirical_copy}_{simulation_path.split('/')[-1]}"
-                            iX_noisy_saturated_take_path=f"{simulation_path}/WHITE_NOISES/{image_path}/SATURATION/satur_{saturation}_{image_path}/interpol_{interpolation_name}_iX_{X}_satur_{saturation}_{image_path}"
-                            next_image=cv2.imread(f"{iX_noisy_saturated_take_path}/{iX_noisy_saturated_take_path.split('/')[-1]}.png", cv2.IMREAD_ANYDEPTH)
-                            image_container[empirical_copy]=next_image.astype(np.float64)
-                            image_names.append(iX_noisy_saturated_take_path.split('/')[-1])
-                        # charge the average image
-                        average_image_path=f"{simulation_path}/WHITE_NOISES/AVERAGES/recenter_{recenter_average_image}_interpol_{interpolation_name}_iX_{X}_satur_{saturation}_sigma_{sigma}_{simulation_path.split('/')[-1]}"
-                        next_image=cv2.imread( f"{average_image_path}/{ average_image_path.split('/')[-1]}.png", cv2.IMREAD_ANYDEPTH)
-                        image_container[number_of_samples_per_sigma[turn]]=next_image.astype(np.float64)
-                        image_names.append(average_image_path.split('/')[-1])
-                        if not set(image_names).issubset(individual_image_results["Image_Name"]): # then must compute
-                            # charge the image loader:
-                            image_loader.import_converted_images_as_array(image_container, image_names)
-                            # Execute the Rotation and Mirror Algorithms:
-                            # ROTATION ######
-                            # the interpolation algorithm used in case we disbale its usage for the iX image obtention will be the Lanczos one
-                            rotation_algorithm.interpolation_flag=interpolation_flag if interpolation_flag is not None else cv2.INTER_LANCZOS4
-                            rotation_algorithm.reInitialize(image_loader)
-                            rotation_algorithm.quadratic_fit_search(precision_quadratic, max_it_quadratic, cost_tolerance_quadratic)
-                            to_result_dict(individual_image_results, image_names, rotation_algorithm, "Rotation", "Quadratic", True if turn=="reference" else False)
-                            rotation_algorithm.reInitialize(image_loader)
-                            rotation_algorithm.fibonacci_ratio_search(precision_fibonacci, max_points_fibonacci, cost_tolerance_fibonacci)
-                            to_result_dict(individual_image_results, image_names, rotation_algorithm, "Rotation", "Fibonacci", True if turn=="reference" else False)
+            for interpolation_name, interpolation_flag in interpolation_flags.items():
+                image_container=np.zeros( (1, 2*X+1, 2*X+1), dtype=np.float64)
+                image_names=[]
+                image_path=f"{simulation_path.split('/')[-1]}"
+                iX_simulated=f"{simulation_path}/interpol_{interpolation_name}_iX_{X}_{image_path}"
+                next_image=cv2.imread(f"{iX_simulated}/{iX_simulated.split('/')[-1]}.png", cv2.IMREAD_ANYDEPTH)
+                image_container[0]=next_image.astype(np.float64)
+                image_names.append(iX_simulated.split('/')[-1])
 
-                            # MIRROR #######
-                            mirror_algorithm.interpolation_flag=interpolation_flag if interpolation_flag is not None else cv2.INTER_LANCZOS4
-                            mirror_algorithm.reInitialize(image_loader)
-                            mirror_algorithm.quadratic_fit_search(precision_quadratic, max_it_quadratic, cost_tolerance_quadratic)
-                            to_result_dict(individual_image_results, image_names, rotation_algorithm, "Mirror", "Quadratic", True if turn=="reference" else False)
-                            mirror_algorithm.reInitialize(image_loader)
-                            mirror_algorithm.fibonacci_ratio_search(precision_fibonacci, max_points_fibonacci, cost_tolerance_fibonacci)
-                            to_result_dict(individual_image_results, image_names, rotation_algorithm, "Mirror", "Fibonacci", True if turn=="reference" else False)
+                if not set(image_names).issubset(individual_image_results["Image_Name"]): # then must compute
+                    # charge the image loader:
+                    image_loader.import_converted_images_as_array(image_container, image_names)
+                    # Execute the Rotation and Mirror Algorithms:
+                    # ROTATION ######
+                    # the interpolation algorithm used in case we disbale its usage for the iX image obtention will be the Lanczos one
+                    rotation_algorithm.interpolation_flag=interpolation_flag if interpolation_flag is not None else cv2.INTER_LANCZOS4
+                    rotation_algorithm.reInitialize(image_loader)
+                    rotation_algorithm.quadratic_fit_search(precision_quadratic, max_it_quadratic, cost_tolerance_quadratic)
+                    to_result_dict(individual_image_results, image_names, rotation_algorithm, "Rotation", "Quadratic", True if turn=="reference" else False)
+                    rotation_algorithm.reInitialize(image_loader)
+                    rotation_algorithm.fibonacci_ratio_search(precision_fibonacci, max_points_fibonacci, cost_tolerance_fibonacci)
+                    to_result_dict(individual_image_results, image_names, rotation_algorithm, "Rotation", "Fibonacci", True if turn=="reference" else False)
 
-                            json.dump(individual_image_results, open( f"./OUTPUT/PIPELINE/{experiment_name}/RAW_RESULTS_{experiment_name}.json", "w"))
+                    # MIRROR #######
+                    mirror_algorithm.interpolation_flag=interpolation_flag if interpolation_flag is not None else cv2.INTER_LANCZOS4
+                    mirror_algorithm.reInitialize(image_loader)
+                    mirror_algorithm.quadratic_fit_search(precision_quadratic, max_it_quadratic, cost_tolerance_quadratic)
+                    to_result_dict(individual_image_results, image_names, rotation_algorithm, "Mirror", "Quadratic", True if turn=="reference" else False)
+                    mirror_algorithm.reInitialize(image_loader)
+                    mirror_algorithm.fibonacci_ratio_search(precision_fibonacci, max_points_fibonacci, cost_tolerance_fibonacci)
+                    to_result_dict(individual_image_results, image_names, rotation_algorithm, "Mirror", "Fibonacci", True if turn=="reference" else False)
+
+                    json.dump(individual_image_results, open( f"./OUTPUT/PIPELINE/{experiment_name}/RAW_RESULTS_{experiment_name}.json", "w"))
 
     print("6. Raw Results Computed!\n")
 
     # 7. PROCESS FINAL RESULTS ##########################################
-    def angle_to_pi_pi( angle): # convert any angle to range ()-pi,pi]
+    def angle_to_pi_pi(angle): # convert any angle to range ()-pi,pi]
         angle= angle%(2*np.pi) # take it to [-2pi, 2pi]
         return angle-np.sign(angle)*2*np.pi if abs(angle)>np.pi else angle
 
@@ -476,11 +451,8 @@ if __name__ == '__main__':
         s = '{:.16f}'.format(n).split('.')[1]
         return len(s) - len(s.lstrip('0'))
     cwd = os.getcwd() # working directory
-    def make_hyperlink(image_name, is_image_average): # for inserting direct link to image paths
-        if is_image_average:
-            url= f"./SIMULATIONS/nx_{image_name.split('nx_')[-1]}/WHITE_NOISES/AVERAGES/{image_name}/PROFILES_{image_name}.png"
-        else:
-            url = f"./SIMULATIONS/nx_{image_name.split('nx_')[-1]}/WHITE_NOISES/sigma_{image_name.split('sigma_')[-1]}/SATURATION/satur_{image_name.split('satur_')[-1]}/interpol_{image_name.split('interpol_')[-1]}/PROFILES_interpol_{image_name.split('interpol_')[-1]}.png"
+    def make_hyperlink(image_name): # for inserting direct link to image paths
+        url = f"./SIMULATIONS/nx_{image_name.split('nx_')[-1]}/interpol_{image_name.split('interpol_')[-1]}/interpol_{image_name.split('interpol_')[-1]}.png"
         return f"=HYPERLINK(\"{url}\", \"link\")"
 
     conv=1 if deg_or_rad=="rad" else 180/np.pi # conversion factor
@@ -488,7 +460,7 @@ if __name__ == '__main__':
     try:
         final_results = json.load(open(f"./OUTPUT/PIPELINE/{experiment_name}/FINAL_RESULTS_{experiment_name}.json"))
     except:
-        final_results = { 'R0':[],'w0':[],'th_phiCR_ref':[],'th_phiCR_prob':[],'sigma_WN':[],'noisy_copies_ref':[], 'noisy_copies_prob':[], 'relative_saturation':[], 'interpolation':[], 'averaged_images_or_angles':[], 'min_abs_theoretical_error':[], 'best_correct_decimals':[], 'best_algorithm':[], 'ref_im_link':[], 'prob_im_link':[], 'mirror_fibo':[], 'mirror_quad':[], 'rotation_fibo':[], 'rotation_quad':[] }
+        final_results = { 'R0':[],'w0':[], 'rho0':[],'th_phiCR_ref':[],'th_phiCR_prob':[], 'interpolation':[], 'min_abs_theoretical_error':[], 'best_correct_decimals':[], 'best_algorithm':[], 'ref_im_link':[], 'prob_im_link':[], 'mirror_fibo':[], 'mirror_quad':[], 'rotation_fibo':[], 'rotation_quad':[] }
 
     # def to_final_dict_results(result_dict, raw_result_dict):
     # we will use a pandas dataframe for it is easier to manipulate
@@ -496,42 +468,21 @@ if __name__ == '__main__':
 
     # what I will do here is veery inefficient, but well, f* that xD
     pd.options.display.max_colwidth = 100
-    for ref_group_tuple, reference_df in raw_results[raw_results["is_reference"]==True].groupby(["R0", "w0", "theoretical_phiCR", "sigma_WN", 'relative_saturation', 'averaged_before_or_after', 'interpolation']):
+    for ref_group_tuple, reference_df in raw_results[raw_results["is_reference"]==True].groupby(["R0", "w0", "theoretical_phiCR", 'interpolation']):
         # we will avoid experiments crossing sigma, saturation, interpolation and average before or after
-        for prob_group_tuple, problem_df in raw_results[(raw_results["is_reference"]==False) & (raw_results["R0"]==ref_group_tuple[0]) & (raw_results["w0"]==ref_group_tuple[1]) & (raw_results["sigma_WN"]==ref_group_tuple[3]) & (raw_results["relative_saturation"]==ref_group_tuple[4]) & (raw_results["interpolation"]==ref_group_tuple[6]) & (raw_results["averaged_before_or_after"]==ref_group_tuple[5])].groupby(["R0", "w0", "theoretical_phiCR" ,"sigma_WN", 'relative_saturation', 'averaged_before_or_after', 'interpolation']):
-
-            # the only difference between the prob_group_tuple and the ref one will be the phiCR -> the only degree we allow to be crossed in the experiments is that one.
-            # if we are interested in some other crossing, just erase the restriction -> And do not forget to put it in the output table as a separate column per ref or pb
-            if ref_group_tuple[5]=='B': # averaged_before_or_after==B -> talking about the average images
-                assert(reference_df.shape[0]==4)
-                assert(problem_df.shape[0]==4)
-            else:
-                assert(reference_df.shape[0]==4*number_of_samples_per_sigma["reference"])
-                assert(problem_df.shape[0]==4*number_of_samples_per_sigma["problem"])
+        for prob_group_tuple, problem_df in raw_results[(raw_results["is_reference"]==False) & (raw_results["R0"]==ref_group_tuple[0]) & (raw_results["w0"]==ref_group_tuple[1]) & (raw_results["interpolation"]==ref_group_tuple[3])].groupby(["R0", "w0", "theoretical_phiCR", 'interpolation']):
 
             final_results["R0"].append(ref_group_tuple[0])
             final_results["w0"].append(ref_group_tuple[1])
+            final_results["rho0"].append(problem_df["rho0"].iloc[0])
             final_results["th_phiCR_ref"].append(ref_group_tuple[2])
             final_results["th_phiCR_prob"].append(prob_group_tuple[2])
-            final_results["sigma_WN"].append(ref_group_tuple[3])
-            final_results["noisy_copies_ref"].append(number_of_samples_per_sigma["reference"])
-            final_results["noisy_copies_prob"].append(number_of_samples_per_sigma["problem"])
-            final_results["relative_saturation"].append(ref_group_tuple[4])
-            final_results["interpolation"].append(ref_group_tuple[6])
+            final_results["interpolation"].append(ref_group_tuple[3])
 
-            if ref_group_tuple[5]=='B':
-                final_results["averaged_images_or_angles"].append("images") # before is image, after is angles
-                final_results["mirror_fibo"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Mirror") & (reference_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0])*conv)
-                final_results["mirror_quad"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Mirror") & (reference_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0])*conv)
-                final_results["rotation_fibo"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Rotation") & (problem_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Rotation") & (reference_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0])*conv)
-                final_results["rotation_quad"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Rotation") & (problem_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Rotation") & (reference_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0])*conv)
-
-            else:
-                final_results["averaged_images_or_angles"].append("angles") # before is image, after is angles
-                final_results["mirror_fibo"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].mean()-reference_df[(reference_df["polarization_method"]=="Mirror") & (reference_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].mean())*conv)
-                final_results["mirror_quad"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Quadratic")]["found_phiCR"].mean()-reference_df[(reference_df["polarization_method"]=="Mirror") & (reference_df["optimization_1d"]=="Quadratic")]["found_phiCR"].mean())*conv)
-                final_results["rotation_fibo"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Rotation") & (problem_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].mean()-reference_df[(reference_df["polarization_method"]=="Rotation") & (reference_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].mean())*conv)
-                final_results["rotation_quad"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Rotation") & (problem_df["optimization_1d"]=="Quadratic")]["found_phiCR"].mean()-reference_df[(reference_df["polarization_method"]=="Rotation") & (reference_df["optimization_1d"]=="Quadratic")]["found_phiCR"].mean())*conv)
+            final_results["mirror_fibo"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Mirror") & (reference_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0])*conv)
+            final_results["mirror_quad"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Mirror") & (problem_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Mirror") & (reference_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0])*conv)
+            final_results["rotation_fibo"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Rotation") & (problem_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Rotation") & (reference_df["optimization_1d"]=="Fibonacci")]["found_phiCR"].iloc[0])*conv)
+            final_results["rotation_quad"].append(angle_to_pi_pi(problem_df[(problem_df["polarization_method"]=="Rotation") & (problem_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0]-reference_df[(reference_df["polarization_method"]=="Rotation") & (reference_df["optimization_1d"]=="Quadratic")]["found_phiCR"].iloc[0])*conv)
 
 
             ground_truth_relative_angle=angle_to_pi_pi(final_results["th_phiCR_prob"][-1]-final_results["th_phiCR_ref"][-1])
@@ -539,8 +490,8 @@ if __name__ == '__main__':
             final_results["min_abs_theoretical_error"].append( theoretical_errors.min()  )
             final_results['best_correct_decimals'].append( num_of_zeros(theoretical_errors.min()) )
             final_results["best_algorithm"].append( ["mirror_fib", "mirror_quad", "rotation_fib", "rotation_quad"][theoretical_errors.argmin()] )
-            final_results["ref_im_link"].append(make_hyperlink(reference_df["Image_Name"].iloc[0], is_image_average=(ref_group_tuple[5]=='B')))
-            final_results["prob_im_link"].append(make_hyperlink(problem_df["Image_Name"].iloc[0], is_image_average=(ref_group_tuple[5]=='B')))
+            final_results["ref_im_link"].append(make_hyperlink(reference_df["Image_Name"].iloc[0]))
+            final_results["prob_im_link"].append(make_hyperlink(problem_df["Image_Name"].iloc[0]))
 
 
 
@@ -558,7 +509,7 @@ if __name__ == '__main__':
     StyleFrame.A_FACTOR=10
     StyleFrame.P_FACTOR=0.9
     StyleFrame(final_results_df.sort_values(by=['min_abs_theoretical_error'])).set_row_height(1,50).to_excel(writer, best_fit=list(final_results_df.columns)[:13]+list(final_results_df.columns)[15:], sheet_name='Experiment Results by Min Error', index=False,  float_format="%.12f")
-    StyleFrame(final_results_df.sort_values(by=['R0','w0','th_phiCR_ref','th_phiCR_prob','min_abs_theoretical_error','sigma_WN', 'relative_saturation', 'interpolation'], ascending=False)).set_row_height(1,50).to_excel(writer, best_fit=list(final_results_df.columns)[:13]+list(final_results_df.columns)[15:], sheet_name='Experiment Results by Properties', index=False,  float_format="%.12f")
+    StyleFrame(final_results_df.sort_values(by=['R0','w0','th_phiCR_ref','th_phiCR_prob','min_abs_theoretical_error','interpolation'], ascending=False)).set_row_height(1,50).to_excel(writer, best_fit=list(final_results_df.columns)[:9]+list(final_results_df.columns)[11:], sheet_name='Experiment Results by Properties', index=False,  float_format="%.12f")
     StyleFrame(raw_results).set_row_height(1,50).to_excel(writer, best_fit=list(raw_results.columns), sheet_name='Raw Results per Image', index=False,  float_format="%.12f")
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()
