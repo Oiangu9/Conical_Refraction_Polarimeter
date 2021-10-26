@@ -69,7 +69,7 @@ if __name__ == '__main__':
     cost_tolerance_fibonacci=1e-12
 
     # 6. OUTPUT RESULTS INTO A LATEX? INTO AN EXCEL WITH IMAGES (GIFS) WOULD BE FANTASTIC
-    deg_or_rad="deg" # for the final outputs
+    deg_or_rad="rad" # for the final outputs
 
     experiment_name=f"{experiment_name}_nx_{resolution_side_nx}_iX_{X}_angles_{deg_or_rad}"
     ##################################################################
@@ -508,7 +508,7 @@ if __name__ == '__main__':
     # Convert the dataframe to an XlsxWriter Excel object.
     StyleFrame.A_FACTOR=10
     StyleFrame.P_FACTOR=0.9
-    StyleFrame(final_results_df.sort_values(by=['min_abs_theoretical_error'])).set_row_height(1,50).to_excel(writer, best_fit=list(final_results_df.columns)[:13]+list(final_results_df.columns)[15:], sheet_name='Experiment Results by Min Error', index=False,  float_format="%.12f")
+    StyleFrame(final_results_df.sort_values(by=['min_abs_theoretical_error'])).set_row_height(1,50).to_excel(writer, best_fit=list(final_results_df.columns)[:9]+list(final_results_df.columns)[11:], sheet_name='Experiment Results by Min Error', index=False,  float_format="%.12f")
     StyleFrame(final_results_df.sort_values(by=['R0','w0','th_phiCR_ref','th_phiCR_prob','min_abs_theoretical_error','interpolation'], ascending=False)).set_row_height(1,50).to_excel(writer, best_fit=list(final_results_df.columns)[:9]+list(final_results_df.columns)[11:], sheet_name='Experiment Results by Properties', index=False,  float_format="%.12f")
     StyleFrame(raw_results).set_row_height(1,50).to_excel(writer, best_fit=list(raw_results.columns), sheet_name='Raw Results per Image', index=False,  float_format="%.12f")
     # Close the Pandas Excel writer and output the Excel file.
