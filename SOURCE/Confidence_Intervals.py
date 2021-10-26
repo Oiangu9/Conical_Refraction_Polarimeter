@@ -27,20 +27,27 @@ def plot_histograms_for(variable, final_results_df, experiment_name, best_cis, c
 
     fig=plt.figure(figsize=(7*columns, 5*rows))
     i=1
-    bins_main_exponents=[1,-8.5, -8, -7.5, -7, -6.5,-6,-5.5,-5,-4.5,-4,-3.5,-1,0]
+    bins_main_exponents=np.linspace(-8.5, -3.5, 32 ).tolist()
+    bins_main_exponents=[1]+bins_main_exponents+[-1,0]
+    #bins_main_exponents=[1,-8.5, -8, -7.5, -7, -6.5,-6,-5.5,-5,-4.5,-4,-3.5,-1,0]
     bins_main=10**np.array(bins_main_exponents)
     bins_main[0]=0
     axs=[]
     maxy=0
     for group_var_val, group_df in final_results_df.groupby([variable], sort=True):
         axs.append(fig.add_subplot(rows,columns, i))
-        axs[-1].hist(group_df['min_abs_theoretical_error'], bins=bins_main, range=(0,0.4), label=f"{variable}={group_var_val}", rwidth=1, align='mid', edgecolor="k", alpha=0.6)
+        ns, b, p = axs[-1].hist(group_df['min_abs_theoretical_error'], bins=bins_main, range=(0,0.4), label=f"{variable}={group_var_val}", rwidth=1, align='mid', edgecolor="k", alpha=0.6)
         axs[-1].set_xscale('log')
-        axs[]-1].legend()
         axs[-1].grid(True)
-        axs[-1].set_title(f"Best {conf}% CI: {best_cis[i-1]}")
+        axs[-1].axvline(x=best_cis[i-1][0], color='m', linestyle='--', label='mu CI', alpha=0.6)
+        axs[-1].axvline(x=best_cis[i-1][1], color='m', linestyle='--', alpha=0.6)
+        quantiles=np.percentile(group_df['min_abs_theoretical_error'], q=((100-conf)/2, conf+(100-conf)/2))
+        axs[-1].axvline(x=quantiles[0], color='r', linestyle='--', label=f'{conf} quantiles')
+        axs[-1].axvline(x=quantiles[1], color='r', linestyle='--')
+        axs[-1].set_title(f"mu {conf}% CI: {best_cis[i-1]}")
+        axs[-1].legend()
         i+=1
-        maxy= if >maxy else maxy
+        maxy = np.max(ns) if np.max(ns)>maxy else maxy
     for ax in axs:
         ax.set_ylim(0,maxy)
     #fig.supylabel('common_y')
@@ -102,4 +109,4 @@ if __name__ == '__main__':
         final_results_df=final_results_df.astype({"R0":float, "w0":float})
 
 
-        compute_bootstrap_t_mean_CIs_by(['rho0', 'w0','R0'], final_results_df, experiment_name, boots_sampless=[10000, 10000, 2000])
+        compute_bootstrap_t_mean_CIs_by(['rho0', 'w0','R0'], final_results_df, experiment_name, boots_sampless=[100000, 100000, 20000])

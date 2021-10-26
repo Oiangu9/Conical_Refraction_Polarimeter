@@ -155,7 +155,7 @@ if __name__ == '__main__':
             for saturation in saturations_at_relative_intesities:
                 path=f"{image_path}/SATURATION/satur_{saturation}_{image_path.split('/')[-1]}"
                 if path not in image_paths['saturation'][turn]:
-                    saturated_image = np.where( image<=(max_intensity*saturation), image, max_intensity)
+                    saturated_image = np.where( image<=(max_intensity*saturation), image, max_intensity*saturation)
                     os.makedirs(path, exist_ok=True)
                     cv2.imwrite(f"{path}/{path.split('/')[-1]}.png", saturated_image)
                     image_paths['saturation'][turn].append(path)

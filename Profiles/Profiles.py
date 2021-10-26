@@ -6,7 +6,7 @@ import os
 from mpl_toolkits.mplot3d import Axes3D
 import imageio
 
-main_path="/home/melanie/Desktop/Conical_Refraction_Polarimeter/Experimental_Stuff/dia2/laser_gaussian_thesis"
+main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/Experimental_Stuff/Fotos_Turpin/Day2/laser_gaussian_thesis/All_Taken_Photos"
 #main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/DATA/EXPERIMENTAL/Utukuri_et_al/2__28_09_2021/Some_i607/Profiles/2"
 #main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/DATA/EXPERIMENTAL/Utukuri_et_al/3__29_09_2021/i607/Profiles"
 #main_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/DATA/EXPERIMENTAL/Utukuri_et_al/4__01_10_2021/Profiles"
