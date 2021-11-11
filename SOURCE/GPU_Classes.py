@@ -197,7 +197,7 @@ class RingSimulator_Optimizer_GPU():
     def compute_and_plot_CR_ring(self, CR_ring_angle, R0_pixels, Z, w0_pixels, out_path, name):
         I=self.compute_CR_ring(CR_ring_angle, R0_pixels, Z, w0_pixels)
         cv2.imwrite(f"{out_path}/[{name}]__PolAngle_{CR_ring_angle/2:.15f}_CRAngle_{CR_ring_angle:.15f}_Z_{Z}_w0_pix_{w0_pixels}_R0_pix_{R0_pixels}.png",
-                (6553*I).astype(np.uint16)) 
+                (6553*I).astype(np.uint16))
 
 
 
@@ -205,15 +205,15 @@ if __name__ == "__main__":
 
     #phi_CRs = [-3, -2, np.pi/2, -1, 0, 1, np.pi/2, 2, 3, np.pi]
     #phi_CRs = [-2.3932]
-    phi_CRs=[-2.3932,  2.977317734726711] # such that 2*26.146deg is their difference
+    phi_CRs=[0] # such that 2*26.146deg is their difference
 
-    '''
+
     print("\n\n\nTesting General Simulator:")
-    L=4.5
-    R0=10
+    R0=167
     z=0
-    nxy=200
-    simulator=RingSimulator_GPU( n=1.5, w0=1, R0=R0, a0=1.0, max_k=50, num_k=1000, nx=nxy, ny=nxy, nz=1, xmin=-R0*L, xmax=R0*L, ymin=-R0*L, ymax=R0*L, zmin=z, zmax=z, sim_chunk_x=nxy, sim_chunk_y=nxy)
+    nx=540
+    w0=23.857
+    simulator=RingSimulator_GPU( n=1.5, w0=1, R0=R0, a0=1.0, max_k=50, num_k=1000, nx=nx, ny=nx, nz=1, xmin=-(nx-1)/2, xmax=(nx-1)/2, ymin=-(nx-1)/2, ymax=(nx-1)/2, zmin=z, zmax=z, sim_chunk_x=nx, sim_chunk_y=nx)
 
     os.makedirs('./Simulated/General/Full/', exist_ok=True)
     os.makedirs('./Simulated/General/Approx/', exist_ok=True)
@@ -241,3 +241,4 @@ if __name__ == "__main__":
         simulator.compute_and_plot_CR_ring( phi_CR, R0_pixels=137.7, Z=0, w0_pixels=10.25, out_path='./Simulated/Optimizer/Full/SIMULATED_Kumar_Example/1101_Resolution/', name='Big_Radious_Very_Thick_Width_')
         print("Hard one done!\n")
         #simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/Optimizer/Approx/')
+    '''
