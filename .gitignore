@@ -3,3 +3,5 @@ OUTPUT/*
 SOURCE/*.png
 SOURCE/Simulated/*
 .directory
+.ipynb_checkpoints
+
