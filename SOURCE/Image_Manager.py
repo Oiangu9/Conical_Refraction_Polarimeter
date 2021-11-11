@@ -12,6 +12,7 @@ class Image_Manager:
             Mode is expected to be X, 607 or 203, depending of whether iX, i607 or i203 is desired to be
             used for all the algorithms.
         """
+        self.max_intensity=None
         self.mode = mode
         self.interpolation_flag = interpolation_flag
         self.previs_ms=previs_ms
@@ -145,6 +146,8 @@ class Image_Manager:
             This numpy array will be freed once thisfunction is computed in order to save RAM.
 
         """
+        # we get which is the maximum intensity for the final normalization of the iX image
+        self.max_intensity= 255 if self.raw_images.dtype==np.uint8 else 65535 if self.raw_images.dtype==np.uint16 else 1
         g_raw = self.compute_intensity_gravity_center(self.raw_images)
 
         logging.info(f" \nCenters of Intensity gravity in raw pixel coordinates: {g_raw}")
@@ -182,6 +185,7 @@ class Image_Manager:
                       self.raw_images[im, lower_bound[im,0]:upper_bound[im,0],
                                           lower_bound[im,1]:upper_bound[im,1]]
 
+        '''
         # We compute the center of gravity of the cropped images, if everything was made allright
         # they should get just centered in the central pixels number 608 (idx 607) or 204 (idx 203)
         g_centered = self.compute_intensity_gravity_center(self.centered_ring_images)
@@ -199,6 +203,13 @@ class Image_Manager:
                         flags=self.interpolation_flag) # interpolation method
             if output_path:
                 cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_ring_images[im])
+        '''
+        # we normalize the image (all the CR rings should have the same scale ideally)
+        self.centered_ring_images=self.max_intensity*(self.centered_ring_images.astype(np.float64)/np.max(self.centered_ring_images, 0))
+
+        if output_path:
+            for im in range(g_raw.shape[0]):
+                cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_ring_images[im].astype(self.raw_images.dtype))
 
         # We recompute the gravity centers:
         self.g_centered = self.compute_intensity_gravity_center(self.centered_ring_images)

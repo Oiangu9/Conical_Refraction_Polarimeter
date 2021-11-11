@@ -6,13 +6,13 @@ from mpl_toolkits.mplot3d import Axes3D
 
 #image_full_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/DATA/SIMULATED/SIMULATED_Utukuri_Examples/2202_Resolution/[Big_Radious_Very_Thin_Width_]__PolAngle_-1.196600000000000_CRAngle_-2.393200000000000_Z_0_R0_30.25_R0_pix_475.58.png"
 #image_full_path="/home/oiangu/Desktop/Conical_Refraction_Polarimeter/DATA/SIMULATED/SIMULATED_Utukuri_Examples/1101_Resolution/[Big_Radious_Very_Thin_Width_]__PolAngle_-1.196600000000000_CRAngle_-2.393200000000000_Z_0_R0_30.25_R0_pix_237.79.png"
-image_full_path="/home/melanie/Desktop/Conical_Refraction_Polarimeter/Experimental_Stuff/dia2/laser_gaussian_thesis/polarizador_lineal_haciendo_sin_linear_pol_antes_del_lambd4_a_ojo.png"
+image_full_path="/home/melanie/Desktop/Conical_Refraction_Polarimeter/Experimental_Stuff/Fotos_Turpin/Day3/Reference/Reference__200.png"
 im = cv2.imread(image_full_path, cv2.IMREAD_ANYDEPTH)
 if im is None:
     print(f" Unable to import image {image_full_path}")
     raise ValueError
 
-plot3d_resolution=0.2
+plot3d_resolution=1
 prof_x=np.sum(im, axis=0)
 prof_y=np.sum(im, axis=1)
 fig = plt.figure(figsize=(2*6, 2*6))
