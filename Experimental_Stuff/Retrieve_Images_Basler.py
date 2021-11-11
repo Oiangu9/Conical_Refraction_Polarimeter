@@ -17,7 +17,13 @@ import cv2
 import sys
 
 # Number of images to be grabbed.
-countOfImagesToGrab = 100
+countOfImagesToGrab = 100000000000
+one_every=40
+photos_to_save=200
+j=0
+
+output_path="/home/melanie/Desktop/Conical_Refraction_Polarimeter/Experimental_Stuff/Fotos_Turpin/Day3/90/"
+exp_name="90_"
 
 # The exit code of the sample application.
 exitCode = 0
@@ -37,13 +43,18 @@ try:
 
     # The parameter MaxNumBuffer can be used to control the count of buffers
     # allocated for grabbing. The default value of this parameter is 10.
-    camera.MaxNumBuffer = 5
+    camera.MaxNumBuffer = 1
+    camera.ExposureTime.SetValue(681)
 
     # Start the grabbing of c_countOfImagesToGrab images.
     # The camera device is parameterized with a default configuration which
     # sets up free-running continuous acquisition.
     camera.StartGrabbingMax(countOfImagesToGrab)
-
+    center_1w=308
+    center_1h=196
+    center_2h=386
+    center_2w=402
+    w=150
     # Camera.StopGrabbing() is called automatically by the RetrieveResult() method
     # when c_countOfImagesToGrab images have been retrieved.
     i=0
@@ -55,12 +66,26 @@ try:
         # Image grabbed successfully?
         if grabResult.GrabSucceeded():
             # Access the image data.
-            print("SizeX: ", grabResult.Width)
-            print("SizeY: ", grabResult.Height)
+            w0=grabResult.Width
+            h0=grabResult.Height
+            #print("SizeX: ", grabResult.Width)
+            #print("SizeY: ", grabResult.Height)
             img = grabResult.Array
-            print(img.dtype)
-            cv2.imwrite("i_Custoom.png", img)
-            print("Gray value of first pixel: ", img[0, 0], "Image size: ", img.shape)
+            cv2.imshow("{i}", img)
+            cv2.waitKey(2)
+            if i%one_every==0:
+                print(43*'\n')
+                print(f"Std Left {img[(center_1h-w):(center_1h+w),(center_1w-w):(center_1w+w)].std()}    \nMean Left {img[(center_1h-w):(center_1h+w),(center_1w-w):(center_1w+w)].mean()}    \nSum Left {img[(center_1h-w):(center_1h+w),(center_1w-w):(center_1w+w)].sum()}    ")
+                print(f"Sum Full Image {img.sum()} ")
+                cv2.imwrite(f"{output_path}/{exp_name}_{j}.png", img)
+                j+=1
+                if j>=photos_to_save:
+                    break
+            #cv2.destroyAllWindows()
+
+            #cv2.imwrite("i_Custoom.png", img)
+            #print("Gray value of first pixel: ", img[0, 0], "Image size: ", img.shape)
+            #print(img[])
         else:
             print("Error: ", grabResult.ErrorCode, grabResult.ErrorDescription)
         grabResult.Release()
