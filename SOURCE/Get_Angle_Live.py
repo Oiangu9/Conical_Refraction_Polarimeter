@@ -137,6 +137,9 @@ def run_angle_live(output_path, ground_truth, saturation):
         for image_path in image_list:
             for interpolation_name, interpolation_flag in interpolation_flags.items():
                 image = (cv2.imread(image_path, cv2.IMREAD_ANYDEPTH)).astype(np.float64)
+                # normalize the image
+                image = max_intensity*image/image.max()
+                # apply saturation
                 image = np.where( image<=(max_intensity*saturation), image, max_intensity*saturation)
                 I=compute_raw_to_centered_iX(image, X, interpolation_flag)
                 os.makedirs(f"{mother_dir}/iX", exist_ok=True)

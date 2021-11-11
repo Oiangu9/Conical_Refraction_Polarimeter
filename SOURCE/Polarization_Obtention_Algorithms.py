@@ -1051,6 +1051,183 @@ class Rotation_Algorithm(Polarization_Obtention_Algorithm):
             self.precisions[name]=self.precisions[name][f'Stage_{stage}']
 
 
+class Simulation_fixed_R0_w0_Z_optimize_phiCR_precomputed_library(Polarization_Obtention_Algorithm):
+    """
+    Given a library of theoretical images is precomputed, the angle phiCR is obtained by fitting
+    the theoretical images to the experimental images. Of course, this means that the simulated
+    rings are particularly simulated with the R0, w0, Z characteristics of the experimental images.
+
+    """
+    def __init__(self, image_loader, use_exact_gravicenter,  library_structure_json_path, min_angle, max_angle, initial_guess_delta):
+        Polarization_Obtention_Algorithm.__init__(self, image_loader, use_exact_gravicenter)
+        import json
+        self.structure_dict = json.load(open(library_structure_json_path))
+        self.phiCRs_in_lib = np.array(self.structure_dict['phiCRs'])
+        self.min_angle = min_angle
+        self.max_angle = max_angle
+        self.initial_guess_delta = initial_guess_delta
+        self.mode = image_loader.mode
+        self.computed_points={}
+        self.optimums={}
+        self.optimals={}
+        self.times={}
+        self.precision=abs(self.phiCRs_in_lib[1]-self.phiCRs_in_lib[0])
+        self.optimizer = Ad_Hoc_Optimizer(min_angle, max_angle, initial_guess_delta, self.evaluate_image_closest_angle)
+
+    def reInitialize(self, image_loader):
+        Polarization_Obtention_Algorithm.reInitialize(self, image_loader)
+        self.original_images = image_loader
+        self.computed_points={}
+        self.optimums={}
+        self.optimals={}
+        self.times={}
+
+    def evaluate_image_closest_angle(self, experimental_image, angle, aux):
+        idx_closest_in_lib = (np.abs(self.phiCRs_in_lib - self.angle_to_pi_pi(angle))).argmin()
+        theoretical_image = cv2.imread( self.structure_dict['rel_path'][idx_closest_in_lib], cv2.IMREAD_ANYDEPTH).astype(np.float64)
+        #plt.imshow(np.abs(theoretical_image-experimental_image).astype(np.uint8))
+        #plt.show()
+        return np.sum(np.abs(theoretical_image-experimental_image)) # the experimental image is assumed to be a float 64 and normalized image (to its maximum value in the 8 or 16 bit scale)
+
+
+    def brute_force_search(self, angle_steps, zoom_ratios):
+        """
+        What does this exactly do
+
+        Arguments
+        --------
+        - angle_steps (list): A list of the different angle steps to take in each of the sweeps.
+            Expected N, where N is the number of sweeps that will be performed. The first one is
+            expected to be the coarsest grain and they should be ordered from big to smallest.
+            The last step in the list will define the precision of the found minimum. The angle
+            steps are expected to be in (0, 2pi)
+
+        - zoom_ratios (list): A list of the interval reductions that will be held after each sweep
+            around the current best candidate for the minimum. There should be N-1 elements and
+            they should be numbers in (0,1].
+
+        """
+        zoom_ratios.append(1) #to avoid out of index in the last iteration
+        for im, image_name in enumerate(self.original_images.raw_images_names):
+            name=f"Brute_Force_{image_name}"
+            (self.times[name],
+            self.computed_points[name],
+            self.optimals[name],
+            self.optimums[name],
+            self.precisions[name]) = self.optimizer.brute_force_search(
+                    angle_steps, zoom_ratios,
+                    self.original_images.centered_ring_images[im].astype(np.float64), None)
+            self.optimals[name][f"Stage_{len(angle_steps)-1}"] =self.angle_to_pi_pi(self.optimals[name][f"Stage_{len(angle_steps)-1}"])
+            self.angles[name]=self.optimals[name][f"Stage_{len(angle_steps)-1}"]/2
+
+
+    def fibonacci_ratio_search(self, maximum_points, cost_tol):
+        """
+        Arguments
+        --------
+        - precision (float): Half the length of the interval achieved in the last step. It will be
+            the absolute error to which we compute the minimum of the funtion. Note however that
+            the precision will have a minimum depending on the image quality and the minimum
+            rotation arithmetics. Noise or discretization can induce plateaus in the minimum.
+            Therefore, if at some point the three points have the same cost function the algorithm
+            will stop: the cost function has arrived to the plateau. In that case the precision will
+            be outputed accordingly.
+
+        - maximum_points (int): Maximum number of points to use in the minimum search. It is also
+            the number of times to make an interval reduction.
+
+        - cost_tol (float): Maximum relative difference between the cost function active points
+            tolerated before convergence assumption.
+        """
+
+        for im, image_name in enumerate(self.original_images.raw_images_names):
+            name=f"Fibonacci_Search_{image_name}"
+            (self.times[name],
+            self.computed_points[name],
+            optimal,
+            self.optimums[name],
+            self.precisions[name])=                self.optimizer.fibonacci_ratio_search(
+                    self.precision, maximum_points, cost_tol,
+                    self.original_images.centered_ring_images[im].astype(np.float64), None)
+            self.optimals[name]=self.angle_to_pi_pi(optimal)
+            self.angles[name]=self.optimals[name]/2
+
+
+    def quadratic_fit_search(self, max_iterations, cost_tol):
+        """
+        Quadratic
+
+        Arguments
+        --------
+        - precision (float): Half the length of the interval achieved in the last step. It will be
+            the absolute error to which we compute the minimum of the funtion. Note however that
+            the precision will have a minimum depending on the image quality and the minimum
+            rotation arithmetics. Noise or discretization can induce plateaus in the minimum.
+            Therefore, if at some point the three points have the same cost function the algorithm
+            will stop: the cost function has arrived to the plateau. In that case the precision will
+            be outputed accordingly.
+
+        - max_iterations (int): Number of maximum iterations of quadratic function fit and
+            minimization to tolerate.
+
+        - cost_tol (float): Maximum relative difference between the cost function active points
+            tolerated before convergence assumption.
+
+        """
+        for im, image_name in enumerate(self.original_images.raw_images_names):
+            name=f"Quadratic_Search_{image_name}"
+            (self.times[name],
+            self.computed_points[name],
+            optimal,
+            self.optimums[name],
+            self.precisions[name])=self.optimizer.quadratic_fit_search(
+                self.precision, max_iterations, cost_tol,
+                self.original_images.centered_ring_images[im].astype(np.float64), None)
+            self.optimals[name]=self.angle_to_pi_pi(optimal)
+            self.angles[name]=self.optimals[name]/2
+
+    def save_result_plots_fibonacci_or_quadratic(self, output_path):
+        """
+        Save the resulting explored points in cost function vs angle, together with the info
+        about the optimization.
+        """
+        os.makedirs(f"{output_path}/Rotation_Algorithm/", exist_ok=True)
+        fig = plt.figure(figsize=(10,5))
+        ax = fig.add_subplot(1, 1, 1)
+        for name, computed_points in self.computed_points.items():
+            ax.plot(computed_points[:,0], computed_points[:,1], 'o', label=name)
+            ax.set_title(f"Polarization Angle = {self.angles[name]}+-{self.precisions[name]/2} rad\nOptimal={self.optimals[name]}+-{self.precisions[name]} rad\nComputed Points={len(computed_points)} . Time Required={self.times[name]}s")
+            ax.set_xlabel("Angle (rad)")
+            ax.set_ylabel("|Rotated-Original|")
+            #ax.set_yscale('log')
+            ax.grid(True)
+            plt.savefig(f"{output_path}/Rotation_Algorithm/{name}.png")
+            ax.clear()
+
+    def save_result_plots_brute_force(self, output_path):
+        os.makedirs(f"{output_path}/Rotation_Algorithm/", exist_ok=True)
+        fig, axes = plt.subplots(len(next(iter(self.times.values())).values()), 1, figsize=(10,15))
+        fig.tight_layout(pad=5.0)
+        for name, computed_points in self.computed_points.items():
+            for stage, ax in enumerate(axes):
+                ax.clear()
+                ax.plot(computed_points[f"Stage_{stage}"][:,0],
+                    computed_points[f"Stage_{stage}"][:,1], 'o', markersize=2,
+                    label=f"{name}_Stage_{stage}")
+                ax.set_title(f"STAGE {stage}: Optimal angle={self.optimals[name][f'Stage_{stage}']}+-{self.precisions[name][f'Stage_{stage}']} rad\nComputed Points={len(computed_points[f'Stage_{stage}'])}. Time Required={self.times[name][f'Stage_{stage}']}s")
+                ax.set_xlabel("Angle (rad)")
+                ax.set_ylabel("|Rotated-Original|")
+                #ax.set_yscale('log')
+                ax.grid(True)
+            fig.suptitle(f"Polarization angle=Polarization Angle={self.angles[name]}+-{self.precisions[name][f'Stage_{len(axes)-1}']/2} rad")
+            plt.savefig(f"{output_path}/Rotation_Algorithm/{name}.png")
+            self.precisions[name]=self.precisions[name][f'Stage_{stage}']
+
+
+
+
+
+
 class Simulation_Coordinate_Descent_Algorithm(Polarization_Obtention_Algorithm):
     """
     Execute first the Gradient Algorithm to get an estimation of the angle phi_CR and the radious

@@ -124,7 +124,7 @@ class Ad_Hoc_Optimizer:
             # order the four pairs of points by their angle
             active_points = active_points[:, np.argsort(active_points[0])]
 
-            if np.abs(active_points[0,-1]-active_points[0,0]) < 2*precision or np.allclose(active_points[1,:], active_points[1,0], rtol=cost_tol) or it==maximum_points:
+            if np.abs(active_points[0,-1]-active_points[0,0]) <= 2*precision or np.allclose(active_points[1,:], active_points[1,0], rtol=cost_tol) or it==maximum_points:
                 break
         t = time()-t
         # save all the data

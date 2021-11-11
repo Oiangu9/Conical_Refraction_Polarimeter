@@ -102,7 +102,7 @@ if __name__ == '__main__':
                     if path not in image_paths['simulation'][turn]:
                         I=simulator.compute_CR_ring( CR_ring_angle=phi_CR, R0_pixels=R0, Z=0, w0_pixels=w0)
                         os.makedirs(path, exist_ok=True)
-                        cv2.imwrite(f"{path}/{path.split('/')[-1]}.png", (max_intensity*I).astype(im_type))
+                        cv2.imwrite(f"{path}/{path.split('/')[-1]}.png", (max_intensity*I/I.max()).astype(im_type))
                         image_paths['simulation'][turn].append(path)
                         # we save the progess (in order to be able to quit and resume)
                         json.dump(image_paths, open( f"./OUTPUT/PIPELINE/{experiment_name}/STRUCTURE_{experiment_name}.json", "w"))
