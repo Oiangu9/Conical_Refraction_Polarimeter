@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import cv2
 from time import time
 import os
+import image_similarity_measures.quality_metrics as ism
 try:
     from SOURCE.Ad_Hoc_Optimizer import Ad_Hoc_Optimizer
     from SOURCE.Theoretical_Ring_Simulator import *
@@ -1058,7 +1059,7 @@ class Simulation_fixed_R0_w0_Z_optimize_phiCR_precomputed_library(Polarization_O
     rings are particularly simulated with the R0, w0, Z characteristics of the experimental images.
 
     """
-    def __init__(self, image_loader, use_exact_gravicenter,  library_structure_json_path, min_angle, max_angle, initial_guess_delta):
+    def __init__(self, image_loader, use_exact_gravicenter,  library_structure_json_path, min_angle, max_angle, initial_guess_delta, relative_saturation, similarity):
         Polarization_Obtention_Algorithm.__init__(self, image_loader, use_exact_gravicenter)
         import json
         self.structure_dict = json.load(open(library_structure_json_path))
@@ -1071,23 +1072,76 @@ class Simulation_fixed_R0_w0_Z_optimize_phiCR_precomputed_library(Polarization_O
         self.optimums={}
         self.optimals={}
         self.times={}
+        self.similarity=similarity # the similarity metric to use as the objective function
+        self.relative_saturation=relative_saturation # in case the user wants the comparisons with the library to be made with saturated versions of the library images
+        if relative_saturation!=1:
+            theoretical_image = cv2.imread( self.structure_dict['rel_path'][0], cv2.IMREAD_ANYDEPTH)
+            self.max_int = 255 if theoretical_image.dtype==np.uint8 else 65535 if theoretical_image.dtype==np.uint16 else 1
+
         self.precision=abs(self.phiCRs_in_lib[1]-self.phiCRs_in_lib[0])
         self.optimizer = Ad_Hoc_Optimizer(min_angle, max_angle, initial_guess_delta, self.evaluate_image_closest_angle)
+        self.choose_similarity_alg(similarity)
 
-    def reInitialize(self, image_loader):
+    def choose_similarity_alg(self, similarity):
+        if similarity == 'mse': # mean square error
+            self.similarity_func = lambda im1, im2: np.sum(np.square(im1-im2))
+        elif similarity == 'mae': # mean absolute error
+            self.similarity_func = lambda im1, im2: np.sum(np.abs(im1-im2))
+        elif similarity == 'ssim':
+            self.similarity_func = lambda im1, im2: -ism.ssim(im1, im2)
+        elif similarity == 'fsim':
+            self.similarity_func = lambda im1, im2: -ism.fsim(np.expand_dims(im1,2), np.expand_dims(im2,2))
+        elif similarity == 'issm':
+            self.similarity_func = lambda im1, im2: ism.issm(im1, im2)
+        elif similarity == 'sre':
+            self.similarity_func = lambda im1, im2: -ism.sre(np.expand_dims(im1,2), np.expand_dims(im2,2))
+        elif similarity == 'sam':
+            self.similarity_func = lambda im1, im2: -ism.sam(np.expand_dims(im1,2), np.expand_dims(im2,2))
+        elif similarity == 'uiq':
+            self.similarity_func = lambda im1, im2: -ism.uiq(np.expand_dims(im1,2), np.expand_dims(im2,2))
+
+
+    def reInitialize(self, image_loader, similarity=None):
         Polarization_Obtention_Algorithm.reInitialize(self, image_loader)
         self.original_images = image_loader
         self.computed_points={}
         self.optimums={}
         self.optimals={}
         self.times={}
+        if similarity is not None:
+            self.similarity=similarity
+            self.choose_similarity_alg(similarity)
+
+    def plot_best_found_ones(self):
+        fig = plt.figure(figsize=(2*4.5, len(self.original_images.raw_images_names)*4.5))
+        axes=fig.subplots(len(self.original_images.raw_images_names),2)
+        if len(axes.shape)==1:
+            axes=np.expand_dims(axes, 0)
+        for k, (name, optimal) in enumerate(self.optimals.items()):
+            axes[k, 0].imshow(self.original_images.centered_ring_images[k])
+            idx_closest_in_lib = (np.abs(self.phiCRs_in_lib - self.angle_to_pi_pi(optimal))).argmin()
+            if self.relative_saturation!=1:
+                theoretical_image = cv2.imread( self.structure_dict['rel_path'][idx_closest_in_lib], cv2.IMREAD_ANYDEPTH)
+                theoretical_image = np.where( theoretical_image<=(self.max_int*self.relative_saturation), theoretical_image, self.max_int*self.relative_saturation)
+            else:
+                theoretical_image = cv2.imread( self.structure_dict['rel_path'][idx_closest_in_lib], cv2.IMREAD_ANYDEPTH)
+            axes[k, 1].imshow(theoretical_image)
+            axes[k,0].set_title(f"Experimental Image {name}\nOptimal {optimal}")
+            axes[k,1].set_title(f"Fitted Image: \nphiCR {self.phiCRs_in_lib[idx_closest_in_lib]}")
+        fig.suptitle("Results of the Simulation Grid Algorithm")
+        plt.show()
 
     def evaluate_image_closest_angle(self, experimental_image, angle, aux):
         idx_closest_in_lib = (np.abs(self.phiCRs_in_lib - self.angle_to_pi_pi(angle))).argmin()
-        theoretical_image = cv2.imread( self.structure_dict['rel_path'][idx_closest_in_lib], cv2.IMREAD_ANYDEPTH).astype(np.float64)
+
+        if self.relative_saturation!=1:
+            theoretical_image = cv2.imread( self.structure_dict['rel_path'][idx_closest_in_lib], cv2.IMREAD_ANYDEPTH)
+            theoretical_image = np.where( theoretical_image<=(self.max_int*self.relative_saturation), theoretical_image, self.max_int*self.relative_saturation).astype(np.float64)
+        else:
+            theoretical_image = cv2.imread( self.structure_dict['rel_path'][idx_closest_in_lib], cv2.IMREAD_ANYDEPTH).astype(np.float64)
         #plt.imshow(np.abs(theoretical_image-experimental_image).astype(np.uint8))
         #plt.show()
-        return np.sum(np.abs(theoretical_image-experimental_image)) # the experimental image is assumed to be a float 64 and normalized image (to its maximum value in the 8 or 16 bit scale)
+        return self.similarity_func(theoretical_image, experimental_image) # the experimental image is assumed to be a float 64 and normalized image (to its maximum value in the 8 or 16 bit scale)
 
 
     def brute_force_search(self, angle_steps, zoom_ratios):
@@ -1118,7 +1172,8 @@ class Simulation_fixed_R0_w0_Z_optimize_phiCR_precomputed_library(Polarization_O
                     angle_steps, zoom_ratios,
                     self.original_images.centered_ring_images[im].astype(np.float64), None)
             self.optimals[name][f"Stage_{len(angle_steps)-1}"] =self.angle_to_pi_pi(self.optimals[name][f"Stage_{len(angle_steps)-1}"])
-            self.angles[name]=self.optimals[name][f"Stage_{len(angle_steps)-1}"]/2
+            self.angles[name]=self.optimals[name][f"Stage_{len(angle_steps)-1}"]
+            # the obtained angles are directly the polarization angle that generated the simulation.
 
 
     def fibonacci_ratio_search(self, maximum_points, cost_tol):
@@ -1150,7 +1205,7 @@ class Simulation_fixed_R0_w0_Z_optimize_phiCR_precomputed_library(Polarization_O
                     self.precision, maximum_points, cost_tol,
                     self.original_images.centered_ring_images[im].astype(np.float64), None)
             self.optimals[name]=self.angle_to_pi_pi(optimal)
-            self.angles[name]=self.optimals[name]/2
+            self.angles[name]=self.optimals[name]
 
 
     def quadratic_fit_search(self, max_iterations, cost_tol):
@@ -1184,7 +1239,7 @@ class Simulation_fixed_R0_w0_Z_optimize_phiCR_precomputed_library(Polarization_O
                 self.precision, max_iterations, cost_tol,
                 self.original_images.centered_ring_images[im].astype(np.float64), None)
             self.optimals[name]=self.angle_to_pi_pi(optimal)
-            self.angles[name]=self.optimals[name]/2
+            self.angles[name]=self.optimals[name]
 
     def save_result_plots_fibonacci_or_quadratic(self, output_path):
         """
