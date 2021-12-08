@@ -1,8 +1,10 @@
 import os
+os.chdir(f"../../..")
+
 import sys
-from GPU_Classes import *
-from Image_Manager import *
-from Polarization_Obtention_Algorithms import Rotation_Algorithm, Mirror_Flip_Algorithm
+from SOURCE.CLASS_CODE_GPU_Classes import *
+from SOURCE.CLASS_CODE_Image_Manager import *
+from SOURCE.CLASS_CODE_Polarization_Obtention_Algorithms import Rotation_Algorithm, Mirror_Flip_Algorithm
 import numpy as np
 import json
 import cv2

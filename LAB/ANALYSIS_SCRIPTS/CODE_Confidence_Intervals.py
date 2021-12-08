@@ -3,6 +3,8 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+os.chdir(f"../../..")
+
 from styleframe import StyleFrame
 
 

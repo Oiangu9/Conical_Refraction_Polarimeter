@@ -1,28 +1,28 @@
 #!/usr/bin/python3
 
-from GUI.Design_ui import *
-from SOURCE.Image_Manager import *
-from SOURCE.Polarization_Obtention_Algorithms import *
-from SOURCE.Theoretical_Ring_Simulator import *
+from GUI.GUI_CODE_Design_ui import *
+from SOURCE.CLASS_CODE_Image_Manager import *
+from SOURCE.CLASS_CODE_Polarization_Obtention_Algorithms import *
+from SOURCE.CLASS_CODE_Theoretical_Ring_Simulator import *
 global disable_gpu_functionality
 global disable_PiCamera_functionality
 global disable_BaslerCamera_functionality
 import sys
 try:
-    from SOURCE.GPU_Classes import *
+    from SOURCE.CLASS_CODE_GPU_Classes import *
     disable_gpu_functionality=False
 except:
     disable_gpu_functionality=True
 
 try:
-    from SOURCE.Camera_Controler_PiCamera import Pi_Camera
+    from SOURCE.CLASS_CODE_Camera_Controler_PiCamera import Pi_Camera
     disable_PiCamera_functionality=False
 except:
     #print("Unexpected error:", sys.exc_info()[1])
     disable_PiCamera_functionality=True
 
 try:
-    from SOURCE.Camera_Controler_BaslerCamera import Basler_Camera
+    from SOURCE.CLASS_CODE_Camera_Controler_BaslerCamera import Basler_Camera
     disable_BaslerCamera_functionality=False
 except:
     #print("Unexpected error:", sys.exc_info()[1])
@@ -34,7 +34,7 @@ import sys
 import os
 import cv2
 
-# pyuic5 -x ./GUI/Design.ui -o ./GUI/Design_ui.py
+# pyuic5 -x ./GUI/GUI_TEMPLATE_Design.ui -o ./GUI/GUI_CODE_Design_ui.py
 
 
 class QPlainTextEditLogger_NonBlocking(logging.Handler, QtCore.QObject):

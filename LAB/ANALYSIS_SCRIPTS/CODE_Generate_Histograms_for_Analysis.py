@@ -3,6 +3,8 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+os.chdir(f"../../..")
+
 
 def plot_histograms_for(variable, final_results_df, experiment_name):
     categories=len(final_results_df.groupby([variable]))
