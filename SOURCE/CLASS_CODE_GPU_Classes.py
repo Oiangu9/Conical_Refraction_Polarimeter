@@ -14,7 +14,7 @@ def _gaussian_a( a0, k):
 
 
 @jax.jit
-def compute_B0_block(n,a0, rho0, rs_block, ks, z,dk, j0_ksrs):
+def compute_B0_block(n,a0, rho0, rs_block, ks, z, dk, j0_ksrs):
     #print(type(a0),type(ks),type(z),type(n),type(rho0),type(rs_block),type(dk))
     return jnp.sum( a0*jnp.exp(-ks**2/4.0)*jnp.exp(-1j*ks**2*z**2/(2*n))*jnp.cos(ks*rho0)*j0_ksrs*ks, axis=-1)*dk/(2*jnp.pi)
 
@@ -30,6 +30,18 @@ def compute_Intensity(B0,B1, in_polrz, sin_phis, cos_phis):
         (B0-B1*cos_phis)*in_polrz[1]+B1*sin_phis*in_polrz[0]
         )), axis=0)**2 # [2, ny, nx, nz]
 
+@jax.jit
+def compute_D_matrix_raw(B0, B1, sin_phis, cos_phis):
+    return jnp.stack((
+        B0+B1*cos_phis, B1*sin_phis,
+        B1*sin_phis, B0-B1*cos_phis
+        )) # [2, 2, ny, nx, nz]
+
+@jax.jit
+def pieces_for_I_LP(B0, B1):
+    return jnp.stack((
+        B0.real**2+B0.imag**2 + B1.real**2+B1.imag**2, 2*(B1.conjugate()*B0).real
+    ))
 
 
 @jax.jit
@@ -183,6 +195,14 @@ class RingSimulator_Optimizer_GPU():
     def _plot_Intensity(self, I, output_path, input_polarization, Z, R0, w0):
         input_angle=input_polarization if type(input_polarization) in [int, float] else np.arctan2(input_polarization.real[1], input_polarization.real[0])
         cv2.imwrite(f"{output_path}/Raw_PolAngle_{input_angle:.15f}_Vector_{input_polarization}_CRAngle_{2*input_angle:.15f}_Z_{z}_R0_{R0}_w0_{w0}.png",       np.asarray((65535*I/jnp.max(I))).astype(np.uint16))
+
+    # the next two functions are just for the generation of datasets in the deep learning approach
+    def compute_D_matrix(self, R0_pixels, Z, w0_pixels):
+        self._compute_B0_B1(Z, R0_pixels, w0_pixels)
+        return compute_D_matrix_raw(self.B0, self.B1, self.sin_phis, self.cos_phis)
+    def compute_pieces_for_I_LP(self, R0_pixels, Z, w0_pixels):
+        self._compute_B0_B1(Z, R0_pixels, w0_pixels)
+        return pieces_for_I_LP(self.B0, self.B1) #, self.phis[:,:,0])
 
     def compute_CR_ring(self, CR_ring_angle, R0_pixels, Z, w0_pixels):
         # If the argument R0, L and Z are the same as the last time B0B1 was computed, then do not recomupte them
