@@ -1,5 +1,4 @@
 import os
-os.chdir(f"../../..")
 
 import sys
 from SOURCE.CLASS_CODE_GPU_Classes import *
@@ -15,7 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import glob
 
 
-def run_angle_live(output_path, ground_truth, saturation):
+def run_angle_live(output_path, ground_truth, saturation, silhouette=False):
 
     reference_directory=output_path+f"/Reference"
     problem_directory=output_path+f"/Problem"
@@ -141,8 +140,11 @@ def run_angle_live(output_path, ground_truth, saturation):
                 image = (cv2.imread(image_path, cv2.IMREAD_ANYDEPTH)).astype(np.float64)
                 # normalize the image
                 image = max_intensity*image/image.max()
-                # apply saturation
-                image = np.where( image<=(max_intensity*saturation), image, max_intensity*saturation)
+                # apply saturation or silhouette
+                if silhouette==False:
+                    image = np.where( image<=(max_intensity*saturation), image, max_intensity*saturation)
+                else:
+                    image = np.where( image<=(max_intensity*saturation), 0, max_intensity)
                 I=compute_raw_to_centered_iX(image, X, interpolation_flag)
                 os.makedirs(f"{mother_dir}/iX", exist_ok=True)
                 cv2.imwrite(f"{mother_dir}/iX/iX_{X}_{image_path.split('/')[-1]}.png",
@@ -422,7 +424,8 @@ def run_angle_live(output_path, ground_truth, saturation):
     os.remove(f"{output_path}/Background.png")
 
 if __name__ == '__main__':
-    saturation=0.7
-    for choice, gt in zip(["Sin_Negativo", "Sin_Positivo", "Sin_Ambos", "Con_Ambos"],[-13.85, 9.45, 0, -4.4]):
-        output_path=f"/home/oiangu/Desktop/Conical_Refraction_Polarimeter/Experimental_Stuff/Fotos_Turpin/Day2/laser_gaussian_thesis/Saturated/{choice}"
-        run_angle_live(output_path, gt, saturation)
+
+    saturation=0.1
+    for choice, gt in zip(["ref_vs_ref","sin_el_negativo", "sin_el_positivo", "con_los_dos", "ortog", "43_44", "70_71", "28_29", "17_18", "18_19", "non_noisy_5_6", "non_noisy_72_73"],[0, -13.85, 9.45, -4.4, 90,(2.6544740200042725+1.57120680809021)*180/np.pi/2, (-0.6731816530227661+2.4470927715301514)*180/np.pi/2,(0.6789670586585999-0.9714600443840027)*180/np.pi/2, (0.659442126750946+2.2813968658447266)*180/np.pi/2, (-2.2813968658447266+2.679948091506958)*180/np.pi/2, (-2.6049387454986572+1.7562638521194458)*180/np.pi/2,(-2.946422576904297-1.33404541015625)*180/np.pi/2]):
+        output_path=f"/home/oiangu/Desktop/Conical_Refraction_Polarimeter/LAB/EXPERIMENTAL/BENCHMARK_High_Saturation_0.1/{choice}"
+        run_angle_live(output_path, gt, saturation, silhouette=False)
