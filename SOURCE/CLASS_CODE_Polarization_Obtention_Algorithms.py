@@ -17,7 +17,7 @@ except:
 import logging
 
 """
-TOOD:
+TODO:
 
 - Hacer que una instancia de algorithm inicializada pueda recibir la misma mas imagenes
 osea un init adicional quizas para reiniciar las cosas cada vez que image loader tiene nuevas
