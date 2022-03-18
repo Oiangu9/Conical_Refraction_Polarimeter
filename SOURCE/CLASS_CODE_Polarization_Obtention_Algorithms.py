@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import cv2
 from time import time
 import os
-import image_similarity_measures.quality_metrics as ism
 try:
     from SOURCE.CLASS_CODE_Ad_Hoc_Optimizer import Ad_Hoc_Optimizer
     from SOURCE.CLASS_CODE_Theoretical_Ring_Simulator import *
@@ -1062,6 +1061,7 @@ class Simulation_fixed_R0_w0_Z_optimize_phiCR_precomputed_library(Polarization_O
     def __init__(self, image_loader, use_exact_gravicenter,  library_structure_json_path, min_angle, max_angle, initial_guess_delta, relative_saturation, similarity):
         Polarization_Obtention_Algorithm.__init__(self, image_loader, use_exact_gravicenter)
         import json
+        import image_similarity_measures.quality_metrics as ism
         self.structure_dict = json.load(open(library_structure_json_path))
         self.phiCRs_in_lib = np.array(self.structure_dict['phiCRs'])
         self.min_angle = min_angle
