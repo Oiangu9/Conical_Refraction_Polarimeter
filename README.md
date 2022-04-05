@@ -1,8 +1,8 @@
 # Development from Scratch of a State of the Art Polarimeter based on Conical Refraction
----
----
-### Project Abstract for the Bachelor's Thesis in Computational Mathematics and Data Analytics
-#### *Universitat Autònoma de Barcelona (UAB)*
+
+### Bachelor's Thesis in Computational Mathematics and Data Analytics
+##### *Universitat Autònoma de Barcelona (UAB)*
+
 ---
 
 **Student presenting the project :**
@@ -13,7 +13,7 @@ Xabier Oyanguren Asua.
 
 Àlex Turpin Avilés, La Caixa Junior Leader Principal Investigator at ICFO, Assistant Professsor at UAB (*Grup d’Òptica, Departament de Física*).
 
-#### Project Abstract :
+## Project Abstract :
 
 As amazing as it may sound, the Conical Refraction (CR) phenomenon mathematically discovered by Hamilton back in 1832 [1] and experimentally verified by Lloyd a year later, which was actually one of the principal phenomena that led to the imposition of the wave-like description of light in front of the particle-like description defended by scientists like Newton, was left forgotten in the history of science, except for some exceptional works by prominent scientists like Poggendorff (1839) [2], Raman (1941) [3] [4], Belsky and Khapalyuk (1978) [5] [6] and Berry (2004) [7]. These studies were nevertheless mainly theoretical in motivation, and it was not squeezed experimentally until in the last decades, with the Optics Group at UAB leading the initiative, that it regained interest in the scientific literature [8]-[12]. It turns out that among other interesting suggested applications, as reviewed in [15], this phenomenon allows the construction of a theoretically very resolutive polarimeter as it was suggested and explained in References [13] and [14]. It is possible to build a device to measure the variation of an input linearly polarized light's polarization, that needs no mechanical polarization filter manipulation, which would ideally allow a measurement resolution proportional to the resolution of the imaging cameras commercially available.
 
