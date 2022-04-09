@@ -11,7 +11,7 @@ Xabier Oyanguren Asua.
 
 **Project Supervisor :**
 
-Àlex Turpin Avilés, La Caixa Junior Leader Principal Investigator at ICFO, Assistant Professsor at UAB (*Grup d’Òptica, Departament de Física*).
+Álex Turpin Avilés, La Caixa Junior Leader Principal Investigator at ICFO, Assistant Professsor at UAB (*Grup d’Òptica, Departament de Física*).
 
 ## Project Abstract :
 
