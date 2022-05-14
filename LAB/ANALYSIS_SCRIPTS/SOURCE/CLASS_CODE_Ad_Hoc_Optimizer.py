@@ -129,7 +129,7 @@ class Ad_Hoc_Optimizer:
         t = time()-t
         # save all the data
         min_point = np.argmin(active_points[1]) # index of minimum f(xj) from the four active points
-        ach_precision = self._round_to_sig((active_points[0, min_point+1]-active_points[0, min_point-1])/2.0)
+        ach_precision = self._round_to_sig((active_points[0, (min_point+1)%4]-active_points[0, (min_point-1)%4])/2.0)
 
         return (self._round_to_sig(t), np.array(computed_points),
             self._round_to_sig(active_points[0,min_point], ach_precision),
@@ -148,19 +148,51 @@ class Ad_Hoc_Optimizer:
         """
         # Initialize the active points to consider in the first iteration
         if initial_guess==None:
+            mid = 0.5*(self.b+self.a)
             active_xs = np.array([self.a,
-                                0.5*(self.b+self.a-self.initial_guess_delta),
-                                0.5*(self.b+self.a+self.initial_guess_delta),
+                                    self.a+(mid-self.initial_guess_delta-self.a)%(self.b-self.a),
+                                    self.a+(mid+self.initial_guess_delta-self.a)%(self.b-self.a),
                                 self.b], dtype=np.float64)
         else: # we have already a candidate for the minimum
             active_xs = np.array([self.a,
-                                initial_guess-self.initial_guess_delta,
-                                initial_guess+self.initial_guess_delta,
-                                self.b], dtype=np.float64)
+                            self.a+(initial_guess-self.initial_guess_delta-self.a)%(self.b-self.a),
+                            self.a+(initial_guess+self.initial_guess_delta-self.a)%(self.b-self.a),
+                            self.b], dtype=np.float64)
 
         # Evaluate cost function for each angle
-        #print("active_xs",active_xs, "costos", [ self.evaluate_cost(image, angle, *args_for_cost) for angle in active_xs])
         active_points = np.stack((active_xs, [ self.evaluate_cost(image, angle, *args_for_cost) for angle in active_xs])) # [2 (xj,f(xj)),4]
+        # Since we can assume the cost function will be periodic, bcause the support is a modular
+        # one. That is, it is repeated over and over, once we get two different cost evaluations,
+        # we will be done, because we can use as the triad, the min, the max and the max in the
+        # branch that is symmetric with the min. We will assume the period of the support is (b-a)
+        while active_points[1].argmin()==active_points[1].argmax(): # then all points have same cost
+            # Need to look for at least two points with different cost. We will do a random gitter
+            # the one in index 1 is always in (a,b), since we forced it. We will gitter it inside
+            active_points[0, 1] += (2*np.random.randint(0,2)-1)*np.random.rand(1)[0]*min(active_points[0, 1]-self.a, self.b-active_points[0, 1])*0.9 # add/subtract randomly a random factor of the distance from the point to the closest boundary
+            active_points[1,1] = self.evaluate_cost(image, active_points[0, 1], *args_for_cost)
+
+        # then at least two points have diff cost!
+        minimum = active_points[:,active_points[1].argmin()]
+        maximum = active_points[:,active_points[1].argmax()]
+        if minimum[0]<maximum[0]:
+            third_point = maximum[0]-(self.b-self.a)
+        else: # the case in which they are equal is not contemplated!
+            third_point = maximum[0]+(self.b-self.a)
+        # NOTE it can happen that the third point is exactly the minimum again, if the minimum was on the boundary of the identified interval! in such a case, if we take the point that is one step further or closer to the boundary we will get the one that evaluates approximately to a, by continuity we will then have what we wanted
+        # In reality the extra evaluation is not necessary, since it will have the same cost but
+        # just for a sanity check it is fine
+        active_points = np.array([
+            [third_point-self.initial_guess_delta,
+                self.evaluate_cost(image, third_point-self.initial_guess_delta, *args_for_cost)],
+            minimum, maximum,
+            [third_point+self.initial_guess_delta, self.evaluate_cost(image, third_point+self.initial_guess_delta, *args_for_cost)]
+        ]).T
+        #print('control', self.a, self.b, 'min', minimum, 'max', maximum,'third', third_point)
+        #assert active_points[1,0]==active_points[1,2]
+        #print("quad prepare", active_points[:, np.argsort(active_points[0])])
+        return active_points[:, np.argsort(active_points[0])]
+
+        '''
         # if the minium is in the boundary of the interval, make it not be the boundary. we make the interval slightly wider by 10% of the original interval and a little random factor to prevent strange symmetries
         patience=10 # try first moving the inside candidates -> make it a tunable parameter!!
         while(np.argmin(active_points[1])==0 or np.argmin(active_points[1])==3):
@@ -180,7 +212,7 @@ class Ad_Hoc_Optimizer:
                     active_points[1,3] = self.evaluate_cost(image, active_points[0,3], *args_for_cost)
 
         # order the four pairs of points by their support position (not anymore! they should laready be ordered!) active_points[:, np.argsort(active_points[0])]
-        return active_points[:, np.argsort(active_points[0])]
+        '''
 
     def quadratic_fit_search(self, precision, max_iterations, cost_tol, image, args_for_cost, initial_guess=None):
         """
@@ -213,10 +245,11 @@ class Ad_Hoc_Optimizer:
 
         computed_points = active_points.transpose().tolist() # list of all the pairs of (xj,f(xj))
 
-        while( np.abs(active_points[0,-1]-active_points[0,0]) >= 2*precision and not (np.allclose(active_points[1,0], active_points[1,1], rtol=cost_tol) or np.allclose(active_points[1,2], active_points[1,1], rtol=cost_tol)) and it<=max_iterations):
+        while( np.sum(np.abs(active_points[0,1:-1]-active_points[0,:-2]) <= 2*precision)==0 and not (np.allclose(active_points[1,0], active_points[1,1], rtol=cost_tol) or np.allclose(active_points[1,2], active_points[1,1], rtol=cost_tol)) and it<=max_iterations):
             # Choose new triad of angles
-            min_point = np.argmin(active_points[1]) # index of minimum f(xj) from the four active points
+            min_point = np.argmin(active_points[1,1:-1])+1 # index of minimum f(xj) from the four active points
             # using the fact that the minimum of the four points will never be in the boundary
+            #print("active_pts",it,  active_points)
             active_points[:, :3] = active_points[:, (min_point-1):(min_point+2)]
             # compute the interpolation polynomial parameters and the minimum
             x_min = 0.5*( active_points[0,0]+active_points[0,1] + (active_points[0,0]-active_points[0,2])*(active_points[0,1]-active_points[0,2])/( ( active_points[0,0]*(active_points[1,2]-active_points[1,1])+active_points[0,1]*(active_points[1,0]-active_points[1,2]) )/(active_points[1,1]-active_points[1,0]) + active_points[0,2] ) )

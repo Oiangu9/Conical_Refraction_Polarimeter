@@ -16,7 +16,7 @@ except:
 import logging
 
 """
-TOOD:
+TODO:
 
 - Hacer que una instancia de algorithm inicializada pueda recibir la misma mas imagenes
 osea un init adicional quizas para reiniciar las cosas cada vez que image loader tiene nuevas
@@ -1062,7 +1062,6 @@ class Simulation_fixed_R0_w0_Z_optimize_phiCR_precomputed_library(Polarization_O
         Polarization_Obtention_Algorithm.__init__(self, image_loader, use_exact_gravicenter)
         import json
         import image_similarity_measures.quality_metrics as ism
-
         self.structure_dict = json.load(open(library_structure_json_path))
         self.phiCRs_in_lib = np.array(self.structure_dict['phiCRs'])
         self.min_angle = min_angle

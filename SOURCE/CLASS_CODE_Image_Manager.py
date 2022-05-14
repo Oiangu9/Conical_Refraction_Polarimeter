@@ -205,7 +205,7 @@ class Image_Manager:
                 cv2.imwrite(f"{output_path}/{self.raw_images_names[im]}.png", self.centered_ring_images[im])
         '''
         # we normalize the image (all the CR rings should have the same scale ideally)
-        self.centered_ring_images=self.max_intensity*(self.centered_ring_images.astype(np.float64)/np.max(self.centered_ring_images, 0))
+        #self.centered_ring_images=(self.max_intensity*(self.centered_ring_images.astype(np.float64)/np.max(self.centered_ring_images, 0)))
 
         if output_path:
             for im in range(g_raw.shape[0]):
