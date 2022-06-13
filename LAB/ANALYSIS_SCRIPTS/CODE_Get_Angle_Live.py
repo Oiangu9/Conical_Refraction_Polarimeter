@@ -428,6 +428,7 @@ if __name__ == '__main__':
     
     # total arguments
     n = len(sys.argv)
+    #print(sys.argv)
     print("Total arguments passed:", n)
     
     if n==0:
@@ -438,4 +439,4 @@ if __name__ == '__main__':
     else: # expected, first output_path then saturation, then silhouette
         for choice, gt in zip(["ref_vs_ref","sin_el_negativo", "sin_el_positivo", "con_los_dos", "ortog", "43_44", "70_71", "28_29", "17_18", "18_19", "non_noisy_5_6", "non_noisy_72_73"],[0, -13.85, 9.45, -4.4, 90,(2.6544740200042725+1.57120680809021)*180/np.pi/2, (-0.6731816530227661+2.4470927715301514)*180/np.pi/2,(0.6789670586585999-0.9714600443840027)*180/np.pi/2, (0.659442126750946+2.2813968658447266)*180/np.pi/2, (-2.2813968658447266+2.679948091506958)*180/np.pi/2, (-2.6049387454986572+1.7562638521194458)*180/np.pi/2,(-2.946422576904297-1.33404541015625)*180/np.pi/2]):
             output_path=f"/home/oiangu/Desktop/Conical_Refraction_Polarimeter/LAB/EXPERIMENTAL/BENCHMARK_High_Saturation_0.1/{choice}"
-            run_angle_live(sys.argv[0]+f"/{choice}", gt, float(sys.argv[1]), silhouette=True if sys.argv[2]=="True" else False)
+            run_angle_live(sys.argv[1]+f"/{choice}", gt, float(sys.argv[2]), silhouette=True if sys.argv[3]=="True" else False)
