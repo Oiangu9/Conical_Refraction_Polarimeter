@@ -1,0 +1,29 @@
+\contentsline {section}{Introduction}{1}{section*.1}
+\contentsline {section}{Part A: Conical Refraction Essentials}{2}{section*.5}
+\contentsline {subsection}{1. The Revival of Conical Refraction }{2}{section*.6}
+\contentsline {subsection}{2. Berry's Mathematical Description of the Phenomenon }{2}{section*.7}
+\contentsline {subsection}{3. Simulating the Phenomenon }{2}{section*.8}
+\contentsline {subsection}{4. A Natural Polarimeter }{2}{section*.9}
+\contentsline {subsection}{Apppendix $\alpha $: Jones and Stokes Representations of Polarization }{2}{section*.10}
+\contentsline {section}{Part B: Designing the Hardware}{4}{section*.11}
+\contentsline {subsection}{1. Experimental Implementations of the Polarimeter}{4}{section*.12}
+\contentsline {subsection}{2. Main Non-Idealities in the Experimental Rings}{4}{section*.13}
+\contentsline {subsection}{3. Proof of Concepts}{4}{section*.14}
+\contentsline {subsection}{Appendix $\beta $: Employed Optical Elements}{4}{section*.15}
+\contentsline {section}{Part C: Designing the Software}{7}{section*.16}
+\contentsline {subsection}{1. Artificial Noise Generation}{7}{section*.17}
+\contentsline {subsection}{2. Simulated Image Datasets}{7}{section*.18}
+\contentsline {subsection}{3. Embedding Space Algorithms}{7}{section*.19}
+\contentsline {subsubsection}{3.1. Data Manifold Dimension Identification}{7}{section*.20}
+\contentsline {subsubsection}{3.2. Metric Learning}{7}{section*.21}
+\contentsline {subsubsection}{3.3. Nearest Neighbors}{7}{section*.22}
+\contentsline {subsection}{3. Geometric Algorithms}{7}{section*.23}
+\contentsline {subsection}{4. Simulation Fitting Algorithms }{7}{section*.24}
+\contentsline {subsection}{5. Looking for the Best Algorithm and Pre-processing }{7}{section*.25}
+\contentsline {subsection}{Appendix $\gamma $: The Implemented Optimizers }{7}{section*.26}
+\contentsline {section}{Part D: The Final Device}{8}{section*.27}
+\contentsline {subsection}{1. Performance on Experimental Data }{8}{section*.28}
+\contentsline {subsection}{2. Commercial Polarimeters }{8}{section*.29}
+\contentsline {subsection}{3. Potential Niches }{8}{section*.30}
+\contentsline {section}{Conclusions}{9}{section*.31}
+\contentsline {section}{References}{10}{section*.32}
