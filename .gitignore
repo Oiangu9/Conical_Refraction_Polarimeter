@@ -6,4 +6,6 @@ SOURCE/Simulated/*
 .ipynb_checkpoints
 .sav
 LAB/EXPERIMENTAL/Todor_Algorithm_Limits
+LAB/DEEP_LEARNING/Manifold Learning/*.txt
+LAB/ANALYSIS_SCRIPTS/*.txt
 
