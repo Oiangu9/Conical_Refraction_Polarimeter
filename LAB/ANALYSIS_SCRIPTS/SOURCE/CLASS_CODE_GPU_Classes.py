@@ -223,16 +223,73 @@ class RingSimulator_Optimizer_GPU():
 
 if __name__ == "__main__":
 
+
+
+
+
+
+
+
     #phi_CRs = [-3, -2, np.pi/2, -1, 0, 1, np.pi/2, 2, 3, np.pi]
     #phi_CRs = [-2.3932]
-    phi_CRs=[0] # such that 2*26.146deg is their difference
+    # phi_CRs=[0] # such that 2*26.146deg is their difference
 
 
     print("\n\n\nTesting General Simulator:")
-    R0=167
-    z=0
+
     nx=540
-    w0=23.857
+    max_k=50
+    num_k=1100
+
+    phiCRs = [#None, 0,
+        #None, 0, np.pi/2, np.pi/8,
+        #np.pi/4, np.pi/4, np.pi/4, np.pi/4,
+        #np.pi/4, np.pi/4, np.pi/4, np.pi/4,
+        None, None, None, np.pi/4
+        ]
+    w0s = [#24, 24,
+        #24, 24, 24, 24,
+        #10, 20, 30, 36,
+        #83.5, 41.75, 20.875, 10.44,
+        24, 24, 24, 24
+        ]
+    R0s = [#167, 167,
+        #167, 167, 167, 167,
+        #60, 120, 180, 220,
+         #167, 167, 167, 167,
+         167, 167, 167, 167,
+         ]
+    Zs = [#0, 0,
+        #0, 0, 0, 0,
+        #0, 0, 0, 0,
+        #0, 0, 0, 0,
+        #7, 6, 2, 2
+        #5, 3, 1.5, 0.5
+        1.7, 1.8, 1.2, 0.8
+        ]
+    names = [#'simul11', 'simul13', 'simul21', 'simul22', 'suml23', 'simul24', 'simul31', 'simul32', 'simul33', 'simul34',
+        #'simul41', 'simul42', 'simul43', 'simul44',
+        'simul590', 'simul5990', 'simul5999', 'simul599990']
+    out = "../../../REPORT/Figures/"
+    simulator =RingSimulator_Optimizer_GPU( n=1.5, a0=1.0, max_k=max_k, num_k=num_k, nx=nx,
+                                      sim_chunk_x=nx, sim_chunk_y=nx)
+
+    for R0, w0, phiCR, z, name in zip(R0s, w0s, phiCRs, Zs, names):
+        if simulator.last_R0_pixels!=R0 or simulator.last_Z!=z or simulator.last_w0_pixels!=w0:
+            simulator.last_R0_pixels=R0
+            simulator.last_w0_pixels=w0
+            simulator.last_Z=z
+            simulator._compute_B0_B1(z, R0, w0)
+        print(R0, w0, phiCR, z, name)
+        if phiCR is None:
+            I=simulator._compute_D_and_Intensity_Turpin(in_polrz=jnp.array([1, 1j])/jnp.sqrt(2))
+        else:
+            I=simulator._compute_D_and_Intensity_Turpin(jnp.array([np.cos(phiCR/2), np.sin(phiCR/2)]))
+        cv2.imwrite(f"{out}/{name}.png", np.asarray((255*(I/jnp.max(I)))).astype(np.uint8))
+        print(f"Done {name}")
+
+    '''
+
     simulator=RingSimulator_GPU( n=1.5, w0=1, R0=R0, a0=1.0, max_k=50, num_k=1000, nx=nx, ny=nx, nz=1, xmin=-(nx-1)/2, xmax=(nx-1)/2, ymin=-(nx-1)/2, ymax=(nx-1)/2, zmin=z, zmax=z, sim_chunk_x=nx, sim_chunk_y=nx)
 
     os.makedirs('./Simulated/General/Full/', exist_ok=True)
@@ -243,7 +300,6 @@ if __name__ == "__main__":
         simulator.compute_intensity_Trupin_and_Plot( jnp.array([np.cos(phi_CR/2), np.sin(phi_CR/2)]), './Simulated/General/Full/')
         print("Hard one done!\n")
         simulator.compute_intensity_Todor_and_Plot(phi_CR/2, './Simulated/General/Approx/')
-    '''
 
     print("\n\n\nTesting Optimizer Simulator:")
     simulator=RingSimulator_Optimizer_GPU( n=1.5, a0=1.0, max_k=50, num_k=1200, nx=550, sim_chunk_x=550, sim_chunk_y=550)
