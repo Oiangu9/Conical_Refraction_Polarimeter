@@ -2034,7 +2034,23 @@ Its specifications are the following ones:
 
 {\bf Algorithmic Part:} A graphical user interface (GUI) application, programmed using Python and the PyQt library \cite{pyqt}. All the algorithms were made available within it, allowing the user to fully customize its parameters. The dependencies and a small manual, together with all the code can be found in the project Github repository \cite{github}. Essentially, it allows: (a) the determination of $\Delta \Phi_{LP}$ for two particular takes: (b) a continuous live monitoring of $\Delta\Phi_{LP}$ (relative to an initial reference LP), for instance to monitor the change in LP for a live chemical reaction; (c) the simulation of theoretical images. The touch screen in Figrue \ref{fig:proof}.c is showing this GUI application.
 
-\subsection*{C.4.1. Cost Analysis and Commercial Polarimeters}
+
+
+\subsection*{C.4.1. Proof-of-concept Dataset and Algorithm Check }
+
+Note that we have set no magnification of the ring prior to the camera, which means the images that will be captured will have a lower resolution. This was because in the basis there was not enough space for aligning all components if we set the additional lens. This can be solved by placing a mirror in the corner where the camera is, and placing the camera in the next corner, which then does account for the required space. Yet, we decided to stick to the simple configuration (which in theory even if the resolution will be smaller, should introduce much less noise), and to test the resulting images.
+
+We generate a small labeled dataset following the same steps as for (C.2.), now employing the proof-of-concept (one of the taken images can be seen in Figure \ref{fig:proof}). The best algorithm for the task turns out to be:
+\begin{itemize}
+\item The Kalkandjiev-Rotation algorithm (B.6.3.) with the Quadratic Fit search algorithm and using cubic interpolation gives an average absolute error of $0.81$ deg and a absolute error standard deviation of $0.74$ deg.
+\item Beste bat?
+\end{itemize}
+
+This tal tal.
+
+Note as explained in the next sub-section that the results will be highly improved with the use of a higher pixel density camera like the Raspberry Pi camera (which also turns out to be six times cheaper).
+
+\subsection*{C.4.2. Cost Analysis and Commercial Polarimeters}
 We can estimate the upper bound of the production cost of the device by the cost of its components at the time of writing the thesis in the personal use market. Note however that if the device is mass produced the price of the optical components drops significantly. See a summary in Table \ref{tab:prices}.
 
 
