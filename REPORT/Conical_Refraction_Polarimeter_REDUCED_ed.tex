@@ -1,3 +1,4 @@
+
 \documentclass[11pt, a4paper, twoside]{article} % , draft
 \usepackage[utf8]{inputenc}
 
@@ -1310,7 +1311,7 @@ All the carried tests and their results, gathered algorithm-wise and image-wise 
 \label{tab:nonnoisy}
 \begin{tabular}{c|c|c|cc|cc}
 \toprule
-\multicolumn{2}{c|}{\bf Algorithm} &  \multicolumn{3}{|c|}{\bf Absolute Error (rad)} & \multicolumn{2}{|c}{\bf Times (s)} \\ \midrule \midrule
+\multicolumn{2}{c|}{\bf Algorithm} &  \multicolumn{3}{|c|}{\bf Absolute Error (deg)} & \multicolumn{2}{|c}{\bf Times (s)} \\ \midrule \midrule
 {\bf                     Name} &                          {\bf Winner} {\bf Variant} &  {\bf Mean} &  \multicolumn{2}{c|}{\bf 90\% CI } &  \multicolumn{2}{|c}{\bf 90\% CI }\\
 \bottomrule\rule{0pt}{4mm}{}
            Mirror Flip & Quadratic Opt., Lanczos Interpol.,  & 0.00106 &    0.00102 &   0.00109 &        0.218 &       0.220 \\
@@ -1353,7 +1354,7 @@ Apparently, using the mixed Blazquez and cosine squared fit cost is better than 
 {\small 
 \center \begin{tabular}{c|c|c|cc|cc}
 \toprule
- \multicolumn{2}{c|}{\bf Algorithm} &  \multicolumn{3}{|c|}{\bf Absolute Error (rad)} & \multicolumn{2}{|c}{\bf Times (s)} \\ \midrule \midrule
+ \multicolumn{2}{c|}{\bf Algorithm} &  \multicolumn{3}{|c|}{\bf Absolute Error (deg)} & \multicolumn{2}{|c}{\bf Times (s)} \\ \midrule \midrule
 {\bf                     Name} &                          {\bf Winner} {\bf Variant} &  {\bf Mean} &  \multicolumn{2}{c|}{\bf 90\% CI } &  \multicolumn{2}{|c}{\bf 90\% CI }\\
 \bottomrule\rule{0pt}{4mm}{}
            Simulation Fit &         Opt. Powell, About Gravicenter, &  1.86 &       1.75 &      1.98 &         1.24 &        1.25 \\
@@ -1559,7 +1560,7 @@ Running the same pipeline of (B.10) on the experimental datasets, we get the res
 \caption{Sumary of the best variant found for each algorithm on the HeNe laser dataset. Confidence intervals are not shown, since with only 7 samples, they are not significant enough. Std stands for standard deviation. }\label{tab:resExp}
 \hspace{-0.1cm}\begin{tabular}{c|c|cc|cc}
 \toprule
- \multicolumn{2}{c|}{\bf Algorithm} &  \multicolumn{2}{|c|}{\bf \small Abs. Error (rad)} & \multicolumn{2}{|c}{\bf Times (s)} \\ \midrule \midrule
+ \multicolumn{2}{c|}{\bf Algorithm} &  \multicolumn{2}{|c|}{\bf \small Abs. Error (deg)} & \multicolumn{2}{|c}{\bf Times (s)} \\ \midrule \midrule
 {\bf                     Name} &                          {\bf Winner} {\bf Variant} &  {\bf Mean} &  {\bf Std.} & {\bf Mean} & {\bf Std.}\\
 \bottomrule\rule{0pt}{4mm}{}
     Cosine squared fit &  {\small  Opt. Nelder-Mead, final estimation } &  0.50(5) &  0.29 &  2.88 &  0.012 \\
